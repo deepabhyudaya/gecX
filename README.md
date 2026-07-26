@@ -8,6 +8,7 @@
 
 ---
 
+
 ## Preview
 
 **Admin Dashboard** — Admin overview with user cards, AI insights, attendance analytics and event calendar.
