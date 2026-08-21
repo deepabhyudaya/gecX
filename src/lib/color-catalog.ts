@@ -1,11 +1,10 @@
-// Color catalog — 120 username colors + 90 profile-bg colors
 
-/** Returns true if the hex color has high luminance (light bg → needs dark text). */
+
 export function isLightColor(hex: string): boolean {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
-  // Perceived luminance (ITU-R BT.709)
+
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.45;
 }
 
@@ -13,7 +12,7 @@ type C = { name: string; colorValue: string; category: string; shade: string; co
 
 function hue(
   cat: string,
-  shades: [string, string, number][]   // [shadeName, hex, cost]
+  shades: [string, string, number][]
 ): C[] {
   return shades.map(([shade, colorValue, cost]) => ({
     name: `${cat.charAt(0).toUpperCase() + cat.slice(1)} · ${shade.charAt(0).toUpperCase() + shade.slice(1)}`,
@@ -40,7 +39,7 @@ export const USERNAME_COLORS: C[] = [
   ...hue("purple",  [["pastel","#F3E8FF",80],["light","#D8B4FE",100],["soft","#C084FC",120],["normal","#A855F7",150],["vivid","#9333EA",150],["dark","#7E22CE",150],["deep","#581C87",180],["neon","#BF00FF",300]]),
   ...hue("pink",    [["pastel","#FCE7F3",80],["light","#FBCFE8",100],["soft","#F9A8D4",120],["normal","#EC4899",150],["vivid","#DB2777",150],["dark","#BE185D",150],["deep","#831843",180],["neon","#FF1493",300]]),
   ...hue("rose",    [["pastel","#FFF1F2",80],["light","#FECDD3",100],["soft","#FDA4AF",120],["normal","#F43F5E",150],["dark","#E11D48",150],["deep","#9F1239",180]]),
-  // monochrome (8)
+
   { name:"White",      colorValue:"#FFFFFF", category:"monochrome", shade:"white",  cost:200 },
   { name:"Snow",       colorValue:"#F1F5F9", category:"monochrome", shade:"snow",   cost:100 },
   { name:"Silver",     colorValue:"#CBD5E1", category:"monochrome", shade:"silver", cost:100 },
@@ -66,7 +65,7 @@ export const PROFILE_BG_COLORS: C[] = [
   ...hue("purple",  [["thistle","#FAF5FF",150],["orchid","#F3E8FF",180],["plum","#E9D5FF",200],["violet","#D8B4FE",220],["eggplant","#3B0764",280],["grape","#581C87",280]]),
   ...hue("pink",    [["blush","#FDF2F8",150],["rose","#FCE7F3",180],["flamingo","#FBCFE8",200],["candy","#F9A8D4",220],["berry","#500724",280],["wine","#831843",280]]),
   ...hue("rose",    [["petal","#FFF1F2",150],["blush","#FFE4E6",180],["ballet","#FECDD3",200],["carnation","#FDA4AF",220],["merlot","#4C0519",280]]),
-  // monochrome / special (10)
+
   { name:"Bg · Fog",     colorValue:"#FAFAFA", category:"monochrome", shade:"fog",    cost:150 },
   { name:"Bg · Ash",     colorValue:"#F4F4F5", category:"monochrome", shade:"ash",    cost:150 },
   { name:"Bg · Cloud",   colorValue:"#E4E4E7", category:"monochrome", shade:"cloud",  cost:180 },
@@ -79,10 +78,9 @@ export const PROFILE_BG_COLORS: C[] = [
   { name:"Bg · Graphite",colorValue:"#111827", category:"monochrome", shade:"graphite",cost:200},
 ];
 
-// --- APP THEMES ---
 function generateAppThemes(): C[] {
   const themes: C[] = [];
-  
+
   const baseVariants = [
     { type: "Dark", bg: "240 10% 4%", fg: "0 0% 98%", card: "240 10% 6%", border: "240 10% 12%", muted: "240 10% 12%", mutedFg: "240 5% 65%" },
     { type: "Light", bg: "0 0% 100%", fg: "240 10% 4%", card: "0 0% 98%", border: "240 6% 90%", muted: "240 6% 94%", mutedFg: "240 4% 46%" },
@@ -151,11 +149,11 @@ function generateAppThemes(): C[] {
         "--sidebar-border": base.border,
         "--sidebar-ring": accent.primary,
       };
-      
+
       let cost = 1000;
       if (base.type === "Amoled" || base.type === "Midnight" || base.type === "Discord") cost = 1500;
       if (base.type === "Forest" || base.type === "Coffee" || base.type === "Plum") cost = 2000;
-      
+
       themes.push({
         name: `${base.type} · ${accent.name}`,
         colorValue: JSON.stringify(vars),
@@ -166,7 +164,6 @@ function generateAppThemes(): C[] {
     }
   }
 
-  // Add Gradient Themes (Expensive)
   const gradients = [
     { name: "Sunset Horizon", css: "linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%)", cat: "orange" },
     { name: "Ocean Blue", css: "linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%)", cat: "cyan" },
@@ -183,8 +180,7 @@ function generateAppThemes(): C[] {
   ];
 
   for (const grad of gradients) {
-    // Gradient themes use transparent backgrounds to let the body gradient show
-    // We set alpha values on background, card, and popover to act as a glassmorphic filter.
+
     const vars = {
       "--background": "0 0% 0% / 0.1",
       "--foreground": "0 0% 100%",
@@ -213,7 +209,7 @@ function generateAppThemes(): C[] {
       "--sidebar-accent-foreground": "0 0% 100%",
       "--sidebar-border": "0 0% 100% / 0.15",
       "--sidebar-ring": "0 0% 100%",
-      "backgroundImage": grad.css, // special key we will intercept
+      "backgroundImage": grad.css,
     };
     themes.push({
       name: `Gradient · ${grad.name}`,
@@ -229,29 +225,25 @@ function generateAppThemes(): C[] {
 
 export const APP_THEMES: C[] = generateAppThemes();
 
-// --- NAMEPLATES ---
-// --- CUSTOM MEDIA (Avatar & Banner) ---
-// Special shop items that unlock the ability to use custom URLs
 export const CUSTOM_MEDIA_ITEMS: C[] = [
   {
     name: "Custom Avatar",
-    colorValue: "", // Not used - this is a feature unlock
+    colorValue: "",
     category: "special",
     shade: "feature",
-    cost: 5000, // Expensive
+    cost: 5000,
   },
   {
     name: "Profile Banner",
-    colorValue: "", // Not used - this is a feature unlock
+    colorValue: "",
     category: "special",
     shade: "feature",
-    cost: 8000, // Very expensive
+    cost: 8000,
   },
 ];
 
 export const NAMEPLATES: C[] = [
-  // Solid accents (Fading banners)
-  // Red/Rose
+
   ...hue("red", [
     ["solid", "#DC2626", 200],
     ["banner · light", "linear-gradient(90deg, rgba(239,68,68,0.8) 0%, transparent 100%)", 300],
@@ -267,7 +259,7 @@ export const NAMEPLATES: C[] = [
     ["banner · dark", "linear-gradient(90deg, #BE123C 0%, transparent 100%)", 500],
     ["banner · deep", "linear-gradient(90deg, #881337 0%, transparent 100%)", 600],
   ]),
-  // Orange/Amber
+
   ...hue("orange", [
     ["solid", "#EA580C", 200],
     ["banner · light", "linear-gradient(90deg, rgba(249,115,22,0.8) 0%, transparent 100%)", 300],
@@ -282,7 +274,7 @@ export const NAMEPLATES: C[] = [
     ["banner · dark", "linear-gradient(90deg, #B45309 0%, transparent 100%)", 500],
     ["banner · deep", "linear-gradient(90deg, #78350F 0%, transparent 100%)", 600],
   ]),
-  // Yellow/Lime
+
   ...hue("yellow", [
     ["solid", "#CA8A04", 200],
     ["banner · light", "linear-gradient(90deg, rgba(234,179,8,0.8) 0%, transparent 100%)", 300],
@@ -295,7 +287,7 @@ export const NAMEPLATES: C[] = [
     ["banner · normal", "linear-gradient(90deg, #65A30D 0%, transparent 100%)", 400],
     ["banner · dark", "linear-gradient(90deg, #4D7C0F 0%, transparent 100%)", 500],
   ]),
-  // Green/Emerald
+
   ...hue("green", [
     ["solid", "#16A34A", 200],
     ["banner · light", "linear-gradient(90deg, rgba(34,197,94,0.8) 0%, transparent 100%)", 300],
@@ -304,7 +296,7 @@ export const NAMEPLATES: C[] = [
     ["banner · deep", "linear-gradient(90deg, #14532D 0%, transparent 100%)", 600],
     ["banner · neon", "linear-gradient(90deg, #39FF14 0%, transparent 100%)", 800],
   ]),
-  // Teal/Cyan/Sky
+
   ...hue("teal", [
     ["solid", "#0D9488", 200],
     ["banner · light", "linear-gradient(90deg, rgba(20,184,166,0.8) 0%, transparent 100%)", 300],
@@ -327,7 +319,7 @@ export const NAMEPLATES: C[] = [
     ["banner · dark", "linear-gradient(90deg, #0369A1 0%, transparent 100%)", 500],
     ["banner · deep", "linear-gradient(90deg, #075985 0%, transparent 100%)", 600],
   ]),
-  // Blue/Indigo
+
   ...hue("blue", [
     ["solid", "#2563EB", 200],
     ["banner · light", "linear-gradient(90deg, rgba(59,130,246,0.8) 0%, transparent 100%)", 300],
@@ -343,7 +335,7 @@ export const NAMEPLATES: C[] = [
     ["banner · dark", "linear-gradient(90deg, #4338CA 0%, transparent 100%)", 500],
     ["banner · deep", "linear-gradient(90deg, #312E81 0%, transparent 100%)", 600],
   ]),
-  // Purple/Violet
+
   ...hue("purple", [
     ["solid", "#9333EA", 200],
     ["banner · light", "linear-gradient(90deg, rgba(168,85,247,0.8) 0%, transparent 100%)", 300],
@@ -352,7 +344,7 @@ export const NAMEPLATES: C[] = [
     ["banner · deep", "linear-gradient(90deg, #581C87 0%, transparent 100%)", 600],
     ["banner · neon", "linear-gradient(90deg, #BF00FF 0%, transparent 100%)", 800],
   ]),
-  // Pink
+
   ...hue("pink", [
     ["solid", "#DB2777", 200],
     ["banner · light", "linear-gradient(90deg, rgba(236,72,153,0.8) 0%, transparent 100%)", 300],
@@ -361,7 +353,7 @@ export const NAMEPLATES: C[] = [
     ["banner · deep", "linear-gradient(90deg, #831843 0%, transparent 100%)", 600],
     ["banner · neon", "linear-gradient(90deg, #FF1493 0%, transparent 100%)", 800],
   ]),
-  // Monochrome
+
   ...hue("monochrome", [
     ["solid · gray", "#475569", 200],
     ["solid · pitch", "#000000", 200],
@@ -373,7 +365,6 @@ export const NAMEPLATES: C[] = [
     ["banner · snow", "linear-gradient(90deg, #FFFFFF 0%, transparent 100%)", 700],
   ]),
 
-  // --- Gradients (Double Fades) ---
   { name: "Gradient · Fire", colorValue: "linear-gradient(90deg, #f12711 0%, rgba(245,175,25,0.1) 100%)", category: "orange", shade: "gradient", cost: 1000 },
   { name: "Gradient · Ice", colorValue: "linear-gradient(90deg, #00c6ff 0%, rgba(0,114,255,0.1) 100%)", category: "cyan", shade: "gradient", cost: 1000 },
   { name: "Gradient · Nature", colorValue: "linear-gradient(90deg, #11998e 0%, rgba(56,239,125,0.1) 100%)", category: "green", shade: "gradient", cost: 1000 },

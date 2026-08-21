@@ -69,8 +69,6 @@ export default function CreateChannelModal({
     }
   };
 
-  // Load roles when modal opens
-
   const loadData = async () => {
     setLoadingRoles(true);
     setLoadingCategories(true);
@@ -132,7 +130,6 @@ export default function CreateChannelModal({
             </p>
           </div>
 
-          {/* Category Selection */}
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">Category (Optional)</Label>
             {loadingCategories ? (
@@ -156,7 +153,6 @@ export default function CreateChannelModal({
             )}
           </div>
 
-          {/* Private Channel Toggle */}
           <div className="space-y-3 p-3 rounded-lg border bg-muted/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -176,12 +172,11 @@ export default function CreateChannelModal({
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              {isPrivate 
-                ? "Only selected roles can view and access this channel." 
+              {isPrivate
+                ? "Only selected roles can view and access this channel."
                 : "Everyone in the server can view this channel."}
             </p>
 
-            {/* Role Selection - Only show when private */}
             {isPrivate && (
               <div className="space-y-2 pt-2 border-t">
                 <p className="text-xs font-medium">Select roles that can access this channel:</p>

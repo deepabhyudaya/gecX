@@ -34,8 +34,8 @@ const AvatarPricingClient = ({ initialItems }: AvatarPricingClientProps) => {
 
   const handlePriceChange = (style: string, newPrice: string) => {
     const price = parseInt(newPrice) || 0;
-    setItems(prev => 
-      prev.map(item => 
+    setItems(prev =>
+      prev.map(item =>
         item.style === style ? { ...item, cost: price } : item
       )
     );
@@ -45,8 +45,8 @@ const AvatarPricingClient = ({ initialItems }: AvatarPricingClientProps) => {
     setIsSaving(style);
     try {
       await toggleAvatarItemStatus(style, isActive);
-      setItems(prev => 
-        prev.map(item => 
+      setItems(prev =>
+        prev.map(item =>
           item.style === style ? { ...item, isActive } : item
         )
       );
@@ -79,7 +79,7 @@ const AvatarPricingClient = ({ initialItems }: AvatarPricingClientProps) => {
     try {
       const result = await resetAvatarPricesToDefaults();
       if (result.success) {
-        setItems(prev => 
+        setItems(prev =>
           prev.map(item => ({
             ...item,
             cost: result.reset.find((r: any) => r.style === item.style)?.cost || item.cost,

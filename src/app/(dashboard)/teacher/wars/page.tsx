@@ -13,7 +13,6 @@ export default async function TeacherWarsDashboard() {
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto pb-24">
-      {/* Banner */}
       <div className="relative bg-gradient-to-r from-amber-950 via-card to-orange-950 border border-amber-900/50 rounded-2xl p-6 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-orange-500/5" />
         <div className="relative">

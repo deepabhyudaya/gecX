@@ -12,7 +12,6 @@ export default async function AdminEnrollmentsPage() {
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   if (role !== "admin") return redirect("/");
 
-  // All courses with enrollment count + avg progress
   const courses = await prisma.course.findMany({
     include: {
       teacher: { select: { name: true, surname: true } },
@@ -32,7 +31,6 @@ export default async function AdminEnrollmentsPage() {
       const totalLectures = lectureIds.length;
       const enrolled = course.enrollments.length;
 
-      // Aggregate completions for all enrolled students
       let totalCompleted = 0;
       if (enrolled > 0 && totalLectures > 0) {
         totalCompleted = await prisma.courseProgress.count({
@@ -56,7 +54,6 @@ export default async function AdminEnrollmentsPage() {
   return (
     <div className="p-6 min-h-full bg-background">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
-        {/* Header */}
         <div className="bg-card border border-border p-6 rounded-[12px] shadow-sm">
           <h1 className="text-[26px] font-bold text-foreground tracking-tight">Enrollments Overview</h1>
           <p className="text-[14px] text-muted-foreground mt-1">All course enrollments and student progress across the platform.</p>
@@ -75,7 +72,6 @@ export default async function AdminEnrollmentsPage() {
           </div>
         </div>
 
-        {/* Course table */}
         <div className="bg-card border border-border rounded-[12px] shadow-sm overflow-hidden">
           <div className="p-4 border-b border-border">
             <h2 className="text-[16px] font-bold text-foreground">By Course</h2>

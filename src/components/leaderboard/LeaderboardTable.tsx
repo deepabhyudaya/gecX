@@ -66,7 +66,6 @@ export function LeaderboardTable({
     );
   }
 
-  // Check if current user is in the list
   const currentUserEntry = entries.find((e) => e.userId === currentUserId);
   const showCurrentUserBanner = currentUserEntry && currentUserEntry.rank > 20;
 
@@ -87,7 +86,6 @@ export function LeaderboardTable({
         ))}
       </motion.div>
 
-      {/* Show current user banner if they're not in top entries */}
       {showCurrentUserBanner && currentUserEntry && (
         <div className="pt-4 border-t border-border">
           <div className="text-xs text-muted-foreground text-center mb-3">
@@ -119,13 +117,12 @@ function LeaderboardRow({
       className={`
         group flex items-center gap-4 p-3 rounded-xl
         transition-all duration-200
-        ${isCurrentUser 
-          ? "bg-primary/5 border border-primary/20" 
+        ${isCurrentUser
+          ? "bg-primary/5 border border-primary/20"
           : "hover:bg-muted/50 border border-transparent"
         }
       `}
     >
-      {/* Rank */}
       <div className="w-10 flex justify-center">
         {RankIcon ? (
           <div className={`w-8 h-8 rounded-full ${rankStyle.bg} flex items-center justify-center`}>
@@ -138,7 +135,6 @@ function LeaderboardRow({
         )}
       </div>
 
-      {/* Avatar */}
       <UserCardTrigger userId={entry.userId}>
         <div className="cursor-pointer">
           <StreakBorderAvatar
@@ -152,7 +148,6 @@ function LeaderboardRow({
         </div>
       </UserCardTrigger>
 
-      {/* User Info */}
       <div className="flex-1 min-w-0">
         <UserCardTrigger userId={entry.userId}>
           <span className="block font-semibold text-sm hover:underline truncate cursor-pointer">
@@ -165,7 +160,6 @@ function LeaderboardRow({
         <p className="text-xs text-muted-foreground truncate">@{entry.username}</p>
       </div>
 
-      {/* Karma Points */}
       <div className="text-right shrink-0">
         <div className="flex items-center gap-1.5 justify-end">
           <Trophy className="w-3.5 h-3.5 text-yellow-500" />

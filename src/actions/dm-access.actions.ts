@@ -5,14 +5,12 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createNotificationsForUsers } from "@/lib/notifications";
 
-// Request DM access from a user
 export async function requestDMAccess(targetUserId: string, message?: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
   if (userId === targetUserId) throw new Error("Cannot request DM access to yourself");
 
-  // Check if there's already an active grant
   const existingGrant = await prisma.dMAccessGrant.findUnique({
     where: {
       user1Id_user2Id: {
@@ -26,7 +24,6 @@ export async function requestDMAccess(targetUserId: string, message?: string) {
     return { success: false, error: "You already have DM access to this user" };
   }
 
-  // Check if there's already a pending request
   const existingRequest = await prisma.dMAccessRequest.findUnique({
     where: {
       requesterId_targetId: {
@@ -40,7 +37,7 @@ export async function requestDMAccess(targetUserId: string, message?: string) {
     if (existingRequest.status === "PENDING") {
       return { success: false, error: "You already have a pending request to this user" };
     }
-    // If previous request was declined/revoked, we can create a new one
+
     if (existingRequest.status === "DECLINED" || existingRequest.status === "REVOKED") {
       await prisma.dMAccessRequest.delete({
         where: { id: existingRequest.id },
@@ -48,7 +45,6 @@ export async function requestDMAccess(targetUserId: string, message?: string) {
     }
   }
 
-  // Create the request
   const request = await prisma.dMAccessRequest.create({
     data: {
       requesterId: userId,
@@ -65,13 +61,12 @@ export async function requestDMAccess(targetUserId: string, message?: string) {
     },
   });
 
-  // Create notification for target user
   await createNotificationsForUsers({
     title: "New DM Request",
     message: `${request.requester.displayName || request.requester.username} wants to message you`,
     type: "DM_REQUEST_RECEIVED",
     entityId: request.id,
-    // Send to target user based on their role
+
     ...await getUserNotificationIds(targetUserId),
   });
 
@@ -79,7 +74,6 @@ export async function requestDMAccess(targetUserId: string, message?: string) {
   return { success: true, requestId: request.id };
 }
 
-// Get incoming DM access requests
 export async function getDMAccessRequests() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -105,7 +99,6 @@ export async function getDMAccessRequests() {
   return requests;
 }
 
-// Get outgoing DM access requests
 export async function getSentDMAccessRequests() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -131,7 +124,6 @@ export async function getSentDMAccessRequests() {
   return requests;
 }
 
-// Accept a DM access request
 export async function acceptDMAccessRequest(requestId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -152,13 +144,11 @@ export async function acceptDMAccessRequest(requestId: string) {
   if (request.targetId !== userId) throw new Error("Unauthorized");
   if (request.status !== "PENDING") throw new Error("Request is not pending");
 
-  // Update request status
   await prisma.dMAccessRequest.update({
     where: { id: requestId },
     data: { status: "APPROVED" },
   });
 
-  // Create access grant
   const user1Id = request.requesterId < request.targetId ? request.requesterId : request.targetId;
   const user2Id = request.requesterId < request.targetId ? request.targetId : request.requesterId;
 
@@ -170,7 +160,6 @@ export async function acceptDMAccessRequest(requestId: string) {
     },
   });
 
-  // Notify requester
   await createNotificationsForUsers({
     title: "DM Request Accepted",
     message: `You can now message ${request.requester.displayName || request.requester.username}`,
@@ -183,7 +172,6 @@ export async function acceptDMAccessRequest(requestId: string) {
   return { success: true };
 }
 
-// Decline a DM access request
 export async function declineDMAccessRequest(requestId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -201,7 +189,6 @@ export async function declineDMAccessRequest(requestId: string) {
     data: { status: "DECLINED" },
   });
 
-  // Notify requester
   await createNotificationsForUsers({
     title: "DM Request Declined",
     message: "Your DM request was declined",
@@ -214,7 +201,6 @@ export async function declineDMAccessRequest(requestId: string) {
   return { success: true };
 }
 
-// Cancel an outgoing DM access request
 export async function cancelDMAccessRequest(requestId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -235,7 +221,6 @@ export async function cancelDMAccessRequest(requestId: string) {
   return { success: true };
 }
 
-// Revoke DM access
 export async function revokeDMAccess(targetUserId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -243,7 +228,6 @@ export async function revokeDMAccess(targetUserId: string) {
   const user1Id = userId < targetUserId ? userId : targetUserId;
   const user2Id = userId < targetUserId ? targetUserId : userId;
 
-  // Find and delete the grant
   const grant = await prisma.dMAccessGrant.findUnique({
     where: {
       user1Id_user2Id: {
@@ -261,7 +245,6 @@ export async function revokeDMAccess(targetUserId: string) {
     where: { id: grant.id },
   });
 
-  // Create or update request to revoked status
   await prisma.dMAccessRequest.upsert({
     where: {
       requesterId_targetId: {
@@ -279,7 +262,6 @@ export async function revokeDMAccess(targetUserId: string) {
     },
   });
 
-  // Notify the other user
   const otherUserId = grant.grantedBy === userId ? targetUserId : grant.grantedBy;
   if (otherUserId) {
     await createNotificationsForUsers({
@@ -296,7 +278,6 @@ export async function revokeDMAccess(targetUserId: string) {
   return { success: true };
 }
 
-// Check if current user has DM access to target user
 export async function checkDMAccess(targetUserId: string) {
   const { userId } = auth();
   if (!userId) return { hasAccess: false, isPending: false };
@@ -319,7 +300,6 @@ export async function checkDMAccess(targetUserId: string) {
     return { hasAccess: true, isPending: false, grant };
   }
 
-  // Check for pending request from current user to target
   const pendingRequest = await prisma.dMAccessRequest.findUnique({
     where: {
       requesterId_targetId: {
@@ -336,7 +316,6 @@ export async function checkDMAccess(targetUserId: string) {
   return { hasAccess: false, isPending: false };
 }
 
-// Get all active DM access grants for current user
 export async function getDMGrants() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -351,7 +330,6 @@ export async function getDMGrants() {
     orderBy: { grantedAt: "desc" },
   });
 
-  // Get user info for each grant
   const grantsWithUserInfo = await Promise.all(
     grants.map(async (grant) => {
       const otherUserId = grant.user1Id === userId ? grant.user2Id : grant.user1Id;
@@ -374,14 +352,12 @@ export async function getDMGrants() {
   return grantsWithUserInfo;
 }
 
-// Check if there's a pending DM request (either direction)
 export async function getPendingDMRequest(targetUserId: string) {
   const { userId } = auth();
   if (!userId) return null;
 
   if (userId === targetUserId) return null;
 
-  // Check for request from current user to target
   const outgoingRequest = await prisma.dMAccessRequest.findUnique({
     where: {
       requesterId_targetId: {
@@ -395,7 +371,6 @@ export async function getPendingDMRequest(targetUserId: string) {
     return { type: "outgoing", request: outgoingRequest };
   }
 
-  // Check for request from target to current user
   const incomingRequest = await prisma.dMAccessRequest.findUnique({
     where: {
       requesterId_targetId: {
@@ -412,7 +387,6 @@ export async function getPendingDMRequest(targetUserId: string) {
   return null;
 }
 
-// Cancel a pending DM request
 export async function cancelDMRequest(targetUserId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -439,7 +413,6 @@ export async function cancelDMRequest(targetUserId: string) {
     data: { status: "CANCELLED" },
   });
 
-  // Delete any related notification
   await prisma.notification.deleteMany({
     where: {
       type: "DM_REQUEST_RECEIVED",
@@ -454,9 +427,8 @@ export async function cancelDMRequest(targetUserId: string) {
   return { success: true };
 }
 
-// Helper to get notification IDs based on user lookup
 async function getUserNotificationIds(userId: string) {
-  // Check user type by looking up in various tables
+
   const student = await prisma.student.findUnique({
     where: { id: userId },
     select: { id: true },

@@ -3,19 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Dialog, 
+import {
+  Dialog,
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StreakBorderAvatar } from "@/components/StreakBorderAvatar";
-import { 
-  MessageCircle, 
-  User, 
-  Users, 
-  Hash, 
+import {
+  MessageCircle,
+  User,
+  Users,
+  Hash,
   ExternalLink,
   Loader2,
   Trophy,
@@ -46,12 +46,11 @@ interface UserCardProps {
   isInline?: boolean;
 }
 
-// Extracted content component for reuse
-function UserCardContent({ 
-  user, 
-  onClose 
-}: { 
-  user: UserCardData; 
+function UserCardContent({
+  user,
+  onClose
+}: {
+  user: UserCardData;
   onClose?: () => void;
 }) {
   const [isFollowing, setIsFollowing] = useState(user.isFollowing);
@@ -64,7 +63,7 @@ function UserCardContent({
   const handleFollow = async () => {
     if (isFollowLoading || user.isOwnProfile) return;
     setIsFollowLoading(true);
-    
+
     try {
       const result = await followUser(user.userId);
       setIsFollowing(result.following);
@@ -105,14 +104,12 @@ function UserCardContent({
     }
   };
 
-  // Get karma tier
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   const tier = getKarmaTier(user.karmaPoints);
   const hasCustomBg = !!user.profileBgColor;
 
-  // Determine background style - USE PROFILE BG COLOR
   const bgIsLight = hasCustomBg ? isLightColor(user.profileBgColor!) : !isDark;
   const bgStyle: React.CSSProperties = hasCustomBg
     ? { backgroundColor: user.profileBgColor || undefined }
@@ -127,14 +124,13 @@ function UserCardContent({
           }
       : {};
 
-  // Text colors: derive from custom bg when present, otherwise respect theme
   const textClass = hasCustomBg
     ? (bgIsLight ? "text-gray-900" : "text-gray-100")
     : "text-foreground";
   const mutedClass = hasCustomBg
     ? (bgIsLight ? "text-gray-600" : "text-gray-400")
     : "text-muted-foreground";
-  // Pill/card backgrounds: stronger contrast so text is always readable
+
   const cardBgClass = hasCustomBg
     ? (bgIsLight
         ? "bg-white/80 border border-black/10 text-gray-900"
@@ -144,7 +140,6 @@ function UserCardContent({
     ? (bgIsLight ? "border-black/10" : "border-white/15")
     : "border-border";
 
-  // Username color
   const usernameStyle = user.equippedUsernameColor
     ? { color: user.equippedUsernameColor }
     : getKarmaTierTextGradientStyle(user.karmaPoints) || { color: getKarmaTierColor(user.karmaPoints) || undefined };
@@ -154,7 +149,6 @@ function UserCardContent({
 
   return (
     <div className="w-full min-h-full" style={bgStyle}>
-      {/* Banner */}
       <div className="relative w-full h-24">
         {user.bannerUrl ? (
           <img
@@ -163,7 +157,7 @@ function UserCardContent({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div 
+          <div
             className="w-full h-full"
             style={tier
               ? tier.name === "Cosmic"
@@ -179,11 +173,9 @@ function UserCardContent({
         )}
       </div>
 
-      {/* Avatar and Info */}
       <div className="relative px-4 pb-4 -mt-10">
 
         <div className="flex items-end justify-between">
-          {/* Large Avatar */}
           <div className="relative">
             <StreakBorderAvatar
               src={effectiveAvatar}
@@ -196,12 +188,11 @@ function UserCardContent({
             />
           </div>
 
-          {/* Karma Badge */}
           {user.karmaPoints > 0 && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div 
+                  <div
                     className={cn(
                       "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
                       cardBgClass
@@ -219,17 +210,16 @@ function UserCardContent({
           )}
         </div>
 
-        {/* Username Section + Discord-style inline badges */}
         <div className="mt-3">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h3 
+            <h3
               className={cn(
                 "text-lg font-bold",
                 user.equippedNameplate && "px-2 py-0.5 rounded-md inline-block"
               )}
               style={{
                 ...usernameStyle,
-                ...(user.equippedNameplate ? { 
+                ...(user.equippedNameplate ? {
                   background: user.equippedNameplate,
                   textShadow: "0 1px 2px rgba(0,0,0,0.4)"
                 } : {})
@@ -244,14 +234,12 @@ function UserCardContent({
           </p>
         </div>
 
-        {/* Bio */}
         {user.bio && (
           <p className={cn("mt-3 text-sm", textClass)}>
             {user.bio.length > 100 ? `${user.bio.slice(0, 100)}...` : user.bio}
           </p>
         )}
 
-        {/* Stats */}
         <div className={cn(
           "flex items-center gap-4 mt-3 text-sm",
           mutedClass
@@ -273,7 +261,6 @@ function UserCardContent({
           </div>
         </div>
 
-        {/* Mutual Servers/Groups */}
         {hasMutual && (
           <div className={cn("mt-3 pt-3 border-t", borderClass)}>
             {user.mutualServers.length > 0 && (
@@ -370,7 +357,6 @@ function UserCardContent({
           </div>
         )}
 
-        {/* Action Buttons */}
         {!user.isOwnProfile && (
           <div className="flex gap-2 mt-4">
             <Button
@@ -398,7 +384,6 @@ function UserCardContent({
           </div>
         )}
 
-        {/* View Full Profile Link */}
         <Link
           href={`/${user.username}`}
           onClick={onClose}
@@ -428,7 +413,6 @@ export function UserCard({ user, children, open: controlledOpen, onOpenChange, i
     onOpenChange?.(newOpen);
   };
 
-  // If inline, render just the content without Dialog wrapper
   if (isInline) {
     return <UserCardContent user={user} />;
   }

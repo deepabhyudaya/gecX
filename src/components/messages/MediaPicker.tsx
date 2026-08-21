@@ -70,7 +70,6 @@ export default function MediaPicker({
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch GIFs
   const fetchGifs = useCallback(async (q: string) => {
     setLoadingGifs(true);
     try {
@@ -84,14 +83,12 @@ export default function MediaPicker({
     }
   }, []);
 
-  // Initial trending load
   useEffect(() => {
     if (tab === "gif") {
       fetchGifs("");
     }
   }, [tab, fetchGifs]);
 
-  // Debounced search
   useEffect(() => {
     if (tab !== "gif") return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -103,17 +100,14 @@ export default function MediaPicker({
     };
   }, [query, tab, fetchGifs]);
 
-  // Focus search on open
   useEffect(() => {
     setTimeout(() => searchRef.current?.focus(), 50);
   }, []);
 
-  // Reset selected index when tab or query changes
   useEffect(() => {
     setSelectedIndex(0);
   }, [tab, query]);
 
-  // Use server emojis and stickers only
   const allEmojis = serverEmojis;
   const allStickers = serverStickers;
 
@@ -124,15 +118,12 @@ export default function MediaPicker({
     ? allStickers.filter((s) => s.name.includes(query.toLowerCase()))
     : allStickers;
 
-  // Group emojis/stickers by groupName for display
   const groupedEmojis = groupBy(filteredEmojis, (e) => e.groupName || "Other");
   const groupedStickers = groupBy(filteredStickers, (s) => s.groupName || "Other");
 
-  // Build a flat list of usable items for keyboard navigation
   const flatUsableEmojis = filteredEmojis.filter((e) => e.usable !== false);
   const flatUsableStickers = filteredStickers.filter((s) => s.usable !== false);
 
-  // Global index maps for selection state
   const usableEmojiIndexMap = useMemo(() => {
     const map = new Map<string, number>();
     flatUsableEmojis.forEach((e, i) => map.set(e.id, i));
@@ -145,7 +136,6 @@ export default function MediaPicker({
     return map;
   }, [flatUsableStickers]);
 
-  // Keyboard navigation inside picker
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const items = tab === "gif" ? gifs : tab === "emoji" ? flatUsableEmojis : flatUsableStickers;
@@ -190,7 +180,6 @@ export default function MediaPicker({
     ...(hideStickers ? [] : [{ key: "sticker" as Tab, label: "Stickers", icon: <Sticker className="size-4" /> }]),
   ];
 
-  // Scroll selected item into view
   useEffect(() => {
     const el = containerRef.current?.querySelector('[data-selected="true"]');
     if (el) {
@@ -213,9 +202,7 @@ export default function MediaPicker({
         ...style,
       }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-border shrink-0">
-        {/* Tabs */}
         <div className="flex gap-1">
           {tabs.map((t) => (
             <button
@@ -240,7 +227,6 @@ export default function MediaPicker({
         </button>
       </div>
 
-      {/* Search */}
       <div className="px-3 py-2 border-b border-border shrink-0">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
@@ -266,10 +252,8 @@ export default function MediaPicker({
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto">
 
-        {/* GIFs Tab */}
         {tab === "gif" && (
           <div className="p-2">
             {loadingGifs ? (
@@ -298,7 +282,6 @@ export default function MediaPicker({
                     }`}
                     title={gif.title}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={gif.preview || gif.url}
                       alt={gif.title}
@@ -312,7 +295,6 @@ export default function MediaPicker({
           </div>
         )}
 
-        {/* Emojis Tab */}
         {tab === "emoji" && (
           <div className="p-2 space-y-3">
             {allEmojis.length === 0 ? (
@@ -364,7 +346,6 @@ export default function MediaPicker({
           </div>
         )}
 
-        {/* Stickers Tab */}
         {tab === "sticker" && (
           <div className="p-2 space-y-3">
             {allStickers.length === 0 ? (
@@ -414,7 +395,6 @@ export default function MediaPicker({
                               }`}
                               title={isUsable ? sticker.name : `${sticker.name} (locked)`}
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={sticker.imageUrl}
                                 alt={sticker.name}
@@ -442,7 +422,6 @@ export default function MediaPicker({
         )}
       </div>
 
-      {/* Footer */}
       <div className="px-3 py-2 border-t border-border shrink-0 flex items-center justify-between">
         {tab === "gif" && (
           <p className="text-[10px] text-muted-foreground">
@@ -485,7 +464,6 @@ const EmojiButton = forwardRef<HTMLButtonElement, { emoji: EmojiItem; onClick: (
         }`}
         title={isUsable ? `:${emoji.name}:` : `:${emoji.name}: (locked)`}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={emoji.imageUrl}
           alt={emoji.name}

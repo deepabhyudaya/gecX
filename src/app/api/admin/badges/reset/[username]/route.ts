@@ -18,7 +18,6 @@ export async function POST(req: Request, { params }: { params: { username: strin
       data: { invalidated: true }
     });
 
-    // Also log this reset
     await prisma.badgeAdminOverrideLog.create({
       data: {
         adminId: adminId,

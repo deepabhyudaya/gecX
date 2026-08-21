@@ -5,8 +5,6 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { ROLE_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS } from "../lib/role-permissions";
 
-// ==================== PERMISSION CHECKING ====================
-
 export async function checkServerPermission(
   serverId: string,
   permission: bigint
@@ -14,7 +12,6 @@ export async function checkServerPermission(
   const { userId } = auth();
   if (!userId) return false;
 
-  // Get server member with their roles
   const member = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } },
     include: {
@@ -26,7 +23,6 @@ export async function checkServerPermission(
 
   if (!member) return false;
 
-  // Check legacy role first (backward compatibility)
   if (member.role === "ADMIN") return true;
   if (member.role === "MODERATOR") {
     if ((DEFAULT_ROLE_PERMISSIONS.MODERATOR & permission) === permission) return true;
@@ -35,7 +31,6 @@ export async function checkServerPermission(
     if ((DEFAULT_ROLE_PERMISSIONS.MEMBER & permission) === permission) return true;
   }
 
-  // Check custom role permissions
   for (const memberRole of member.roles) {
     if ((memberRole.role.permissions & ROLE_PERMISSIONS.ADMINISTRATOR) === ROLE_PERMISSIONS.ADMINISTRATOR) {
       return true;
@@ -75,13 +70,10 @@ export async function getUserServerPermissions(serverId: string): Promise<bigint
   return permissions;
 }
 
-// ==================== SERVER ROLES CRUD ====================
-
 export async function getServerRoles(serverId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Verify user is a member
   const member = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } }
   });
@@ -110,7 +102,6 @@ export async function checkChannelAccess(
   const { userId } = auth();
   if (!userId) return false;
 
-  // Get channel with permissions
   const channel = await prisma.serverChannel.findUnique({
     where: { id: channelId },
     include: { permissions: true }
@@ -118,10 +109,8 @@ export async function checkChannelAccess(
 
   if (!channel || channel.serverId !== serverId) return false;
 
-  // Public channel - everyone can view
   if (!channel.isPrivate) return true;
 
-  // Get member with roles
   const member = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } },
     include: {
@@ -133,16 +122,14 @@ export async function checkChannelAccess(
 
   if (!member) return false;
 
-  // Admins can view all channels
   if (member.role === "ADMIN") return true;
-  if (member.roles.some(r => 
+  if (member.roles.some(r =>
     (r.role.permissions & ROLE_PERMISSIONS.ADMINISTRATOR) === ROLE_PERMISSIONS.ADMINISTRATOR
   )) return true;
 
-  // Check if user has any of the allowed roles
   const userRoleIds = member.roles.map(r => r.roleId);
   const allowedRoleIds = channel.permissions.map(p => p.roleId);
-  
+
   return userRoleIds.some(roleId => allowedRoleIds.includes(roleId));
 }
 
@@ -160,11 +147,9 @@ export async function createServerRole(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check permission
   const hasPermission = await checkServerPermission(serverId, ROLE_PERMISSIONS.MANAGE_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to manage roles");
 
-  // Get highest position for new role
   const highestRole = await prisma.serverRole.findFirst({
     where: { serverId },
     orderBy: { position: "desc" }
@@ -203,7 +188,6 @@ export async function updateServerRole(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Get role with server info
   const role = await prisma.serverRole.findUnique({
     where: { id: roleId },
     include: { server: true }
@@ -211,12 +195,8 @@ export async function updateServerRole(
 
   if (!role) throw new Error("Role not found");
 
-  // Check permission
   const hasPermission = await checkServerPermission(role.serverId, ROLE_PERMISSIONS.MANAGE_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to manage roles");
-
-  // Prevent editing the implicit admin role (if we had one)
-  // For now, any role can be edited by those with MANAGE_ROLES
 
   const updated = await prisma.serverRole.update({
     where: { id: roleId },
@@ -245,7 +225,6 @@ export async function deleteServerRole(roleId: string) {
 
   if (!role) throw new Error("Role not found");
 
-  // Check permission
   const hasPermission = await checkServerPermission(role.serverId, ROLE_PERMISSIONS.MANAGE_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to manage roles");
 
@@ -263,11 +242,9 @@ export async function reorderServerRoles(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check permission
   const hasPermission = await checkServerPermission(serverId, ROLE_PERMISSIONS.MANAGE_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to manage roles");
 
-  // Update positions in transaction
   await prisma.$transaction(
     roleOrders.map(({ id, position }) =>
       prisma.serverRole.update({
@@ -280,8 +257,6 @@ export async function reorderServerRoles(
   revalidatePath("/servers");
 }
 
-// ==================== MEMBER ROLE ASSIGNMENT ====================
-
 export async function assignRoleToMember(
   serverId: string,
   targetUserId: string,
@@ -290,25 +265,21 @@ export async function assignRoleToMember(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check permission
   const hasPermission = await checkServerPermission(serverId, ROLE_PERMISSIONS.MANAGE_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to assign roles");
 
-  // Get target member
   const targetMember = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId: targetUserId } }
   });
 
   if (!targetMember) throw new Error("Member not found");
 
-  // Get the role
   const role = await prisma.serverRole.findUnique({
     where: { id: roleId, serverId }
   });
 
   if (!role) throw new Error("Role not found");
 
-  // Check if already has role
   const existing = await prisma.serverMemberRole.findUnique({
     where: {
       memberId_roleId: {
@@ -320,7 +291,6 @@ export async function assignRoleToMember(
 
   if (existing) return existing;
 
-  // Assign role
   const memberRole = await prisma.serverMemberRole.create({
     data: {
       memberId: targetMember.id,
@@ -342,18 +312,15 @@ export async function removeRoleFromMember(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check permission
   const hasPermission = await checkServerPermission(serverId, ROLE_PERMISSIONS.MANAGE_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to remove roles");
 
-  // Get target member
   const targetMember = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId: targetUserId } }
   });
 
   if (!targetMember) throw new Error("Member not found");
 
-  // Remove role
   await prisma.serverMemberRole.deleteMany({
     where: {
       memberId: targetMember.id,
@@ -368,14 +335,12 @@ export async function getMemberRoles(serverId: string, targetUserId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Verify caller is a member
   const callerMember = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } }
   });
 
   if (!callerMember) throw new Error("Not a server member");
 
-  // Get target member with roles
   const targetMember = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId: targetUserId } },
     include: {
@@ -390,8 +355,6 @@ export async function getMemberRoles(serverId: string, targetUserId: string) {
 
   return targetMember.roles.map(mr => mr.role);
 }
-
-// ==================== SERVER SETTINGS ====================
 
 export async function getServerSettings(serverId: string) {
   const { userId } = auth();
@@ -427,7 +390,6 @@ export async function updateServerSettings(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check permission (MANAGE_SERVER or ADMINISTRATOR)
   const hasPermission = await checkServerPermission(
     serverId,
     ROLE_PERMISSIONS.MANAGE_SERVER | ROLE_PERMISSIONS.ADMINISTRATOR
@@ -453,8 +415,6 @@ export async function updateServerSettings(
   return settings;
 }
 
-// ==================== MEMBER SORT ORDER ====================
-
 export async function updateMemberSortOrder(
   serverId: string,
   targetUserId: string,
@@ -463,21 +423,17 @@ export async function updateMemberSortOrder(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Get server settings
   const settings = await prisma.serverSettings.findUnique({
     where: { serverId }
   });
 
-  // Check if manual reordering is enabled
   if (!settings?.allowMemberReordering) {
     throw new Error("Manual member reordering is disabled");
   }
 
-  // Check permission
   const hasPermission = await checkServerPermission(serverId, ROLE_PERMISSIONS.MANAGE_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to reorder members");
 
-  // Update sort order
   await prisma.serverMember.update({
     where: { serverId_userId: { serverId, userId: targetUserId } },
     data: { sortOrder: newSortOrder }
@@ -486,20 +442,16 @@ export async function updateMemberSortOrder(
   revalidatePath("/servers");
 }
 
-// ==================== INITIALIZATION ====================
-
 export async function initializeDefaultRoles(serverId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check if already initialized
   const existingRoles = await prisma.serverRole.count({
     where: { serverId }
   });
 
   if (existingRoles > 0) return;
 
-  // Create default roles
   await prisma.$transaction([
     prisma.serverRole.create({
       data: {

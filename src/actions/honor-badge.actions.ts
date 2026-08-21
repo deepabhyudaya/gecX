@@ -11,8 +11,6 @@ async function requireAdmin() {
   if (role !== "admin") throw new Error("Admin only");
 }
 
-// ==================== BADGE DEFINITION CRUD ====================
-
 export async function createHonorBadgeDefinition(input: {
   code: string;
   name: string;
@@ -101,8 +99,6 @@ export async function getHonorBadgeDefinition(badgeId: string) {
   });
 }
 
-// ==================== MANUAL AWARD / REVOKE ====================
-
 export async function awardHonorBadgeManual(
   badgeId: string,
   userId: string,
@@ -163,8 +159,6 @@ export async function revokeHonorBadge(
   return updated;
 }
 
-// ==================== AUTO-AWARD ENGINE (season conclusion) ====================
-
 export async function autoAwardHonorBadgesForSeason(seasonId: string) {
   const season = await prisma.season.findUnique({
     where: { id: seasonId },
@@ -192,9 +186,8 @@ export async function autoAwardHonorBadgesForSeason(seasonId: string) {
   for (const badge of autoBadges) {
     const criteria = (badge.criteria as Record<string, any>) ?? {};
 
-    // SEASON_FINAL badges
     if (badge.category === "SEASON_FINAL") {
-      // Champion / top rank
+
       if (criteria.target === "season_champion_branch") {
         const top = branchPoints[0];
         if (top) {
@@ -209,7 +202,7 @@ export async function autoAwardHonorBadgesForSeason(seasonId: string) {
           if (didAward) awarded++;
         }
       }
-      // Conqueror
+
       if (criteria.target === "conqueror") {
         const conquerorStudents = studentPoints.filter((s) => s.isConqueror);
         for (const s of conquerorStudents) {
@@ -217,7 +210,7 @@ export async function autoAwardHonorBadgesForSeason(seasonId: string) {
           if (didAward) awarded++;
         }
       }
-      // Ranked
+
       if (criteria.target === "ranked") {
         const minRankOrder = criteria.minRankOrder ?? 1;
         const rankIds = season.ranks.filter((r) => r.rankOrder >= minRankOrder).map((r) => r.id);
@@ -229,7 +222,6 @@ export async function autoAwardHonorBadgesForSeason(seasonId: string) {
       }
     }
 
-    // WAR_PERFORMANCE badges
     if (badge.category === "WAR_PERFORMANCE") {
       if (criteria.target === "perfect_season") {
         const perfect = studentPoints.filter((s) => s.warsLost === 0 && s.warsParticipated >= (criteria.minWars ?? 1));
@@ -239,7 +231,7 @@ export async function autoAwardHonorBadgesForSeason(seasonId: string) {
         }
       }
       if (criteria.target === "sweep") {
-        // Sweeps are recorded via WAR_SWEEP transactions; we can query them.
+
         const sweepTxs = await prisma.seasonPointTransaction.findMany({
           where: { seasonId, transactionType: "WAR_SWEEP" },
           select: { recipientId: true },
@@ -263,7 +255,6 @@ export async function autoAwardHonorBadgesForSeason(seasonId: string) {
       }
     }
 
-    // PARTICIPATION badges
     if (badge.category === "PARTICIPATION") {
       if (criteria.target === "participation") {
         const minWars = criteria.minWars ?? 1;
@@ -275,14 +266,10 @@ export async function autoAwardHonorBadgesForSeason(seasonId: string) {
       }
     }
 
-    // STREAK badges
     if (badge.category === "STREAK") {
       if (criteria.target === "win_streak") {
         const minStreak = criteria.minStreak ?? 3;
-        // We don't have a streak field; approximate from transactions ordered by time.
-        // For simplicity, use warsWon as a proxy if exact streak tracking isn't in schema.
-        // A proper implementation would track per-student consecutive win transactions.
-        // Skipping for now — can be enhanced later.
+
       }
     }
   }
@@ -308,12 +295,10 @@ async function tryAward(
     });
     return true;
   } catch (err: any) {
-    if (err.code === "P2002") return false; // already awarded
+    if (err.code === "P2002") return false;
     throw err;
   }
 }
-
-// ==================== USER BADGE QUERIES ====================
 
 export async function getUserHonorBadges(userId: string, seasonId?: string) {
   return prisma.honorBadgeAward.findMany({

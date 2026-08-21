@@ -108,7 +108,7 @@ export default function DirectMessageClient({
   const [serverStickers, setServerStickers] = useState<any[]>([]);
   const [renderEmojis, setRenderEmojis] = useState<any[]>([]);
   const [renderStickers, setRenderStickers] = useState<any[]>([]);
-  // Track the timestamp of the most recent message we know about (for poll "since" param)
+
   const lastMsgTimeRef = useRef<string>(
     selectedData?.messages?.length
       ? new Date((selectedData.messages as any[]).at(-1).createdAt).toISOString()
@@ -125,7 +125,6 @@ export default function DirectMessageClient({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch emojis: picker data (with ownership) for sending, ALL emojis for rendering
   useEffect(() => {
     getAllEmojiPickerData()
       .then(({ emojis, stickers }) => {
@@ -141,7 +140,6 @@ export default function DirectMessageClient({
       .catch(() => {});
   }, []);
 
-  // Memoize emoji map from ALL emojis (for rendering messages from any user)
   const emojiMap = useMemo(() => buildEmojiMap(renderEmojis, []), [renderEmojis]);
 
   const updateIsNearBottom = useCallback(() => {
@@ -152,16 +150,16 @@ export default function DirectMessageClient({
   }, []);
 
   const hasScrolledRef = useRef(false);
-  
+
   useEffect(() => {
-    // Only auto-scroll if the user is already near the bottom.
+
     if (!isNearBottom) {
       hasScrolledRef.current = false;
       return;
     }
-    // Prevent multiple scrolls
+
     if (hasScrolledRef.current) return;
-    
+
     const scroller = scrollerRef.current;
     if (scroller) {
       hasScrolledRef.current = true;
@@ -169,7 +167,6 @@ export default function DirectMessageClient({
     }
   }, [localMessages.length, isNearBottom]);
 
-  // Reset local state only when switching conversations
   useEffect(() => {
     const msgs = selectedData?.messages ?? [];
     setLocalMessages(msgs);
@@ -178,7 +175,6 @@ export default function DirectMessageClient({
       : new Date().toISOString();
   }, [selectedData?.id, selectedData?.isGroup]);
 
-  // Mark messages as read (no router.refresh — sidebar badge handled by its own poller)
   useEffect(() => {
     if (selectedData) {
       if (selectedData.isGroup) {
@@ -189,7 +185,6 @@ export default function DirectMessageClient({
     }
   }, [selectedData?.id, selectedData?.isGroup]);
 
-  // Ably realtime integration for DMs
   const ablyChannelName = useMemo(() => {
     if (!selectedData || selectedData.isGroup) return null;
     return `dm:${selectedData.id}`;
@@ -232,7 +227,6 @@ export default function DirectMessageClient({
     return unsubscribe;
   }, [ablyChannelName, subscribe]);
 
-  // Poll for new messages from the other person every 3 seconds (fallback when Ably is not connected)
   useEffect(() => {
     if (!selectedData || selectedData.isGroup || isConnected) return;
     let cancelled = false;
@@ -331,16 +325,16 @@ export default function DirectMessageClient({
 
     try {
       const saved = await sendDirectMessage(selectedData.id, content, capturedReply?.id);
-      // Replace optimistic entry with real DB row (keeps reactions/poll fields)
+
       setLocalMessages((prev) =>
         prev.map((m) =>
           m.id === tempId ? { ...saved, reactions: [], poll: null, replyTo } : m
         )
       );
-      // Advance the poll cursor so we don't re-fetch our own message
+
       lastMsgTimeRef.current = new Date(saved.createdAt).toISOString();
     } catch {
-      // Remove failed optimistic message
+
       setLocalMessages((prev) => prev.filter((m) => m.id !== tempId));
     }
   };
@@ -365,17 +359,17 @@ export default function DirectMessageClient({
   };
 
   const handleDeleteMessage = async (messageId: number) => {
-    // Optimistic remove
+
     setLocalMessages((prev) => prev.filter((m) => m.id !== messageId));
     try {
       await deleteDirectMessage(messageId);
     } catch {
-      // Silently ignore — next poll will reconcile
+
     }
   };
 
   const handleReaction = async (messageId: number, emoji: string) => {
-    // Optimistic toggle
+
     setLocalMessages((prev) =>
       prev.map((msg) => {
         if (msg.id !== messageId) return msg;
@@ -400,7 +394,7 @@ export default function DirectMessageClient({
       }
       router.refresh();
     } catch (e: any) {
-      // Revert optimistic update
+
       setLocalMessages((prev) =>
         prev.map((msg) => {
           if (msg.id !== messageId) return msg;
@@ -469,7 +463,7 @@ export default function DirectMessageClient({
   const shadowCard = "shadow-[rgba(0,0,0,0.08)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_2px_2px,#fafafa_0px_0px_0px_1px] dark:shadow-[rgba(255,255,255,0.1)_0px_0px_0px_1px,rgba(0,0,0,0.2)_0px_2px_2px]";
 
   const onLayout = (sizes: number[]) => {
-    // Disable layout saving on mobile to prevent viewport shifts
+
     if (typeof window === 'undefined') return;
     if (window.innerWidth < 768) return;
     document.cookie = `react-resizable-panels:messages-layout=${JSON.stringify(sizes)}; path=/; max-age=31536000`;
@@ -483,7 +477,6 @@ export default function DirectMessageClient({
         onLayout={onLayout}
         style={{ height: '100%', overflow: 'hidden' }}
       >
-        {/* SIDEBAR PANEL */}
         <ResizablePanel
           defaultSize={defaultLayout?.[0] ?? 30}
           minSize={20}
@@ -509,7 +502,6 @@ export default function DirectMessageClient({
           </div>
 
           <div className="flex-1 overflow-y-auto no-scrollbar p-2 space-y-6">
-            {/* Direct Messages Section */}
             <div className="space-y-1.5">
               <div className="px-2 flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                 <Inbox className="w-3 h-3" />
@@ -564,7 +556,6 @@ export default function DirectMessageClient({
               )})}
             </div>
 
-            {/* Groups Section */}
             <div className="space-y-1.5 pb-4">
               <div className="px-2 flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                 <Users className="w-3 h-3" />
@@ -604,7 +595,6 @@ export default function DirectMessageClient({
 
         <ResizableHandle withHandle className="hidden md:flex" />
 
-        {/* MAIN VIEW PANEL */}
         <ResizablePanel
           defaultSize={defaultLayout?.[1] ?? 70}
           className={`flex-1 flex-col bg-background h-full relative ${selectedData ? 'flex' : 'hidden md:flex'}`}
@@ -614,7 +604,6 @@ export default function DirectMessageClient({
               <GroupChatView group={selectedData} currentUserId={currentUserId} currentUserProfile={currentUserProfile} />
             ) : (
               <div className="flex flex-col h-full">
-                {/* HEADER */}
                 <div className="px-4 py-3 md:px-6 md:py-4 border-b border-border flex justify-between items-center bg-background z-10 shrink-0">
                   <div className="flex items-center gap-3">
                     <button
@@ -626,7 +615,7 @@ export default function DirectMessageClient({
                     <div>
                       <UserCardTrigger userId={selectedData.otherUser.id}>
                         <div className="group cursor-pointer">
-                          <h2 
+                          <h2
                             className="text-[18px] md:text-[20px] font-medium tracking-[-0.32px] transition-colors hover:opacity-80"
                             style={{ color: selectedData.otherUser.equippedUsernameColor || 'inherit' }}
                           >
@@ -767,7 +756,6 @@ export default function DirectMessageClient({
                   </DialogContent>
                 </Dialog>
 
-                {/* MESSAGES */}
                 <div
                   ref={scrollerRef}
                   onScroll={updateIsNearBottom}
@@ -824,7 +812,6 @@ export default function DirectMessageClient({
                         {reactionMessageId === msg.id && (
                           <div ref={reactionEmojiRef} className="absolute z-50 right-4 top-8 shadow-xl">
                             <div className="bg-background rounded-lg border border-border shadow-2xl overflow-hidden" style={{ width: 320 }}>
-                              {/* Tabs */}
                               <div className="flex border-b border-border">
                                 <button
                                   onClick={() => setReactionTab('unicode')}
@@ -846,7 +833,6 @@ export default function DirectMessageClient({
                                 )}
                               </div>
 
-                              {/* Unicode Emojis */}
                               {reactionTab === 'unicode' && (
                                 <EmojiPicker
                                   onEmojiClick={(emojiData) => handleReaction(msg.id, emojiData.emoji)}
@@ -856,7 +842,6 @@ export default function DirectMessageClient({
                                 />
                               )}
 
-                              {/* Custom Server Emojis */}
                               {reactionTab === 'custom' && (
                                 <div className="p-3 h-[300px] overflow-y-auto">
                                   {serverEmojis.filter((e: any) => !e.packId).length === 0 ? (
@@ -873,7 +858,6 @@ export default function DirectMessageClient({
                                           className="aspect-square rounded hover:bg-accent p-1 transition-colors flex items-center justify-center"
                                           title={emoji.name}
                                         >
-                                          {/* eslint-disable-next-line @next/next/no-img-element */}
                                           <img
                                             src={emoji.imageUrl}
                                             alt={emoji.name}
@@ -913,7 +897,6 @@ export default function DirectMessageClient({
                                 : selectedData.otherUser?.avatar;
                               return (
                                 <div className="flex items-center gap-1 mb-1 min-w-0">
-                                  {/* Discord curved connector */}
                                   <div className="shrink-0 flex items-center" style={{ width: 32, marginLeft: -2 }}>
                                     <svg width="32" height="18" viewBox="0 0 32 18" fill="none" aria-hidden>
                                       <path
@@ -926,18 +909,15 @@ export default function DirectMessageClient({
                                       />
                                     </svg>
                                   </div>
-                                  {/* Small avatar */}
                                   <div className="relative w-4 h-4 rounded-full overflow-hidden bg-muted shrink-0">
                                     {replyAvatar
                                       ? <img src={replyAvatar} alt={replyUsername} className="w-full h-full object-cover" />
                                       : <span className="absolute inset-0 flex items-center justify-center text-[7px] font-bold text-muted-foreground">{replyUsername[0]?.toUpperCase()}</span>
                                     }
                                   </div>
-                                  {/* Username */}
                                   <span className="text-[11px] font-semibold text-foreground/60 shrink-0 hover:text-foreground/90 cursor-pointer">
                                     @{replyUsername}
                                   </span>
-                                  {/* Content preview */}
                                   <span className="text-[11px] text-muted-foreground truncate max-w-[240px] cursor-pointer hover:text-foreground/80">
                                     {msg.replyTo.content}
                                   </span>
@@ -962,14 +942,13 @@ export default function DirectMessageClient({
                                 {msg.commandLabel || msg.content}
                               </a>
                             ) : (
-                              <MarkdownMessage 
-                                content={msg.content} 
+                              <MarkdownMessage
+                                content={msg.content}
                                 emojiMap={emojiMap}
                                 stickerUrls={[...serverStickers, ...renderStickers].map(s => s.imageUrl)}
                               />
                             )}
 
-                            {/* Display Reactions */}
                             {Object.keys(reactionsByEmoji).length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1.5">
                                 {Object.entries(reactionsByEmoji).map(([emoji, reacts]: [string, any]) => {
@@ -1000,7 +979,6 @@ export default function DirectMessageClient({
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* INPUT */}
                 {!selectedData.isClosed && !selectedData.otherUser?.isBlockedByMe && !selectedData.otherUser?.hasBlockedMe ? (
                   <div className="p-2 bg-background border-t border-border shrink-0 relative">
                     {replyToMessage && (
@@ -1083,7 +1061,6 @@ export default function DirectMessageClient({
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      {/* NEW CHAT DIALOG */}
       <Sheet open={isCreating} onOpenChange={setIsCreating}>
         <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col bg-background border-none shadow-2xl">
           <SheetHeader className="p-6 text-left">

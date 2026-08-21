@@ -74,10 +74,8 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
       : new Date().toISOString()
   );
 
-  // Local members state so mute changes can be applied in real-time via Ably
   const [members, setMembers] = useState<any[]>(group.members ?? []);
 
-  // Reset messages and members only when switching groups
   useEffect(() => {
     setLocalMessages(group.messages ?? []);
     setMembers(group.members ?? []);
@@ -89,7 +87,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
   const me = members.find((m: any) => m.userId === currentUserId);
   const isMuted = me?.isMuted || false;
 
-  // Fetch emojis: picker data (with ownership) for sending, ALL emojis for rendering
   useEffect(() => {
     getAllEmojiPickerData()
       .then(({ emojis, stickers }) => {
@@ -107,12 +104,10 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
 
   const emojiMap = useMemo(() => buildEmojiMap(renderEmojis, []), [renderEmojis]);
 
-  // Mark group as read
   useEffect(() => {
     markGroupMessagesAsRead(group.id);
   }, [group.id]);
 
-  // Ably realtime integration for groups
   const ablyChannelName = useMemo(() => `group:${group.id}`, [group.id]);
   const { isConnected, subscribe } = useAbly(ablyChannelName);
 
@@ -156,7 +151,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
     return unsubscribe;
   }, [ablyChannelName, subscribe]);
 
-  // Poll for new messages from other group members every 3 seconds (fallback when Ably not connected)
   useEffect(() => {
     if (isConnected) return;
     let cancelled = false;
@@ -193,7 +187,7 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
   const updateIsNearBottom = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    // Consider "near bottom" within ~120px to avoid jitter.
+
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
     setIsNearBottom(distanceFromBottom < 120);
   }, []);
@@ -203,14 +197,14 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
   }, [updateIsNearBottom]);
 
   const hasScrolledRef = useRef(false);
-  
+
   useEffect(() => {
     if (!isNearBottom) {
       hasScrolledRef.current = false;
       return;
     }
     if (hasScrolledRef.current) return;
-    
+
     const scroller = scrollerRef.current;
     if (scroller) {
       hasScrolledRef.current = true;
@@ -319,7 +313,7 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
   };
 
   const handleReaction = async (messageId: number, emoji: string) => {
-    // Optimistic toggle
+
     setLocalMessages((prev) =>
       prev.map((msg) => {
         if (msg.id !== messageId) return msg;
@@ -342,7 +336,7 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
       setLocalMessages(refreshed);
       router.refresh();
     } catch (e: any) {
-      // Revert optimistic update
+
       setLocalMessages((prev) =>
         prev.map((msg) => {
           if (msg.id !== messageId) return msg;
@@ -364,10 +358,8 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
 
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
-      {/* GROUP BANNER */}
       {group.bannerUrl && (
         <div className="shrink-0 w-full h-20 relative overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={group.bannerUrl}
             alt="Group banner"
@@ -376,7 +368,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/60" />
         </div>
       )}
-      {/* HEADER */}
       <div className="px-4 py-3 md:px-6 md:py-4 border-b border-border flex justify-between items-center bg-background z-10 shrink-0">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-xl bg-muted flex items-center justify-center shrink-0 shadow-sm border border-border/50">
@@ -411,7 +402,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
         </div>
       </div>
 
-      {/* MESSAGES AREA */}
       <div
         ref={scrollerRef}
         onScroll={updateIsNearBottom}
@@ -461,7 +451,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
               {reactionMessageId === msg.id && (
                 <div ref={reactionEmojiRef} className="absolute z-50 right-4 top-8 shadow-xl">
                   <div className="bg-background rounded-lg border border-border shadow-2xl overflow-hidden" style={{ width: 320 }}>
-                    {/* Tabs */}
                     <div className="flex border-b border-border">
                       <button
                         onClick={() => setReactionTab('unicode')}
@@ -483,7 +472,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
                       )}
                     </div>
 
-                    {/* Unicode Emojis */}
                     {reactionTab === 'unicode' && (
                       <EmojiPicker
                         onEmojiClick={(emojiData) => handleReaction(msg.id, emojiData.emoji)}
@@ -493,7 +481,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
                       />
                     )}
 
-                    {/* Custom Server Emojis */}
                     {reactionTab === 'custom' && (
                       <div className="p-3 h-[300px] overflow-y-auto">
                         {serverEmojis.filter((e: any) => !e.packId).length === 0 ? (
@@ -510,7 +497,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
                                 className="aspect-square rounded hover:bg-accent p-1 transition-colors flex items-center justify-center"
                                 title={emoji.name}
                               >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={emoji.imageUrl}
                                   alt={emoji.name}
@@ -560,14 +546,13 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
                       {msg.commandLabel || msg.content}
                     </a>
                   ) : (
-                    <MarkdownMessage 
-                      content={msg.content} 
+                    <MarkdownMessage
+                      content={msg.content}
                       emojiMap={emojiMap}
                       stickerUrls={[...serverStickers, ...renderStickers].map(s => s.imageUrl)}
                     />
                   )}
 
-                  {/* REACTIONS DISPLAY */}
                   {Object.keys(reactionsByEmoji).length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       <TooltipProvider delayDuration={100}>
@@ -618,7 +603,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
         <div ref={messagesEndRef} />
       </div>
 
-      {/* INPUT AREA */}
       <div className="p-2 bg-background border-t border-border shrink-0 relative">
         {replyToMessage && (
           <div className="mb-2 px-3 py-2 rounded-md border border-border bg-muted/40 text-[12px] text-muted-foreground flex items-center justify-between gap-2 max-w-4xl mx-auto">
@@ -673,7 +657,6 @@ export default function GroupChatView({ group, currentUserId, currentUserProfile
         </div>
       </div>
 
-      {/* MEMBERS SIDE SHEET */}
       <Dialog open={showPollDialog} onOpenChange={setShowPollDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>

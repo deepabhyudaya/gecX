@@ -87,7 +87,6 @@ export default function StreakSettingsPage() {
         </div>
       </div>
 
-      {/* Streak Border Reference */}
       <Card>
         <CardHeader>
           <CardTitle>Streak Border Tiers</CardTitle>
@@ -182,7 +181,6 @@ export default function StreakSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Testing Tools */}
       <Card className="border-orange-500/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -194,7 +192,6 @@ export default function StreakSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Set Custom Streak */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Set Custom Streak for User</Label>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -231,7 +228,6 @@ export default function StreakSettingsPage() {
 
           <Separator />
 
-          {/* Reset Streak */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Reset Streak for User</Label>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -259,7 +255,7 @@ export default function StreakSettingsPage() {
 
           <Separator />
 
-          {/* Set Admin Streaks */}
+          
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-sm font-medium">Set 365-Day Streak for All Admins</Label>

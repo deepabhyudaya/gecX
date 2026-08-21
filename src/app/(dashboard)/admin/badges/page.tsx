@@ -40,7 +40,7 @@ export default function AdminBadgeTester() {
     });
     if (res.ok) {
       toast.success('Badge overridden!');
-      searchStudent(); // Refresh
+      searchStudent();
     } else {
       toast.error('Failed to set badge');
     }
@@ -58,7 +58,7 @@ export default function AdminBadgeTester() {
   };
 
   const ALL_CATEGORIES = [
-    'ATTENDANCE_STREAK', 'RESULTS_90', 'LEADERBOARD_ALL_TIME', 
+    'ATTENDANCE_STREAK', 'RESULTS_90', 'LEADERBOARD_ALL_TIME',
     'LEADERBOARD_MONTH', 'LEADERBOARD_WEEK', 'LEADERBOARD_TODAY',
     'COURSES_COMPLETED', 'VERIFIED_ANSWERS'
   ];
@@ -76,10 +76,10 @@ export default function AdminBadgeTester() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex gap-2">
-            <Input 
-              placeholder="Student username exactly..." 
-              value={username} 
-              onChange={e => setUsername(e.target.value)} 
+            <Input
+              placeholder="Student username exactly..."
+              value={username}
+              onChange={e => setUsername(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && searchStudent()}
             />
             <Button onClick={searchStudent} disabled={loading || !username.trim()}>
@@ -112,11 +112,10 @@ export default function AdminBadgeTester() {
                     </div>
                   </div>
                   <div className="flex gap-2 items-center">
-                    <select 
+                    <select
                       className="text-sm border rounded p-1.5 bg-background"
                       onChange={(e) => {
                         const val = parseInt(e.target.value);
-                        // Auto-map tier to its default color
                         const tierColors: Record<number, string> = { 1: 'PINK', 2: 'PURPLE', 3: 'GREEN', 4: 'BLUE', 5: 'GOLD' };
                         const autoColor = tierColors[val] || 'PINK';
                         setBadge(cat, val, autoColor);

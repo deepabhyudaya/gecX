@@ -20,11 +20,7 @@ import { publishWarEvent } from "@/lib/war-events";
 import { getActiveSeasonForWar } from "./season.actions";
 import { recordStudentWarSeasonPoints } from "./season-points.actions";
 
-// ==================== TYPES ====================
-
 export type StudentRivalryWithDetails = Awaited<ReturnType<typeof getStudentRivalryById>>;
-
-// ==================== HELPERS ====================
 
 async function requireRole(...roles: string[]) {
   const { sessionClaims } = auth();
@@ -48,8 +44,6 @@ function currentSeason(): string {
   const term = month < 4 ? "T1" : month < 8 ? "T2" : "T3";
   return `${year}-${term}`;
 }
-
-// ==================== PROPOSAL ====================
 
 export async function proposeStudentRivalry(input: {
   studentBId: string;
@@ -77,24 +71,12 @@ export async function proposeStudentRivalry(input: {
   });
   if (existing) throw new Error("An active rivalry already exists between you and this student");
 
-  // const oneMonthAgo = new Date();
-  // oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  // const recentProposal = await prisma.studentRivalry.findFirst({
-  //   where: { proposerId: student.id, createdAt: { gte: oneMonthAgo } },
-  // });
-  // if (recentProposal) throw new Error("You can only propose one rivalry per month");
-
   const autoExpiresAt = new Date();
   autoExpiresAt.setDate(autoExpiresAt.getDate() + 7);
 
-  // Look up active season (college-specific → global fallback)
   const myClass = await prisma.class.findUnique({ where: { id: student.classId }, select: { collegeId: true } });
   const activeSeason = await getActiveSeasonForWar(myClass?.collegeId ?? null, "STUDENT");
 
-  // SW-001: resolve the war type up-front but DO NOT create the bout yet.
-  // The bout is created in `targetAcceptStudentRivalry` once both admin and
-  // target have approved, so we cannot leave orphan PENDING bouts on a rejected
-  // / retracted / expired rivalry. Pending choice is persisted on the rivalry.
   let resolvedWarTypeId: string | null = warTypeId ?? null;
   if (isAutoRandom) {
     const allTypes = await prisma.warType.findMany({
@@ -140,8 +122,6 @@ export async function proposeStudentRivalry(input: {
   revalidatePath("/student/wars");
   return rivalry;
 }
-
-// ==================== ADMIN APPROVAL ====================
 
 export async function adminApproveStudentRivalry(rivalryId: string) {
   await requireRole("admin");
@@ -209,8 +189,6 @@ export async function deleteStudentRivalry(rivalryId: string) {
   return { success: true };
 }
 
-// ==================== TARGET ACCEPTANCE & ACTIVATION ====================
-
 export async function targetAcceptStudentRivalry(rivalryId: string) {
   const student = await getCallerStudent();
 
@@ -222,9 +200,6 @@ export async function targetAcceptStudentRivalry(rivalryId: string) {
   if (rivalry.status !== "PENDING_CR") throw new Error("Rivalry is not pending acceptance");
   if (rivalry.studentBId !== student.id) throw new Error("Only the challenged student can accept");
 
-  // SW-002: server creation + rivalry update + bout creation all happen inside one tx
-  // so we never end up with an orphan Server or a half-applied state.
-  // SW-001: the bout is created here (not at proposal time).
   const updated = await prisma.$transaction(async (tx) => {
     const fresh = await tx.studentRivalry.findUnique({ where: { id: rivalryId } });
     if (!fresh || fresh.status !== "PENDING_CR") {
@@ -236,11 +211,9 @@ export async function targetAcceptStudentRivalry(rivalryId: string) {
       tx,
     });
 
-    // Phase 2A: assign Duelist role to both fighters.
     await assignWarRole(built.serverId, rivalry.studentAId, built.warriorRoleId, rivalry.adminId ?? null, tx);
     await assignWarRole(built.serverId, rivalry.studentBId, built.warriorRoleId, rivalry.adminId ?? null, tx);
 
-    // Phase 2A: pin initial scoreboard + lore opener.
     let scoreboardMessageId: string | null = null;
     if (built.scoreboardChannelId) {
       scoreboardMessageId = await upsertScoreboardMessage(
@@ -266,7 +239,6 @@ export async function targetAcceptStudentRivalry(rivalryId: string) {
       });
     }
 
-    // SW-001: ensure at least one bout exists; fallback to Karma Sprint if no type was chosen.
     let warTypeId = fresh.pendingWarTypeId;
     if (!warTypeId) {
       const ksType = await tx.warType.findUnique({ where: { name: "Karma Sprint" } });
@@ -313,8 +285,6 @@ export async function targetAcceptStudentRivalry(rivalryId: string) {
   return updated;
 }
 
-// ==================== RETRACT & SURRENDER ====================
-
 export async function retractStudentRivalryProposal(rivalryId: string) {
   const student = await getCallerStudent();
 
@@ -329,11 +299,9 @@ export async function retractStudentRivalryProposal(rivalryId: string) {
 
   const updated = await prisma.studentRivalry.update({
     where: { id: rivalryId },
-    data: { status: "REJECTED" }, // or CANCELED if added to enum, but REJECTED serves the UI
+    data: { status: "REJECTED" },
   });
 
-  // SW-006: notify the target (and admins if it was pending admin review) so
-  // the "you've been challenged" notification doesn't dangle.
   const admins = rivalry.status === "PENDING_ADMIN"
     ? await prisma.admin.findMany({ select: { id: true } })
     : [];
@@ -363,21 +331,12 @@ export async function surrenderStudentRivalry(rivalryId: string) {
 
   const winnerId = isA ? rivalry.studentBId : rivalry.studentAId;
 
-  // SW-005: route surrender through the same conclude pipeline so lore,
-  // notifications, GECX and (future) season points all happen consistently.
   return _concludeStudentRivalryInternal(rivalryId, {
     forcedWinnerStudentId: winnerId,
     surrenderedByStudentId: student.id,
   });
 }
 
-// ==================== BATTLEFIELD SERVER ====================
-
-/**
- * Creates the duel arena server (categories, channels, both members) AND the
- * Phase 2A war-server role (Duelist). Returns ids the caller persists on the
- * `StudentRivalry` row + uses for role assignment.
- */
 async function createDuelServer(
   rivalry: {
     id: string;
@@ -442,7 +401,6 @@ async function createDuelServer(
     skipDuplicates: true,
   });
 
-  // Phase 2A: Duelist custom role + pre-resolved channel ids.
   const { warriorRoleId } = await createStudentWarRoles(server.id, db);
   const [scoreboardCh, loreCh] = await Promise.all([
     findWarChannelByName(server.id, "scoreboard", db),
@@ -456,8 +414,6 @@ async function createDuelServer(
     warriorRoleId,
   };
 }
-
-// ==================== BOUT MANAGEMENT ====================
 
 export async function recordStudentBout(input: {
   rivalryId: string;
@@ -495,7 +451,6 @@ export async function recordStudentBout(input: {
     totalBouts: round,
   });
 
-  // Phase 2A: bout + score + lore in a single tx with status re-check.
   const bout = await prisma.$transaction(async (tx) => {
     const fresh = await tx.studentRivalry.findUnique({
       where: { id: rivalryId },
@@ -526,7 +481,6 @@ export async function recordStudentBout(input: {
     return b;
   });
 
-  // ---- Post-commit best-effort UI signals ----
   if (rivalry.scoreboardChannelId) {
     try {
       const newMessageId = await upsertScoreboardMessage(
@@ -603,24 +557,15 @@ export async function recordStudentBout(input: {
   return bout;
 }
 
-// ==================== CONCLUDE RIVALRY ====================
-
 export async function concludeStudentRivalry(rivalryId: string) {
   await requireRole("admin");
   return _concludeStudentRivalryInternal(rivalryId, {});
 }
 
-/**
- * SW-004 + SW-005: shared internal conclude pipeline used by both admin-triggered
- * concludeStudentRivalry and player-triggered surrenderStudentRivalry.
- * - Idempotent: re-reads status inside the transaction and no-ops if already concluded.
- * - Atomic: status flip + lore write + winner-bonus all live in the same transaction.
- * - GECX + karma side-effects + notifications happen AFTER the tx commits.
- */
 async function _concludeStudentRivalryInternal(
   rivalryId: string,
   opts: {
-    forcedWinnerStudentId?: string | null; // surrender path forces a winner
+    forcedWinnerStudentId?: string | null;
     surrenderedByStudentId?: string | null;
   }
 ) {
@@ -656,7 +601,6 @@ async function _concludeStudentRivalryInternal(
     winnerName,
   });
 
-  // SW-004: status flip + lore in a single tx, with idempotency.
   const { updated, didConclude } = await prisma.$transaction(async (tx) => {
     const fresh = await tx.studentRivalry.findUnique({ where: { id: rivalryId } });
     if (!fresh) throw new Error("Rivalry not found");
@@ -683,7 +627,6 @@ async function _concludeStudentRivalryInternal(
     return updated;
   }
 
-  // Season point recording (best-effort; guarded by seasonPointsDistributed flag in the action)
   if (updated?.seasonId && !updated.seasonPointsDistributed) {
     try {
       await recordStudentWarSeasonPoints(rivalryId, updated.seasonId);
@@ -692,14 +635,12 @@ async function _concludeStudentRivalryInternal(
     }
   }
 
-  // ---- Phase 2B: settle spectator bets (idempotent via betsSettled) ----
   try {
     await settleRivalryBets(rivalryId, winnerStudentId);
   } catch (err) {
     console.error("[concludeStudentRivalry] bet settlement failed:", err);
   }
 
-  // ---- Phase 2B: award ally bonuses to winning side (idempotent via bonusGecxAwarded) ----
   if (winnerStudentId) {
     try {
       const winningAllies = await prisma.studentRivalryAlly.findMany({
@@ -729,8 +670,6 @@ async function _concludeStudentRivalryInternal(
     }
   }
 
-  // ---- Phase 2A archive flow ----
-  // Final scoreboard edit + server rename + closing lore post.
   if (rivalry.scoreboardChannelId) {
     try {
       const newMessageId = await upsertScoreboardMessage(
@@ -794,15 +733,13 @@ async function _concludeStudentRivalryInternal(
     battlefieldServerId: rivalry.battlefieldServerId ?? null,
   });
 
-  // Side-effects after commit so they don't run twice on retry.
   if (winnerStudentId) {
-    // NOTE (SW-004 Phase 2): direct karma mutation will be routed through the
-    // karma engine. Keeping behaviour identical for Phase 1 to avoid regressions.
+
     const profile = await prisma.userCommunityProfile.findUnique({ where: { userId: winnerStudentId } });
     if (profile) {
       await prisma.userCommunityProfile.update({
         where: { userId: winnerStudentId },
-        data: { karmaPoints: profile.karmaPoints + 5000 }, // 200 RP * 25 karma = 5000 karma
+        data: { karmaPoints: profile.karmaPoints + 5000 },
       });
     }
     await awardGecX({
@@ -832,8 +769,6 @@ async function _concludeStudentRivalryInternal(
   return updated;
 }
 
-// ==================== POINTS CONVERSION ====================
-
 const RP_TO_KARMA = 25;
 const RP_TO_GECX = 1;
 
@@ -860,7 +795,6 @@ export async function convertStudentRivalryPoints(rivalryId: string, rivalryPoin
   const karmaEarned = rivalryPoints * RP_TO_KARMA;
   const gecxEarned = rivalryPoints * RP_TO_GECX;
 
-  // SW-004: atomic read-deduct-award to prevent negative RP on concurrent calls.
   await prisma.$transaction(async (tx) => {
     const fresh = await tx.studentRivalry.findUnique({ where: { id: rivalryId } });
     if (!fresh) throw new Error("Rivalry not found");
@@ -884,7 +818,6 @@ export async function convertStudentRivalryPoints(rivalryId: string, rivalryPoin
     }
   });
 
-  // Award GECX outside tx (idempotent on retry)
   await awardGecX({
     userId: student.id,
     userType: "student",
@@ -897,8 +830,6 @@ export async function convertStudentRivalryPoints(rivalryId: string, rivalryPoin
   revalidatePath(`/student/wars/${rivalryId}`);
   return { karmaEarned, gecxEarned, rpSpent: rivalryPoints };
 }
-
-// ==================== MODERATION ====================
 
 export async function issueStudentStrike(rivalryId: string, studentId: string, reason: string) {
   await requireRole("admin", "teacher");
@@ -928,7 +859,6 @@ export async function issueStudentStrike(rivalryId: string, studentId: string, r
     studentIds: [studentId],
   });
 
-  // SW-005: third strike deducts 50 pts atomically inside a tx with a re-read.
   if (strikes.length + 1 >= 3) {
     await prisma.$transaction(async (tx) => {
       const fresh = await tx.studentRivalry.findUnique({
@@ -950,8 +880,6 @@ export async function issueStudentStrike(rivalryId: string, studentId: string, r
   return { strike, strikeCount: strikes.length + 1 };
 }
 
-// ==================== AUTO-EXPIRE ====================
-
 export async function expireStaleStudentRivalries() {
   await requireRole("admin");
 
@@ -964,8 +892,6 @@ export async function expireStaleStudentRivalries() {
     include: { studentA: true, studentB: true },
   });
 
-  // SW-003: each expiry is its own tx with an idempotency re-check so a retry
-  // of the cron cannot double-fire notifications.
   let expiredCount = 0;
   for (const r of stale) {
     const didExpire = await prisma.$transaction(async (tx) => {
@@ -988,8 +914,6 @@ export async function expireStaleStudentRivalries() {
 
   return { expired: expiredCount };
 }
-
-// ==================== QUERIES ====================
 
 export async function getStudentRivalryById(rivalryId: string) {
   return prisma.studentRivalry.findUnique({
@@ -1098,8 +1022,6 @@ export async function getStudentsForWarProposal(search?: string) {
   });
 }
 
-// ==================== TEACHER NOMINATION ACTIONS ====================
-
 export async function acceptWarNomination(boutId: string) {
   await requireRole("teacher");
   const { userId } = auth();
@@ -1139,10 +1061,8 @@ export async function declineWarNomination(boutId: string) {
   if (!bout || bout.teacherId !== userId) throw new Error("Nomination not found");
   if (bout.teacherStatus !== "NOMINATED") throw new Error("Not currently nominated");
 
-  // Fallback mechanic: If a teacher declines, we fallback to the fallback type if defined.
-  // We'll fallback to KARMA_SPRINT if no explicit fallback.
   let newWarTypeId = bout.warTypeId;
-  
+
   if (bout.warType?.fallbackTypeId) {
     newWarTypeId = bout.warType.fallbackTypeId;
   } else {
@@ -1152,11 +1072,11 @@ export async function declineWarNomination(boutId: string) {
 
   const updated = await prisma.studentRivalryBout.update({
     where: { id: boutId },
-    data: { 
+    data: {
       teacherStatus: "DECLINED",
-      warTypeId: newWarTypeId, 
-      // Teacher removed because the fallback type doesn't need a teacher
-      teacherId: null 
+      warTypeId: newWarTypeId,
+
+      teacherId: null
     },
   });
 

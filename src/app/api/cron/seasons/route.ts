@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { finalizeSeason } from "@/actions/season-conclude.actions";
 import prisma from "@/lib/prisma";
 
-// Cron-safe route to auto-finalize seasons that have passed their 48h wind-down.
-// Expected to be called by a Vercel Cron or external scheduler.
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const expected = `Bearer ${process.env.CRON_SECRET ?? ""}`;

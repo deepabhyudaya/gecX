@@ -32,9 +32,7 @@ export function SidebarContextProvider({
   children: React.ReactNode;
   value?: SidebarContextType;
 }) {
-  // ALL hooks must run in the same order on every render — previously
-  // useMemo lived AFTER an `if (value) return ...` early return, which
-  // violates the rules of hooks if `value` ever toggled between renders.
+
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const panelRef = useRef<ImperativePanelHandle>(null);
@@ -67,9 +65,6 @@ export function SidebarContextProvider({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [value]);
 
-  // Memoize the local context value unconditionally so consumers don't
-  // re-render on every parent re-render. Used only when `value` isn't
-  // provided externally.
   const localValue = useMemo(
     () => ({
       collapsed,

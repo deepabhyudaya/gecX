@@ -37,7 +37,6 @@ export default function KnowledgeDuelManager({ bout }: Props) {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-      {/* Configuration Panel */}
       <div className="xl:col-span-2 space-y-6">
         <div className="bg-card border border-border rounded-2xl p-6">
           <div className="flex justify-between items-center mb-6">
@@ -83,24 +82,22 @@ export default function KnowledgeDuelManager({ bout }: Props) {
         </div>
       </div>
 
-      {/* Live Scoring Panel */}
       <div className="space-y-6">
         <div className="bg-gradient-to-br from-card to-muted border border-border rounded-2xl p-6 shadow-xl relative overflow-hidden">
-          {/* Status Bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-red-500" />
-          
+
           <h2 className="font-bold text-lg mb-6">Live Scoring</h2>
-          
+
           <div className="space-y-6">
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <h3 className="font-bold text-blue-500 mb-2">{bout.rivalry.studentA.name}</h3>
               <div className="flex items-center gap-4">
-                <button 
+                <button
                   onClick={() => setScoreA(Math.max(0, scoreA - 10))}
                   className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center font-bold hover:bg-muted-foreground/20"
                 >-10</button>
                 <div className="flex-1 text-center text-3xl font-black tabular-nums">{scoreA}</div>
-                <button 
+                <button
                   onClick={() => setScoreA(scoreA + 10)}
                   className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-500 flex items-center justify-center font-bold hover:bg-blue-500/30"
                 >+10</button>
@@ -110,12 +107,12 @@ export default function KnowledgeDuelManager({ bout }: Props) {
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <h3 className="font-bold text-red-500 mb-2">{bout.rivalry.studentB.name}</h3>
               <div className="flex items-center gap-4">
-                <button 
+                <button
                   onClick={() => setScoreB(Math.max(0, scoreB - 10))}
                   className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center font-bold hover:bg-muted-foreground/20"
                 >-10</button>
                 <div className="flex-1 text-center text-3xl font-black tabular-nums">{scoreB}</div>
-                <button 
+                <button
                   onClick={() => setScoreB(scoreB + 10)}
                   className="w-10 h-10 rounded-lg bg-red-500/20 text-red-500 flex items-center justify-center font-bold hover:bg-red-500/30"
                 >+10</button>

@@ -10,7 +10,6 @@ import { recordUserActivity } from "./streak-tracking.actions";
 
 const COMMENTS_PER_PAGE = 20;
 
-// Helper to get or create community profile
 async function getOrCreateCommunityProfile(userId: string) {
   const { sessionClaims } = auth();
   const clerkUser = await currentUser();
@@ -38,7 +37,6 @@ async function getOrCreateCommunityProfile(userId: string) {
   return profile;
 }
 
-// Create a comment
 export async function createComment(postId: string, content: string, parentId?: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -48,14 +46,12 @@ export async function createComment(postId: string, content: string, parentId?: 
 
   const profile = await getOrCreateCommunityProfile(userId);
 
-  // Verify post exists
   const post = await prisma.communityPost.findUnique({
     where: { id: postId, isDeleted: false },
   });
 
   if (!post) throw new Error("Post not found");
 
-  // If parentId provided, verify parent comment exists
   if (parentId) {
     const parentComment = await prisma.communityComment.findUnique({
       where: { id: parentId, postId, isDeleted: false },
@@ -75,18 +71,15 @@ export async function createComment(postId: string, content: string, parentId?: 
     },
   });
 
-  // Update comment count on post
   await prisma.communityPost.update({
     where: { id: postId },
     data: { commentCount: { increment: 1 } },
   });
 
-  // Award karma to comment creator
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.commentCreated, "comment_created");
   await recordUserActivity(userId, "comment");
-  
-  // Award karma to post author when someone comments on their post
+
   if (post.authorId !== userId) {
     await recordKarmaEarned(post.authorId, settings.commentReceived, "comment_received");
   }
@@ -97,7 +90,6 @@ export async function createComment(postId: string, content: string, parentId?: 
   return comment;
 }
 
-// Delete a comment
 export async function deleteComment(commentId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -109,7 +101,6 @@ export async function deleteComment(commentId: string) {
 
   if (!comment) throw new Error("Comment not found");
 
-  // Check if user is author or admin
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
 
@@ -122,7 +113,6 @@ export async function deleteComment(commentId: string) {
     data: { isDeleted: true },
   });
 
-  // Decrement comment count on post
   await prisma.communityPost.update({
     where: { id: comment.postId },
     data: { commentCount: { decrement: 1 } },
@@ -132,7 +122,6 @@ export async function deleteComment(commentId: string) {
   revalidatePath("/community");
 }
 
-// Like/unlike a comment
 export async function likeComment(commentId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -144,7 +133,7 @@ export async function likeComment(commentId: string) {
   });
 
   if (existingLike) {
-    // Unlike
+
     await prisma.communityCommentLike.delete({
       where: { id: existingLike.id },
     });
@@ -156,7 +145,7 @@ export async function likeComment(commentId: string) {
 
     return { liked: false };
   } else {
-    // Like
+
     await prisma.communityCommentLike.create({
       data: { commentId, userId },
     });
@@ -166,7 +155,6 @@ export async function likeComment(commentId: string) {
       data: { likeCount: { increment: 1 } },
     });
 
-    // Award karma to comment author when someone likes their comment (skip AI comments)
     const comment = await prisma.communityComment.findUnique({
       where: { id: commentId },
       select: { authorId: true, authorType: true },
@@ -180,11 +168,9 @@ export async function likeComment(commentId: string) {
   }
 }
 
-// Get comments for a post with all nested replies
 export async function getComments(postId: string, cursor?: string) {
   const { userId } = auth();
 
-  // Load comments for the post (capped to avoid unbounded slow queries)
   const allComments = await prisma.communityComment.findMany({
     where: {
       postId,
@@ -200,10 +186,9 @@ export async function getComments(postId: string, cursor?: string) {
         select: { replies: { where: { isDeleted: false } } },
       },
     },
-    orderBy: { createdAt: "asc" }, // Oldest first for proper nesting
+    orderBy: { createdAt: "asc" },
   });
 
-  // Get unique author IDs to fetch current profile avatars, streaks and karma
   const authorIds = [...new Set(allComments.map(c => c.authorId))];
   const authorProfiles = await prisma.userCommunityProfile.findMany({
     where: { userId: { in: authorIds } },
@@ -219,15 +204,13 @@ export async function getComments(postId: string, cursor?: string) {
   const streakMap = new Map(streakRows.map((r) => [r.userId, Number(r.currentStreak) || 0]));
   const karmaMap = new Map(streakRows.map((r) => [r.userId, Number(r.karmaPoints) || 0]));
 
-  // Build nested tree structure
   const commentMap = new Map();
   const rootComments: any[] = [];
 
-  // First pass: create map and clean up data, using current profile avatar
   allComments.forEach((comment) => {
     const cleanComment = {
       ...comment,
-      // Use custom avatar if set, otherwise fall back to regular avatar or static authorImage
+
       authorImage: customAvatarMap.get(comment.authorId) || avatarMap.get(comment.authorId) || comment.authorImage,
       authorAvatar: avatarMap.get(comment.authorId) || null,
       authorCustomAvatar: customAvatarMap.get(comment.authorId) || null,
@@ -242,23 +225,20 @@ export async function getComments(postId: string, cursor?: string) {
     commentMap.set(comment.id, cleanComment);
   });
 
-  // Second pass: build tree
   allComments.forEach((comment) => {
     const cleanComment = commentMap.get(comment.id);
     if (comment.parentId && commentMap.has(comment.parentId)) {
-      // Add to parent's replies
+
       const parent = commentMap.get(comment.parentId);
       parent.replies.push(cleanComment);
     } else {
-      // Top-level comment
+
       rootComments.push(cleanComment);
     }
   });
 
-  // Sort root comments by date (newest first)
   rootComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  // Pagination for root comments only
   let hasMore = false;
   let paginatedRoots = rootComments;
   let nextCursor = null;
@@ -286,7 +266,6 @@ export async function getComments(postId: string, cursor?: string) {
   };
 }
 
-// Get replies for a specific comment
 export async function getReplies(commentId: string, cursor?: string) {
   const { userId } = auth();
 
@@ -314,7 +293,6 @@ export async function getReplies(commentId: string, cursor?: string) {
 
   const nextCursor = hasMore && replies.length > 0 ? replies[replies.length - 1].id : null;
 
-  // Fetch author avatars, streaks and karma for replies
   const replyAuthorIds = [...new Set(replies.map(r => r.authorId))];
   const replyAuthorProfiles = await prisma.userCommunityProfile.findMany({
     where: { userId: { in: replyAuthorIds } },
@@ -345,8 +323,6 @@ export async function getReplies(commentId: string, cursor?: string) {
   };
 }
 
-// Mark an answer as helpful (rank 1=Best, 2=Helpful, 3=Promising)
-// Only the original post author can do this, and max 3 answers per post
 export async function markHelpfulAnswer(commentId: string, rank: 1 | 2 | 3) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -368,7 +344,6 @@ export async function markHelpfulAnswer(commentId: string, rank: 1 | 2 | 3) {
     throw new Error("Only top-level answers can be marked as helpful");
   }
 
-  // Check if this rank is already assigned to another comment on this post
   const existingAtRank = await prisma.communityComment.findFirst({
     where: { postId: comment.postId, helpfulRank: rank, isDeleted: false },
   });
@@ -385,16 +360,14 @@ export async function markHelpfulAnswer(commentId: string, rank: 1 | 2 | 3) {
   };
   const karmaAmount = karmaMap[rank];
 
-  // If this comment already had a different rank, revoke old karma first (skip AI authors)
   if (comment.helpfulRank && comment.helpfulRank !== rank && comment.authorType !== "ai") {
     const oldKarma = karmaMap[comment.helpfulRank] || 0;
     if (oldKarma > 0 && comment.karmaAwarded > 0) {
-      // We don't subtract from history, but we update the comment record
+
       await recordKarmaEarned(comment.authorId, -oldKarma, `answer_unmarked_rank_${comment.helpfulRank}`);
     }
   }
 
-  // Update comment with new rank and karma
   await prisma.communityComment.update({
     where: { id: commentId },
     data: {
@@ -403,12 +376,10 @@ export async function markHelpfulAnswer(commentId: string, rank: 1 | 2 | 3) {
     },
   });
 
-  // Award karma to answer author (skip AI authors)
   if (comment.authorType !== "ai") {
     await recordKarmaEarned(comment.authorId, karmaAmount, `answer_marked_rank_${rank}`);
   }
 
-  // Update post answered status
   const helpfulCount = await prisma.communityComment.count({
     where: { postId: comment.postId, helpfulRank: { not: null }, isDeleted: false },
   });
@@ -426,7 +397,6 @@ export async function markHelpfulAnswer(commentId: string, rank: 1 | 2 | 3) {
   return { success: true, rank, karmaAwarded: karmaAmount };
 }
 
-// Unmark a helpful answer (only post author)
 export async function unmarkHelpfulAnswer(commentId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -452,7 +422,6 @@ export async function unmarkHelpfulAnswer(commentId: string) {
   };
   const oldKarma = karmaMap[comment.helpfulRank] || 0;
 
-  // Revoke karma (negative) only for human authors
   if (oldKarma > 0 && comment.authorType !== "ai") {
     await recordKarmaEarned(comment.authorId, -oldKarma, `answer_unmarked_rank_${comment.helpfulRank}`);
   }
@@ -462,7 +431,6 @@ export async function unmarkHelpfulAnswer(commentId: string) {
     data: { helpfulRank: null, karmaAwarded: 0 },
   });
 
-  // Update post answered status if no helpful answers remain
   const helpfulCount = await prisma.communityComment.count({
     where: { postId: comment.postId, helpfulRank: { not: null }, isDeleted: false },
   });
@@ -480,7 +448,6 @@ export async function unmarkHelpfulAnswer(commentId: string) {
   return { success: true };
 }
 
-// Get helpful answers for a post
 export async function getHelpfulAnswers(postId: string) {
   const answers = await prisma.communityComment.findMany({
     where: { postId, helpfulRank: { not: null }, isDeleted: false },

@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { userId } = params;
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: "User ID is required" },
@@ -18,10 +18,7 @@ export async function GET(
     }
 
     const breakdown = await getUserKarmaBreakdown(userId);
-    
-    // private: response is per-user — must not be served to other users from
-    // any shared cache. 5s max-age gives a UI-feel "instant on revisit" while
-    // SWR=60 keeps the spinner away on staleness windows.
+
     return NextResponse.json(
       { breakdown },
       {

@@ -45,7 +45,6 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
 
   const { posts, isPrivate: isPrivateAccount } = await getUserPosts(params.username);
 
-  // Get equipped colors for this user
   const equippedColors = await getEquippedColors(profile.userId);
 
   const isOwnProfile = clerkUser?.id === profile.userId;
@@ -53,7 +52,6 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
 
   const bgIsLight = equippedColors.profileBgColor ? isLightColor(equippedColors.profileBgColor) : false;
 
-  // Text color utilities to apply throughout the profile based on profile bg
   const textClass = bgIsLight ? "text-gray-900" : equippedColors.profileBgColor ? "text-gray-100" : "";
   const mutedClass = bgIsLight ? "text-gray-500" : equippedColors.profileBgColor ? "text-gray-400" : "text-muted-foreground";
   const cardBgClass = bgIsLight ? "bg-white/70" : equippedColors.profileBgColor ? "bg-black/30" : "bg-muted/50";
@@ -61,11 +59,8 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
   const borderClass = bgIsLight ? "border-black/10" : equippedColors.profileBgColor ? "border-white/10" : "border-border";
   const headerBgClass = bgIsLight ? "bg-white/90" : equippedColors.profileBgColor ? "bg-black/30" : "bg-background/95";
 
-
-  // Get effective avatar URL (custom avatar takes priority over Clerk)
   const effectiveAvatar = profile.customAvatar || profile.avatar || "/noAvatar.png";
 
-  // Use equipped profile background color if available, otherwise use karma gradient (Cosmic gets purple glow)
   const bgStyle: React.CSSProperties = equippedColors.profileBgColor
     ? { backgroundColor: equippedColors.profileBgColor }
     : tier
@@ -79,14 +74,12 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
           }
       : {};
 
-  // Determine username color style
   const usernameStyle = equippedColors.usernameColor
     ? { color: equippedColors.usernameColor }
     : getKarmaTierTextGradientStyle(profile.karmaPoints) || { color: getKarmaTierColor(profile.karmaPoints) || undefined };
 
   return (
     <div className={`flex-1 flex flex-col w-full relative ${textClass}`} style={bgStyle}>
-      {/* Header */}
       <div className={`sticky top-0 z-10 ${headerBgClass} backdrop-blur border-b ${borderClass}`}>
         <div className="px-4 py-3 flex items-center gap-4 max-w-2xl mx-auto">
           <Link
@@ -106,12 +99,9 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
         </div>
       </div>
 
-      {/* Content Container */}
       <div className="flex-1 max-w-2xl mx-auto w-full">
-      {/* Banner - shown if set */}
       {profile.bannerUrl && (
         <div className="w-full sm:rounded-t-xl overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={profile.bannerUrl}
             alt="Profile banner"
@@ -120,7 +110,6 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
         </div>
       )}
 
-      {/* Profile Info */}
       <div className={`px-4 pb-6 pt-4 border-b ${borderClass}`}>
         <div className="flex items-start justify-between">
           <div className={`relative ${profile.bannerUrl ? "-mt-14 sm:-mt-16" : ""}`}>
@@ -190,7 +179,6 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
             <p className={`mt-3 text-sm whitespace-pre-wrap ${textClass}`}>{profile.bio}</p>
           )}
 
-          {/* View Academic Profile Button */}
           {(profile.canViewAcademic || isOwnProfile) && (
             <Link href={`/profile?id=${profile.userId}`} className="inline-block mt-3">
               {equippedColors.profileBgColor ? (
@@ -214,7 +202,6 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
             </Link>
           )}
 
-          {/* Karma Breakdown */}
           {profile.karmaPoints > 0 && (
             <KarmaBreakdown
               userId={profile.userId}
@@ -231,13 +218,12 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
             />
           )}
 
-          {/* Stats */}
           <div className="flex items-center gap-6 mt-4">
             <div className="cursor-default">
               <span className={`font-semibold ${textClass}`}>{profile.postCount}</span>
               <span className={`${mutedClass} ml-1`}>posts</span>
             </div>
-            
+
             {profile.isPrivate && !profile.isFollowing && !isOwnProfile ? (
               <div className="cursor-default flex items-center gap-1">
                 <span className={`font-semibold ${textClass}`}>{profile.followingCount}</span>
@@ -250,7 +236,7 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
                 <span className={`${mutedClass} ml-1`}>following</span>
               </Link>
             )}
-            
+
             {profile.isPrivate && !profile.isFollowing && !isOwnProfile ? (
               <div className="cursor-default flex items-center gap-1">
                 <span className={`font-semibold ${textClass}`}>{profile.followerCount}</span>
@@ -263,7 +249,7 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
                 <span className={`${mutedClass} ml-1`}>followers</span>
               </Link>
             )}
-            
+
             {profile.karmaPoints > 0 && (
               <Link href="/leaderboard" className="flex items-center gap-1 hover:opacity-80 transition-opacity" title="View Leaderboard">
                 <Trophy size={14} className="text-yellow-500" />
@@ -275,7 +261,6 @@ export default async function CommunityProfilePage({ params }: ProfilePageProps)
         </div>
       </div>
 
-      {/* Posts */}
       <div className="mt-4">
         {isPrivateAccount && !profile.isFollowing && !isOwnProfile ? (
           <div className="text-center py-12 px-4">

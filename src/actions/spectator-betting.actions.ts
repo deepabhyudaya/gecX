@@ -7,12 +7,8 @@ import { createNotificationsForUsers } from "@/lib/notifications";
 import { deductGecXForPurchase, awardGecX } from "./gecx.actions";
 import { publishWarEvent } from "@/lib/war-events";
 
-// ==================== CONFIG ====================
-
 const MIN_STAKE = 10;
 const MAX_STAKE = 5000;
-
-// ==================== PLACE BET ====================
 
 export async function placeBet(
   rivalryId: string,
@@ -21,7 +17,7 @@ export async function placeBet(
 ) {
   const { userId } = auth();
   if (!userId) throw new Error("Not authenticated");
-  const user = (await auth()) as any; // get clerk metadata
+  const user = (await auth()) as any;
 
   const clerkRole = ((user?.sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
   const bettorUserType = clerkRole || "student";
@@ -47,20 +43,17 @@ export async function placeBet(
     throw new Error("You must bet on one of the duelists");
   }
 
-  // Eligibility: fighters + their accepted allies cannot bet.
   if (userId === rivalry.studentAId || userId === rivalry.studentBId) {
     throw new Error("Duelists cannot bet on their own match");
   }
   const isAlly = rivalry.allies.some((a) => a.allyStudentId === userId);
   if (isAlly) throw new Error("Allies of this duel cannot place bets");
 
-  // One bet per bettor per rivalry.
   const existing = rivalry.spectatorBets.find(
     (b) => b.bettorUserId === userId && b.status === "OPEN"
   );
   if (existing) throw new Error("You already have an open bet on this duel");
 
-  // Deduct stake.
   await deductGecXForPurchase({
     userId,
     amount: stakeGecx,
@@ -101,8 +94,6 @@ export async function placeBet(
   return bet;
 }
 
-// ==================== CANCEL BET (before close) ====================
-
 export async function cancelBet(betId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Not authenticated");
@@ -118,7 +109,6 @@ export async function cancelBet(betId: string) {
     throw new Error("Betting window has closed — cannot cancel");
   }
 
-  // Refund stake.
   await awardGecX({
     userId: bet.bettorUserId,
     userType: bet.bettorUserType,
@@ -137,11 +127,9 @@ export async function cancelBet(betId: string) {
   return updated;
 }
 
-// ==================== SETTLE BETS (called from conclude pipeline) ====================
-
 export async function settleRivalryBets(
   rivalryId: string,
-  winnerStudentId: string | null, // null = draw
+  winnerStudentId: string | null,
   tx?: any
 ) {
   const db = tx ?? prisma;
@@ -159,7 +147,6 @@ export async function settleRivalryBets(
     return { settled: 0, refunded: 0 };
   }
 
-  // ---- Draw = full refund ----
   if (winnerStudentId === null) {
     let refunded = 0;
     for (const b of openBets) {
@@ -188,7 +175,6 @@ export async function settleRivalryBets(
     return { settled: 0, refunded };
   }
 
-  // ---- Normal settle (parimutuel pool) ----
   const winnerBets = openBets.filter((b) => b.sideStudentId === winnerStudentId);
   const loserBets = openBets.filter((b) => b.sideStudentId !== winnerStudentId);
 
@@ -240,8 +226,6 @@ export async function settleRivalryBets(
   await db.studentRivalry.update({ where: { id: rivalryId }, data: { betsSettled: true } });
   return { settled, refunded: 0 };
 }
-
-// ==================== LIST BETS ====================
 
 export async function getRivalryBets(rivalryId: string) {
   const { userId } = auth();

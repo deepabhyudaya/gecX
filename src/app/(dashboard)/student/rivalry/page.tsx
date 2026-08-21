@@ -69,7 +69,6 @@ export default async function StudentRivalryPage() {
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
-      {/* Banner */}
       <div className="relative shrink-0 bg-gradient-to-r from-blue-950 via-card to-red-950 border border-border rounded-2xl p-6 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-red-500/5" />
         <div className="relative">
@@ -120,7 +119,6 @@ export default async function StudentRivalryPage() {
         </div>
       </div>
 
-      {/* CR action required banner */}
       {hasPendingCR && isCrForThisRivalry && !alreadyApproved && rivalry && (
         <div className="bg-orange-500/10 border border-orange-500/40 rounded-2xl p-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -142,7 +140,6 @@ export default async function StudentRivalryPage() {
         </div>
       )}
 
-      {/* PENDING_CR — visible to all class members */}
       {rivalry && rivalry.status === "PENDING_CR" && !isCrForThisRivalry && (
         <div className="bg-orange-500/10 border border-orange-500/40 rounded-2xl p-6 text-center space-y-2">
           <div className="text-3xl">⚔️</div>
@@ -155,7 +152,6 @@ export default async function StudentRivalryPage() {
         </div>
       )}
 
-      {/* Active rivalry */}
       {rivalry && rivalry.status === "ACTIVE" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -171,7 +167,6 @@ export default async function StudentRivalryPage() {
           </div>
           <RivalryScoreboard rivalryId={rivalry.id} compact />
 
-          {/* Latest lore */}
           {rivalry.loreEntries && rivalry.loreEntries.length > 0 && (
             <div className="bg-card border border-border rounded-2xl p-5">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
@@ -189,7 +184,6 @@ export default async function StudentRivalryPage() {
         </div>
       )}
 
-      {/* Pending admin approval */}
       {rivalry && rivalry.status === "PENDING_ADMIN" && (
         <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-2xl p-6 text-center space-y-2">
           <div className="text-3xl">⏳</div>
@@ -200,7 +194,6 @@ export default async function StudentRivalryPage() {
         </div>
       )}
 
-      {/* Concluded */}
       {rivalry && rivalry.status === "CONCLUDED" && (
         <div className="bg-purple-500/10 border border-purple-500/40 rounded-2xl p-6 text-center space-y-3">
           <div className="text-3xl">🏆</div>
@@ -212,7 +205,6 @@ export default async function StudentRivalryPage() {
         </div>
       )}
 
-      {/* No rivalry — show proposal form */}
       {!rivalry && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
@@ -254,7 +246,6 @@ export default async function StudentRivalryPage() {
         </div>
       )}
 
-      {/* CR info */}
       {cr && (
         <div className="bg-card border border-border rounded-2xl p-4">
           <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Branch Representative (CR) — {student.class.name}</div>

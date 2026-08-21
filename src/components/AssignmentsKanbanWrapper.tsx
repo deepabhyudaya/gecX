@@ -19,7 +19,7 @@ export default function AssignmentsKanbanWrapper({ data, tableComponent }: Props
   const [view, setView] = useState<"table" | "kanban">("kanban");
 
   const kanbanItems: KanbanItem[] = data.map((assignment) => {
-    // Basic status logic based on date, can be overridden by localStorage
+
     const now = new Date();
     const due = new Date(assignment.dueDate);
     let defaultStatus = "to_do";

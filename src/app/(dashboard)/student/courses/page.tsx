@@ -17,8 +17,6 @@ export default async function StudentCoursesPage() {
   const { userId } = auth();
   if (!userId) return null;
 
-  // Fetch courses and enrolled IDs in two separate queries to avoid
-  // the "Unknown field enrollments" error when Prisma client is stale
   const [courses, myEnrollments] = await Promise.all([
     prisma.course.findMany({
       where: { status: { in: ["APPROVED", "EXPIRED"] } },
@@ -44,7 +42,6 @@ export default async function StudentCoursesPage() {
   return (
     <div className="p-6 min-h-full bg-background">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
-        {/* Header */}
         <div className="bg-card border border-border p-6 rounded-[12px] shadow-sm flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-[28px] font-bold text-foreground tracking-tight">Course Catalog</h1>
@@ -66,7 +63,6 @@ export default async function StudentCoursesPage() {
           </div>
         )}
 
-        {/* Course grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {courses.map((course) => {
             const isEnrolled = enrolledIds.has(course.id);
@@ -81,7 +77,6 @@ export default async function StudentCoursesPage() {
                 <div className="h-2 bg-primary/20" />
 
                 <div className="p-5 flex flex-col flex-1 gap-4">
-                  {/* Title */}
                   <Link href={`/student/courses/${course.slug || course.id}`} className="group/title">
                     <h3 className="text-[16px] font-bold text-foreground leading-snug group-hover/title:text-primary transition-colors">
                       {course.title}
@@ -96,7 +91,6 @@ export default async function StudentCoursesPage() {
                     <span className="flex items-center gap-1"><Users size={12} /> {course._count.enrollments} students</span>
                   </div>
 
-                  {/* Action */}
                   <div className="mt-auto">
                     {isEnrolled ? (
                       <Link href={`/student/courses/${course.slug || course.id}`}>

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 async function resolveTicket(formData: FormData) {
   "use server";
   const id = parseInt(formData.get("id") as string);
-  
+
   await prisma.ticket.update({
     where: { id },
     data: { status: "RESOLVED" },
@@ -52,8 +52,8 @@ export default async function AdminTicketsPage() {
                   </td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-[12px] font-medium ${
-                      ticket.status === 'RESOLVED' 
-                        ? 'bg-[#ebf5ff] text-[#0068d6]' 
+                      ticket.status === 'RESOLVED'
+                        ? 'bg-[#ebf5ff] text-[#0068d6]'
                         : 'bg-[#ffeeea] text-[#ff5b4f]'
                     }`}>
                       {ticket.status}
@@ -63,7 +63,7 @@ export default async function AdminTicketsPage() {
                     {ticket.status !== 'RESOLVED' && (
                       <form action={resolveTicket}>
                         <input type="hidden" name="id" value={ticket.id} />
-                        <button 
+                        <button
                           type="submit"
                           className="bg-transparent border-0 text-[#0072f5] hover:underline text-[14px] font-medium cursor-pointer"
                         >
@@ -74,7 +74,7 @@ export default async function AdminTicketsPage() {
                   </td>
                 </tr>
               ))}
-              
+
               {tickets.length === 0 && (
                 <tr>
                   <td colSpan={6} className="text-center py-8 text-[#4d4d4d] text-[14px]">

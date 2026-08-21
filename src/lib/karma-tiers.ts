@@ -3,7 +3,7 @@ export interface KarmaTier {
   threshold: number;
   gradientClass: string;
   colorHex: string;
-  textGradient?: string; // For luxury gradient text effect on usernames
+  textGradient?: string;
 }
 
 const tiers: KarmaTier[] = [
@@ -66,15 +66,15 @@ const tiers: KarmaTier[] = [
 ];
 
 export function getKarmaTier(karmaPoints: number): KarmaTier | null {
-  // Sort tiers by threshold descending to find highest matching tier
+
   const sortedTiers = [...tiers].sort((a, b) => b.threshold - a.threshold);
-  
+
   for (const tier of sortedTiers) {
     if (karmaPoints >= tier.threshold) {
       return tier;
     }
   }
-  
+
   return null;
 }
 
@@ -97,11 +97,10 @@ export function hasKarmaTier(karmaPoints: number): boolean {
   return getKarmaTier(karmaPoints) !== null;
 }
 
-// Get gradient text style for all karma tiers (Bronze and above)
 export function getKarmaTierTextGradientStyle(karmaPoints: number): React.CSSProperties | undefined {
   const tier = getKarmaTier(karmaPoints);
   if (tier && tier.textGradient) {
-    // Extract the gradient from the Tailwind class
+
     const gradients: Record<string, string> = {
       "Bronze": "linear-gradient(90deg, #F59E0B, #EA580C, #B45309)",
       "Silver": "linear-gradient(90deg, #D1D5DB, #9CA3AF, #64748B)",

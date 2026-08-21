@@ -75,7 +75,7 @@ function PinList({
       else updated.unshift(toggled);
       return updated;
     });
-    // Reset group z-index after the animation duration (keep in sync with animation timing)
+
     setTimeout(() => setTogglingGroup(null), zIndexResetDelay);
   };
 

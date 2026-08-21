@@ -9,7 +9,6 @@ const EventCalendarContainer = async ({
 }) => {
   const { date } = searchParams;
 
-  // Fetch events for highlighting on the calendar
   const events = await prisma.event.findMany({
     select: {
       startTime: true,

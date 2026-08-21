@@ -151,7 +151,6 @@ function SortableQuestion({
       return { ...o, ...fields };
     });
 
-    // If SINGLE_CHOICE or DROPDOWN and option is marked correct, clear other correct options
     if (fields.isCorrect && ["SINGLE_CHOICE", "DROPDOWN"].includes(q.type)) {
       onUpdate({
         ...q,
@@ -205,7 +204,6 @@ function SortableQuestion({
         </div>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
-        {/* Description / Instruction */}
         <div className="space-y-1">
           <Label className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Help Text / Description</Label>
           <Input
@@ -216,14 +214,12 @@ function SortableQuestion({
           />
         </div>
 
-        {/* Choice Option Lists */}
         {["SINGLE_CHOICE", "MULTI_CHOICE", "DROPDOWN"].includes(q.type) && (
           <div className="space-y-2 border-t border-border/40 pt-3">
             <Label className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Answer Choices</Label>
             <div className="space-y-1.5">
               {q.options?.map((opt, optIndex) => (
                 <div key={optIndex} className="flex items-center gap-2">
-                  {/* Correct answer toggle for Exam/Assignment */}
                   {isExamOrAssignment && (
                     <button
                       type="button"
@@ -267,7 +263,6 @@ function SortableQuestion({
           </div>
         )}
 
-        {/* Option configuration footer */}
         <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-1 flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
@@ -306,7 +301,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
   const [saving, startSaveTransition] = useTransition();
   const [publishing, startPublishTransition] = useTransition();
 
-  // Load initial form metadata
   const [title, setTitle] = useState(form.title);
   const [description, setDescription] = useState(form.description || "");
   const [timeLimit, setTimeLimit] = useState<number | "">(form.timeLimit || "");
@@ -315,7 +309,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
   );
   const [allowMultiple, setAllowMultiple] = useState(form.allowMultiple);
 
-  // Load questions
   const [questions, setQuestions] = useState<QuestionState[]>(
     form.questions.map((q) => ({
       id: q.id,
@@ -382,7 +375,7 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
   const handleSaveWorkspace = () => {
     startSaveTransition(async () => {
       try {
-        // Save form settings
+
         await updateForm(form.id, {
           title,
           description: description || null,
@@ -391,7 +384,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
           allowMultiple,
         });
 
-        // Save questions and options
         await saveFormQuestions(form.id, questions);
         toast.success("Workspace saved successfully!");
         router.refresh();
@@ -416,7 +408,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-start pb-24">
-      {/* Side Settings Control Panel */}
       <div className="lg:col-span-1 space-y-4">
         <Card className="bg-card border-border shadow-sm">
           <CardHeader className="py-3 border-b border-border/40">
@@ -426,7 +417,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
-            {/* Mode Indicator Badge */}
             <div className="p-3 bg-muted/40 border border-border/60 rounded-lg space-y-1">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Builder Mode</span>
               <span className="text-xs font-extrabold text-foreground flex items-center gap-1.5 uppercase">
@@ -435,7 +425,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
               </span>
             </div>
 
-            {/* Time Limit for Exams/Assignments */}
             {isExamOrAssignment && (
               <div className="space-y-1.5">
                 <Label htmlFor="timeLimit" className="text-xs flex items-center gap-1">
@@ -453,7 +442,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
               </div>
             )}
 
-            {/* Due Date Constraint */}
             {isExamOrAssignment && (
               <div className="space-y-1.5">
                 <Label htmlFor="dueDate" className="text-xs flex items-center gap-1">
@@ -470,7 +458,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
               </div>
             )}
 
-            {/* Allow Multiple Attempts for General Forms */}
             {form.type === "GENERAL" && (
               <div className="flex items-center justify-between border-t border-border/30 pt-3">
                 <div className="flex flex-col gap-0.5">
@@ -487,7 +474,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
           </CardContent>
         </Card>
 
-        {/* Global Save Actions */}
         <div className="flex flex-col gap-2">
           <Button
             onClick={handleSaveWorkspace}
@@ -510,7 +496,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
         </div>
       </div>
 
-      {/* Main Canvas Workspace */}
       <div className="lg:col-span-3 space-y-6">
         <Card className="bg-card border-border shadow-sm p-6 space-y-4">
           <div className="space-y-1.5 border-b border-border/40 pb-4">
@@ -528,7 +513,6 @@ export default function FormBuilderWorkspace({ form }: FormBuilderWorkspaceProps
             />
           </div>
 
-          {/* Dnd-kit Sortable Context for questions */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={questions.map((q) => q.order)} strategy={verticalListSortingStrategy}>
               <div className="space-y-4">

@@ -37,17 +37,14 @@ export function NotificationCommandDialog({
               value={`${item.title} ${item.subtitle}`}
               className="flex flex-col items-start gap-0.5 py-3 cursor-default"
             >
-              {/* Title */}
               <span className="font-medium text-sm leading-tight truncate">
                 {item.title}
               </span>
-              {/* Subtitle */}
               {item.subtitle && (
                 <span className="text-xs text-muted-foreground line-clamp-2 leading-snug">
                   {item.subtitle}
                 </span>
               )}
-              {/* Time */}
               {item.time && (
                 <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                   <Clock className="h-3 w-3" />

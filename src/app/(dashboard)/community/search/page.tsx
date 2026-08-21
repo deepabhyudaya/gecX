@@ -91,7 +91,6 @@ export default function SearchUsersPage() {
 
   return (
     <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-3 flex items-center gap-4">
           <Link
@@ -104,7 +103,6 @@ export default function SearchUsersPage() {
         </div>
       </div>
 
-      {/* Search Input */}
       <div className="p-4 border-b border-border">
         <div className="relative">
           <Search
@@ -120,7 +118,6 @@ export default function SearchUsersPage() {
         </div>
       </div>
 
-      {/* Results */}
       <div className="flex-1">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">

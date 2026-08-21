@@ -19,7 +19,7 @@ export async function fetchUserEmojis(): Promise<EmojiItem[]> {
     })
     .catch((err) => {
       console.error("[fetchUserEmojis] failed:", err);
-      // Don't cache on error so next call retries
+
       emojiPromise = undefined;
       return [];
     });

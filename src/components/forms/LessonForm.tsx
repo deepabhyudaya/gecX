@@ -89,7 +89,7 @@ const LessonForm = ({
           register={register}
           error={errors?.name}
         />
-        
+
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs font-medium text-muted-foreground">Day</label>
           <select

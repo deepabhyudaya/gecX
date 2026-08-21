@@ -27,7 +27,6 @@ export function CollapsibleTopBar({ children }: CollapsibleTopBarProps) {
 
   return (
     <div className="flex flex-col shrink-0 bg-background overflow-hidden">
-      {/* Navbar content — collapses with smooth transition */}
       <div
         className={cn(
           "w-full flex items-center bg-background border-b border-border transition-all duration-300 ease-in-out overflow-hidden",
@@ -37,7 +36,6 @@ export function CollapsibleTopBar({ children }: CollapsibleTopBarProps) {
         {children}
       </div>
 
-      {/* Toggle arrow — centered at the bottom edge of the bar */}
       <div className="flex justify-center -mt-px relative z-10 bg-background w-full">
         <button
           onClick={toggle}

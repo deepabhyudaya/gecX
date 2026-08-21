@@ -28,7 +28,6 @@ export default async function CourseDetailPage({
   const { sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-  // Query by slug; fall back to numeric id for existing courses without a slug
   const isNumeric = /^\d+$/.test(slug);
   const course = await prisma.course.findFirst({
     where: isNumeric ? { id: parseInt(slug) } : { slug },
@@ -48,7 +47,6 @@ export default async function CourseDetailPage({
   return (
     <div className="p-6 min-h-full bg-background">
       <div className="max-w-4xl mx-auto flex flex-col gap-6">
-        {/* Back link */}
         <Link
           href={role === "admin" ? "/list/approvals" : "/list/courses"}
           className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
@@ -56,7 +54,6 @@ export default async function CourseDetailPage({
           Back
         </Link>
 
-        {/* Hero */}
         <div className="bg-card border border-border rounded-[12px] p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
@@ -97,7 +94,6 @@ export default async function CourseDetailPage({
           </div>
         </div>
 
-        {/* Curriculum */}
         <div className="bg-card border border-border rounded-[12px] shadow-sm overflow-hidden">
           <div className="p-5 border-b border-border">
             <h2 className="text-[18px] font-bold text-foreground flex items-center gap-2">
@@ -114,7 +110,6 @@ export default async function CourseDetailPage({
             <div className="divide-y divide-border">
               {course.sections.map((sec, sIdx) => (
                 <div key={sec.id}>
-                  {/* Section row */}
                   <div className="flex items-center gap-3 px-5 py-3 bg-muted/30">
                     <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[11px] font-bold text-muted-foreground">
                       {sIdx + 1}
@@ -125,12 +120,10 @@ export default async function CourseDetailPage({
                     </div>
                   </div>
 
-                  {/* Lectures */}
                   <div className="divide-y divide-border/40">
                     {sec.lectures.map((lec) => (
                       <div key={lec.id} className="flex items-center gap-3 px-5 py-3 pl-14 hover:bg-muted/20 transition-colors group">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          {/* Play button   opens YouTube link in new tab */}
                           <a
                             href={lec.videoUrl}
                             target="_blank"
@@ -160,7 +153,6 @@ export default async function CourseDetailPage({
           )}
         </div>
 
-        {/* Approve/Reject bottom bar for admin */}
         {role === "admin" && course.status === "PENDING" && (
           <div className="bg-card border border-border rounded-[12px] p-4 flex items-center justify-between">
             <p className="text-[14px] text-muted-foreground">Ready to make a decision on this course?</p>

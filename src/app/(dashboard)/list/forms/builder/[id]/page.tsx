@@ -34,7 +34,6 @@ export default async function FormBuilderPage({
 
   if (!form) return notFound();
 
-  // Teachers can only edit forms they created
   if (role === "teacher" && form.createdById !== userId) {
     return <div>Access Denied: You do not own this form.</div>;
   }

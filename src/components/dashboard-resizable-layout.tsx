@@ -19,14 +19,14 @@ export function DashboardResizableLayout({
   const { panelRef, setCollapsed } = useSidebarCtx();
 
   const onLayout = (sizes: number[]) => {
-    // Disable layout saving on mobile to prevent viewport shifts
+
     if (typeof window !== 'undefined' && window.innerWidth < 768) return;
     document.cookie = `react-resizable-panels:layout=${JSON.stringify(sizes)}; path=/; max-age=31536000`;
   };
 
   return (
-    <ResizablePanelGroup 
-      direction="horizontal" 
+    <ResizablePanelGroup
+      direction="horizontal"
       className="h-full overflow-hidden"
       onLayout={onLayout}
     >
@@ -46,10 +46,9 @@ export function DashboardResizableLayout({
 
       <ResizableHandle withHandle className="hidden md:flex" />
 
-      <ResizablePanel 
-        defaultSize={defaultLayout?.[1] ?? 84} 
+      <ResizablePanel
+        defaultSize={defaultLayout?.[1] ?? 84}
       >
-        {/* Inner div fills panel and clips so the child DashboardPageLayout can own scrolling */}
         <div className="h-full flex flex-col overflow-hidden">
           {children}
         </div>

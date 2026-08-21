@@ -68,8 +68,7 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
 
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         <div className="max-w-6xl mx-auto space-y-12 pb-24">
-          
-          {/* EMOJI PACKS */}
+
           <section>
             <div className="mb-6">
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -77,7 +76,7 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
               </h2>
               <p className="text-muted-foreground">Unlock custom emojis to use anywhere.</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {initialData.emojiPacks.map((pack) => {
                 const price = PACK_PRICES[pack.packId] || DEFAULT_PACK_PRICE;
@@ -95,17 +94,16 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex-1 bg-muted/30 rounded-lg p-3 grid grid-cols-4 gap-2 mb-4 border border-border/20">
                       {pack.items.map((emoji) => (
                         <div key={emoji.id} className="aspect-square bg-background rounded-md flex items-center justify-center p-1 border border-border/10 shadow-sm relative group" title={emoji.name}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={emoji.imageUrl} alt={emoji.name} className="w-full h-full object-contain" />
                           {!emoji.owned && <div className="absolute inset-0 bg-background/50 rounded-md" />}
                         </div>
                       ))}
                     </div>
-                    
+
                     <button
                       disabled={pack.allOwned}
                       onClick={() => {
@@ -113,8 +111,8 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
                         setIsSticker(false);
                       }}
                       className={`w-full py-2.5 rounded-lg font-semibold transition-all ${
-                        pack.allOwned 
-                          ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                        pack.allOwned
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
                           : "bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98]"
                       }`}
                     >
@@ -126,7 +124,6 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
             </div>
           </section>
 
-          {/* STICKER PACKS */}
           <section>
             <div className="mb-6">
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -134,7 +131,7 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
               </h2>
               <p className="text-muted-foreground">Unlock custom stickers to use anywhere.</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {initialData.stickerPacks.map((pack) => {
                 const price = PACK_PRICES[pack.packId] || DEFAULT_PACK_PRICE;
@@ -152,17 +149,16 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex-1 bg-muted/30 rounded-lg p-3 grid grid-cols-3 gap-2 mb-4 border border-border/20">
                       {pack.items.map((sticker) => (
                         <div key={sticker.id} className="aspect-square bg-background rounded-md flex items-center justify-center p-2 border border-border/10 shadow-sm relative group" title={sticker.name}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={sticker.imageUrl} alt={sticker.name} className="w-full h-full object-contain" />
                           {!sticker.owned && <div className="absolute inset-0 bg-background/50 rounded-md" />}
                         </div>
                       ))}
                     </div>
-                    
+
                     <button
                       disabled={pack.allOwned}
                       onClick={() => {
@@ -170,8 +166,8 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
                         setIsSticker(true);
                       }}
                       className={`w-full py-2.5 rounded-lg font-semibold transition-all ${
-                        pack.allOwned 
-                          ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                        pack.allOwned
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
                           : "bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98]"
                       }`}
                     >
@@ -195,7 +191,7 @@ export default function EmojiStickerShopClient({ initialData }: EmojiStickerShop
               <span className="font-bold text-foreground">{selectedPack?.packId.replace(/-/g, " ")}</span> pack?
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedPack && (
             <div className="bg-muted rounded-lg p-4 flex items-center justify-between border border-border">
               <span className="font-semibold text-muted-foreground">Price</span>

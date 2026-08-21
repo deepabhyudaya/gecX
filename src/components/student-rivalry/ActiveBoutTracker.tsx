@@ -27,8 +27,7 @@ export default function ActiveBoutTracker({ activeBout, studentA, studentB }: Pr
 
   useEffect(() => {
     if (!activeBout) return;
-    
-    // Most automated wars have a duration attached. Let's calculate from conductedAt + minDurationHours
+
     const end = new Date(activeBout.conductedAt);
     const durationHours = activeBout.warType?.minDurationHours || 24;
     end.setHours(end.getHours() + durationHours);
@@ -52,7 +51,6 @@ export default function ActiveBoutTracker({ activeBout, studentA, studentB }: Pr
 
   return (
     <div className="bg-gradient-to-br from-card to-muted border border-border rounded-2xl p-6 relative overflow-hidden">
-      {/* Background glow based on type */}
       {isAutomated && <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full" />}
       {isTeacherLed && <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full" />}
 
@@ -75,7 +73,6 @@ export default function ActiveBoutTracker({ activeBout, studentA, studentB }: Pr
           {activeBout.warType?.description}
         </p>
 
-        {/* Teacher Led Interface */}
         {isTeacherLed && (
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-5 text-center space-y-2">
             <div className="text-3xl">🧑‍🏫</div>
@@ -96,13 +93,12 @@ export default function ActiveBoutTracker({ activeBout, studentA, studentB }: Pr
           </div>
         )}
 
-        {/* Automated Interface (Karma Sprint Demo) */}
         {isAutomated && activeBout.warType?.name === "Karma Sprint" && (
           <div className="space-y-4">
             <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
               Live Tracker (Simulated)
             </div>
-            
+
             <div className="space-y-3">
               <div className="bg-card border border-border rounded-xl p-3 flex justify-between items-center shadow-sm">
                 <span className="font-bold text-blue-400">{studentA.name}</span>

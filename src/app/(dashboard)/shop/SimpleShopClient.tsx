@@ -20,8 +20,8 @@ const SimpleShopClient = ({ initialData }: any) => {
         setShopData(prev => ({
           ...prev,
           balance: result.remainingBalance,
-          items: prev.items.map((item: any) => 
-            item.style === style 
+          items: prev.items.map((item: any) =>
+            item.style === style
               ? { ...item, owned: true }
               : item
           )
@@ -75,7 +75,7 @@ const SimpleShopClient = ({ initialData }: any) => {
                       className="w-24 h-24"
                     />
                   </div>
-                  
+
                   {item.owned ? (
                     <div className="space-y-2">
                       <div className="text-sm text-green-600">✓ Owned</div>

@@ -23,7 +23,6 @@ export default async function CommunityPage() {
 
   return (
     <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 pt-3 pb-0 flex flex-col">
           <div className="flex justify-between items-center mb-2">
@@ -32,18 +31,17 @@ export default async function CommunityPage() {
               <p className="text-xs text-muted-foreground">Ask questions, get answers, earn karma</p>
             </div>
           </div>
-          
-          {/* Tabs */}
+
           <div className="flex border-b border-transparent gap-4">
-            <Link 
-              href="/community" 
+            <Link
+              href="/community"
               className="px-4 py-2 border-b-2 border-foreground text-sm font-semibold text-foreground flex items-center gap-1.5"
             >
               <BookOpen className="size-4" />
               Q&A Feed
             </Link>
-            <Link 
-              href="/community/reels" 
+            <Link
+              href="/community/reels"
               className="px-4 py-2 border-b-2 border-transparent text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
             >
               <Film className="size-4" />
@@ -53,12 +51,10 @@ export default async function CommunityPage() {
         </div>
       </div>
 
-      {/* Question Creator */}
       <PostCreator
         userImage={profile?.customAvatar || profile?.avatar || clerkUser?.imageUrl}
       />
 
-      {/* Questions Feed */}
       <div className="flex-1">
         {posts.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">

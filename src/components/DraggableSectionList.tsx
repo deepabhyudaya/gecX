@@ -103,7 +103,6 @@ function LectureToggle({ children }: { children: React.ReactNode }) {
   );
 }
 
-
 function SortableSection({ section }: { section: Section }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: section.id });
@@ -121,7 +120,6 @@ function SortableSection({ section }: { section: Section }) {
       style={style}
       className="bg-muted/20 border border-border rounded-[10px] overflow-hidden"
     >
-      {/* Section Header */}
       <div className="flex items-center justify-between p-3 border-b border-border/60">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <button
@@ -146,7 +144,6 @@ function SortableSection({ section }: { section: Section }) {
         </div>
       </div>
 
-      {/* Lectures + Add Lecture */}
       <div className="p-3 flex flex-col gap-2">
         <LectureToggle>
           <DraggableLectureList
@@ -159,7 +156,6 @@ function SortableSection({ section }: { section: Section }) {
     </div>
   );
 }
-
 
 export function DraggableSectionList({
   courseId,

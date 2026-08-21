@@ -4,9 +4,8 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-// Default dicebear styles with initial pricing
 const DEFAULT_AVATAR_PRICES = [
-  // Basic tier
+
   { style: "adventurer", name: "Adventurer", cost: 25, category: "basic" },
   { style: "adventurer-neutral", name: "Adventurer Neutral", cost: 25, category: "basic" },
   { style: "big-ears", name: "Big Ears", cost: 25, category: "basic" },
@@ -16,8 +15,7 @@ const DEFAULT_AVATAR_PRICES = [
   { style: "initials", name: "Initials", cost: 25, category: "basic" },
   { style: "shapes", name: "Shapes", cost: 25, category: "basic" },
   { style: "thumbs", name: "Thumbs", cost: 25, category: "basic" },
-  
-  // Standard tier
+
   { style: "avataaars", name: "Avataaars", cost: 50, category: "standard" },
   { style: "avataaars-neutral", name: "Avataaars Neutral", cost: 50, category: "standard" },
   { style: "bottts", name: "Bottts", cost: 50, category: "standard" },
@@ -37,17 +35,14 @@ const DEFAULT_AVATAR_PRICES = [
   { style: "pixel-art", name: "Pixel Art", cost: 50, category: "standard" },
   { style: "pixel-art-neutral", name: "Pixel Art Neutral", cost: 50, category: "standard" },
   { style: "rings", name: "Rings", cost: 50, category: "standard" },
-  
-  // Premium tier
+
   { style: "dylan", name: "Dylan", cost: 100, category: "premium" },
   { style: "personas", name: "Personas", cost: 100, category: "premium" },
   { style: "toon-head", name: "Toon Head", cost: 100, category: "premium" },
 
-  // Custom celestial orbs
   { style: "orb", name: "Orb", cost: 75, category: "orbs" },
 ];
 
-// Check if user is admin
 function checkAdmin() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -72,10 +67,9 @@ export type GecXSettingsData = {
   parentResultBonusPercent: number;
 };
 
-// Get gecX settings (creates defaults if none exist)
 export async function getGecXSettings(): Promise<GecXSettingsData> {
   let settings = await prisma.gecXSettings.findFirst();
-  
+
   if (!settings) {
     settings = await prisma.gecXSettings.create({
       data: {
@@ -95,7 +89,7 @@ export async function getGecXSettings(): Promise<GecXSettingsData> {
       },
     });
   }
-  
+
   return {
     defaultStartingBalance: settings.defaultStartingBalance,
     attendancePerDay: settings.attendancePerDay,
@@ -113,19 +107,17 @@ export async function getGecXSettings(): Promise<GecXSettingsData> {
   };
 }
 
-// Update gecX settings (admin only)
 export async function updateGecXSettings(settings: Partial<GecXSettingsData>) {
   checkAdmin();
-  
-  // Validate all values are non-negative integers
+
   for (const [key, value] of Object.entries(settings)) {
     if (typeof value !== "number" || value < 0 || !Number.isInteger(value)) {
       throw new Error(`${key} must be a non-negative integer`);
     }
   }
-  
+
   const existing = await prisma.gecXSettings.findFirst();
-  
+
   if (existing) {
     await prisma.gecXSettings.update({
       where: { id: existing.id },
@@ -136,15 +128,14 @@ export async function updateGecXSettings(settings: Partial<GecXSettingsData>) {
       data: settings as GecXSettingsData,
     });
   }
-  
+
   revalidatePath("/admin/gecx-settings");
   return { success: true };
 }
 
-// Reset to default values (admin only)
 export async function resetGecXSettingsToDefaults() {
   checkAdmin();
-  
+
   const defaults: GecXSettingsData = {
     defaultStartingBalance: 0,
     attendancePerDay: 1,
@@ -160,9 +151,9 @@ export async function resetGecXSettingsToDefaults() {
     parentAttendanceBonusPercent: 5,
     parentResultBonusPercent: 5,
   };
-  
+
   const existing = await prisma.gecXSettings.findFirst();
-  
+
   if (existing) {
     await prisma.gecXSettings.update({
       where: { id: existing.id },
@@ -173,19 +164,17 @@ export async function resetGecXSettingsToDefaults() {
       data: defaults,
     });
   }
-  
+
   revalidatePath("/admin/gecx-settings");
   return { success: true, defaults };
 }
 
-// Get all avatar shop items with prices
 export async function getAvatarShopItems() {
   const items = await prisma.avatarShopItem.findMany({
     where: { isActive: true },
     orderBy: [{ category: "asc" }, { cost: "asc" }, { name: "asc" }],
   });
-  
-  // If no items exist, initialize with defaults
+
   if (items.length === 0) {
     await initializeAvatarShopItems();
     return prisma.avatarShopItem.findMany({
@@ -193,14 +182,13 @@ export async function getAvatarShopItems() {
       orderBy: [{ category: "asc" }, { cost: "asc" }, { name: "asc" }],
     });
   }
-  
+
   return items;
 }
 
-// Initialize avatar shop items with default prices
 export async function initializeAvatarShopItems() {
   checkAdmin();
-  
+
   for (const item of DEFAULT_AVATAR_PRICES) {
     await prisma.avatarShopItem.upsert({
       where: { style: item.style },
@@ -214,61 +202,58 @@ export async function initializeAvatarShopItems() {
       },
     });
   }
-  
+
   revalidatePath("/admin/avatar-pricing");
   return { success: true, initialized: DEFAULT_AVATAR_PRICES.length };
 }
 
-// Update avatar price (admin only)
 export async function updateAvatarPrice(style: string, cost: number, category?: string) {
   checkAdmin();
-  
+
   if (typeof cost !== "number" || cost < 0 || !Number.isInteger(cost)) {
     throw new Error("Cost must be a non-negative integer");
   }
-  
+
   await prisma.avatarShopItem.update({
     where: { style },
-    data: { 
+    data: {
       cost,
       ...(category && { category }),
     },
   });
-  
+
   revalidatePath("/admin/avatar-pricing");
   revalidatePath("/shop");
   return { success: true };
 }
 
-// Toggle avatar item active status
 export async function toggleAvatarItemStatus(style: string, isActive: boolean) {
   checkAdmin();
-  
+
   await prisma.avatarShopItem.update({
     where: { style },
     data: { isActive },
   });
-  
+
   revalidatePath("/admin/avatar-pricing");
   revalidatePath("/shop");
   return { success: true };
 }
 
-// Reset all avatar prices to defaults
 export async function resetAvatarPricesToDefaults() {
   checkAdmin();
-  
+
   for (const item of DEFAULT_AVATAR_PRICES) {
     await prisma.avatarShopItem.update({
       where: { style: item.style },
-      data: { 
+      data: {
         cost: item.cost,
         category: item.category,
         isActive: true,
       },
     });
   }
-  
+
   revalidatePath("/admin/avatar-pricing");
   revalidatePath("/shop");
   return { success: true, reset: DEFAULT_AVATAR_PRICES.length };

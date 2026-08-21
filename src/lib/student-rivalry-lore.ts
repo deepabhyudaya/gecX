@@ -1,4 +1,4 @@
-// Template-based 1v1 duel lore generator
+
 
 export type DuelLoreContext = {
   studentAName: string;

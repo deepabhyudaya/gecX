@@ -68,7 +68,6 @@ const AvatarPreviewModal = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Large Preview */}
           <div className="flex justify-center">
             <div className="w-48 h-48 rounded-lg overflow-hidden bg-muted">
               <img
@@ -79,7 +78,6 @@ const AvatarPreviewModal = ({
             </div>
           </div>
 
-          {/* Info */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <Badge className={getCategoryColor(avatar.category)}>
@@ -97,7 +95,6 @@ const AvatarPreviewModal = ({
               </p>
             )}
 
-            {/* Status */}
             <div className="flex gap-2 flex-wrap">
               {avatar.equippedAcademic && (
                 <Badge variant="secondary">
@@ -117,7 +114,6 @@ const AvatarPreviewModal = ({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="space-y-2">
             {avatar.owned ? (
               <div className="grid grid-cols-2 gap-2">
@@ -145,9 +141,9 @@ const AvatarPreviewModal = ({
                 className="w-full"
               >
                 <Coins className="w-4 h-4 mr-2" />
-                {isPurchasing 
-                  ? "Purchasing..." 
-                  : canAfford 
+                {isPurchasing
+                  ? "Purchasing..."
+                  : canAfford
                     ? `Purchase for ${avatar.cost} gecX`
                     : `Insufficient gecX (need ${avatar.cost})`
                 }

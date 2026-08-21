@@ -84,7 +84,7 @@ export const WAR_TYPES: WarTypeConfig[] = [
     id: "WILDCARD",
     name: "Wildcard War",
     description: "Platform randomly assigns the war type at the exact start moment.",
-    requiresTeacher: true, // Might fallback
+    requiresTeacher: true,
     favors: "Adaptability",
     durationHint: "Varies",
     strategicHint: "Choose this if you fear nothing.",

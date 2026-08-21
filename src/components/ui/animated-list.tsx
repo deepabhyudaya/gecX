@@ -40,7 +40,7 @@ export interface AnimatedListProps extends ComponentPropsWithoutRef<"div"> {
 
 export const AnimatedList = React.memo(
   ({ children, className, delay = 0, isTable = false, ...props }: AnimatedListProps) => {
-    // By using Framer delays, we make it snappy and compatible with react data tables natively!
+
     const childrenArray = useMemo(
       () => React.Children.toArray(children),
       [children]

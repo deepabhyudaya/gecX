@@ -4,20 +4,17 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { getKarmaSettings } from "./karma-settings.actions";
 
-// Karma calculation weights
 const KARMA_WEIGHTS = {
   academic: 0.4,
   engagement: 0.6,
 };
 
-// Add 5M karma to all admins (one-time testing function)
 export async function addKarmaToAdminsForTesting() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
 
   if (role !== "admin") throw new Error("Admin only");
 
-  // Get all admins
   const admins = await prisma.admin.findMany({
     select: { id: true, username: true },
   });
@@ -25,13 +22,13 @@ export async function addKarmaToAdminsForTesting() {
   const results = [];
 
   for (const admin of admins) {
-    // Get or create community profile for admin
+
     let profile = await prisma.userCommunityProfile.findUnique({
       where: { userId: admin.id },
     });
 
     if (!profile) {
-      // Create profile if doesn't exist
+
       profile = await prisma.userCommunityProfile.create({
         data: {
           userId: admin.id,
@@ -42,7 +39,7 @@ export async function addKarmaToAdminsForTesting() {
         },
       });
     } else {
-      // Add 5M to existing karma
+
       profile = await prisma.userCommunityProfile.update({
         where: { userId: admin.id },
         data: { karmaPoints: profile.karmaPoints + 5000000 },
@@ -59,7 +56,6 @@ export async function addKarmaToAdminsForTesting() {
   return { success: true, updated: results.length, admins: results };
 }
 
-// Add custom karma to any user (testing function for admins)
 export async function addCustomKarmaToUser(username: string, amount: number) {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -70,7 +66,6 @@ export async function addCustomKarmaToUser(username: string, amount: number) {
     throw new Error("Invalid username or amount");
   }
 
-  // Find user by username; auto-create profile if missing (e.g. after data wipe)
   let userProfile = await prisma.userCommunityProfile.findUnique({
     where: { username: username.toLowerCase() },
   });
@@ -98,7 +93,6 @@ export async function addCustomKarmaToUser(username: string, amount: number) {
     };
   }
 
-  // Add karma to user
   const updatedProfile = await prisma.userCommunityProfile.update({
     where: { userId: userProfile.userId },
     data: { karmaPoints: userProfile.karmaPoints + amount },
@@ -113,9 +107,8 @@ export async function addCustomKarmaToUser(username: string, amount: number) {
   };
 }
 
-// Calculate karma for a specific user
 export async function calculateKarma(userId: string) {
-  // Get academic data
+
   const student = await prisma.student.findUnique({
     where: { id: userId },
     include: {
@@ -133,7 +126,7 @@ export async function calculateKarma(userId: string) {
   const settings = await getKarmaSettings();
 
   if (student) {
-    // Assignment/exam results karma - based on percentage thresholds
+
     for (const result of student.results) {
       if (result.score >= 95) {
         academicKarma += settings.resultAbove95;
@@ -150,7 +143,6 @@ export async function calculateKarma(userId: string) {
       }
     }
 
-    // Attendance karma - per day + perfect week bonus
     const attendanceByWeek = new Map<string, { total: number; present: number }>();
     for (const attendance of student.attendances) {
       const weekKey = getWeekKey(attendance.date);
@@ -158,13 +150,12 @@ export async function calculateKarma(userId: string) {
       week.total++;
       if (attendance.present) {
         week.present++;
-        // Award karma for each day present
+
         academicKarma += settings.attendancePerDay;
       }
       attendanceByWeek.set(weekKey, week);
     }
 
-    // Perfect attendance week bonus
     for (const week of Array.from(attendanceByWeek.values())) {
       if (week.total > 0 && week.present === week.total) {
         academicKarma += settings.perfectAttendanceWeek;
@@ -172,7 +163,6 @@ export async function calculateKarma(userId: string) {
     }
   }
 
-  // Also check teacher attendance if user is a teacher
   const teacher = await prisma.teacher.findUnique({
     where: { id: userId },
     include: { attendances: true },
@@ -195,7 +185,6 @@ export async function calculateKarma(userId: string) {
     }
   }
 
-  // Get engagement data
   const profile = await prisma.userCommunityProfile.findUnique({
     where: { userId },
     include: {
@@ -213,38 +202,30 @@ export async function calculateKarma(userId: string) {
   let repostsReceived = 0;
 
   if (profile) {
-    // Posts created (now handled via recordKarmaEarned for real-time updates)
-    // Keep for backward compatibility calculation only
 
-    // Likes received on posts (now handled via recordKarmaEarned for real-time updates)
     for (const post of profile.posts) {
       postLikesReceived += post.likes.length;
     }
 
-    // Reposts received (now handled via recordKarmaEarned for real-time updates)
     for (const post of profile.posts) {
       repostsReceived += post.reposts.length;
     }
   }
 
-  // Store these for details
   const totalPostLikesReceived = postLikesReceived;
 
-  // Get likes received on comments (now handled via recordKarmaEarned for real-time updates)
   const commentLikes = await prisma.communityCommentLike.count({
     where: {
       comment: { authorId: userId },
     },
   });
 
-  // Get group message reactions received (now handled via recordKarmaEarned for real-time updates)
   const groupMessageReactions = await prisma.groupMessageReaction.count({
     where: {
       message: { senderId: userId },
     },
   });
 
-  // Calculate total karma (cap academic and engagement separately for balance)
   const maxAcademicKarma = 1000;
   const maxEngagementKarma = 2000;
 
@@ -256,7 +237,6 @@ export async function calculateKarma(userId: string) {
     cappedEngagement * KARMA_WEIGHTS.engagement
   );
 
-  // Update user's karma (auto-create profile after data wipe)
   await prisma.userCommunityProfile.upsert({
     where: { userId },
     update: { karmaPoints: totalKarma },
@@ -295,18 +275,15 @@ export async function calculateKarma(userId: string) {
   };
 }
 
-// Get karma breakdown for a user
 export async function getKarmaBreakdown(userId?: string) {
   const { userId: currentUserId } = auth();
   const targetUserId = userId || currentUserId;
 
   if (!targetUserId) throw new Error("Unauthorized");
 
-  // Recalculate to get fresh data
   return await calculateKarma(targetUserId);
 }
 
-// Sync karma for all users (admin only)
 export async function syncAllKarma() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -330,28 +307,24 @@ export async function syncAllKarma() {
   return { synced: results.length, results };
 }
 
-// Helper to get week key from date
 function getWeekKey(date: Date): string {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - d.getDay()); // Start of week (Sunday)
+  d.setDate(d.getDate() - d.getDay());
   return d.toISOString().split("T")[0];
 }
 
-// Get karma leaderboard (backward compatibility - redirects to new function)
 export async function getKarmaLeaderboard(limit: number = 20) {
-  // Re-export from karma-tracking for consistency
+
   const { getAllTimeLeaderboard } = await import("./karma-tracking.actions");
   return getAllTimeLeaderboard(limit);
 }
 
-// Re-export getLeaderboard for timeframe-based leaderboards
 export async function getLeaderboard(timeframe: "today" | "week" | "month" | "all" = "all", limit: number = 20) {
   const { getLeaderboard: getLeaderboardImpl } = await import("./karma-tracking.actions");
   return getLeaderboardImpl(timeframe, limit);
 }
 
-// Re-export getUserKarmaBreakdown
 export async function getUserKarmaBreakdown(userId: string) {
   const { getUserKarmaBreakdown: getUserKarmaBreakdownImpl } = await import("./karma-tracking.actions");
   return getUserKarmaBreakdownImpl(userId);

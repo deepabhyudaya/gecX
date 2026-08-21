@@ -33,7 +33,6 @@ export default async function RivalryDetailPage({ params }: { params: { id: stri
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
 
-      {/* War Room Header */}
       <div className="relative bg-gradient-to-r from-blue-950 via-gray-950 to-red-950 border border-border rounded-2xl overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('/noise.png')] bg-repeat" />
         <div className="relative p-6">
@@ -64,7 +63,6 @@ export default async function RivalryDetailPage({ params }: { params: { id: stri
             </div>
           </div>
 
-          {/* Status badges */}
           <div className="flex items-center gap-3 mt-4 flex-wrap">
             <StatusBadge status={rivalry.status} />
             <span className="text-xs text-muted-foreground">{rivalry.bouts.length} bouts played</span>
@@ -77,13 +75,10 @@ export default async function RivalryDetailPage({ params }: { params: { id: stri
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Left column */}
         <div className="xl:col-span-2 space-y-6">
 
-          {/* Scoreboard */}
           <RivalryScoreboard rivalryId={rivalry.id} />
 
-          {/* Draw Animation — only for active rivalry */}
           {rivalry.status === "ACTIVE" && (
             <DrawAnimation
               rivalryId={rivalry.id}
@@ -93,7 +88,6 @@ export default async function RivalryDetailPage({ params }: { params: { id: stri
             />
           )}
 
-          {/* Bout History */}
           {rivalry.bouts.length > 0 && (
             <div className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
@@ -130,14 +124,11 @@ export default async function RivalryDetailPage({ params }: { params: { id: stri
           )}
         </div>
 
-        {/* Right column */}
         <div className="space-y-6">
-          {/* My RP */}
           {membership && (
             <ConvertRPButton rivalryId={rivalry.id} availableRP={myRP} />
           )}
 
-          {/* Warriors Roster */}
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="font-bold text-sm mb-4">⚡ Warriors</h3>
             <div className="space-y-4">
@@ -181,7 +172,6 @@ export default async function RivalryDetailPage({ params }: { params: { id: stri
             </div>
           </div>
 
-          {/* Lore Archive */}
           {rivalry.loreEntries.length > 0 && (
             <div id="lore" className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-bold text-sm mb-4">📜 Lore Archive</h3>
@@ -199,7 +189,6 @@ export default async function RivalryDetailPage({ params }: { params: { id: stri
             </div>
           )}
 
-          {/* Strikes log */}
           {rivalry.strikes.length > 0 && (
             <div className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-bold text-sm mb-4 text-yellow-400">⚠️ Strike Log</h3>

@@ -20,11 +20,7 @@ import { publishWarEvent } from "@/lib/war-events";
 import { getActiveSeasonForWar } from "./season.actions";
 import { recordBranchWarSeasonPoints } from "./season-points.actions";
 
-// ==================== TYPES ====================
-
 export type RivalryWithDetails = Awaited<ReturnType<typeof getRivalryById>>;
-
-// ==================== HELPERS ====================
 
 async function requireRole(...roles: string[]) {
   const { sessionClaims } = auth();
@@ -43,7 +39,7 @@ async function getCallerStudent() {
 
 function currentSeason(): string {
   const now = new Date();
-  const month = now.getMonth(); // 0-based
+  const month = now.getMonth();
   const year = now.getFullYear();
   const term = month < 4 ? "T1" : month < 8 ? "T2" : "T3";
   return `${year}-${term}`;
@@ -53,8 +49,6 @@ function normalizeScore(rawScore: number, classSize: number): number {
   if (classSize === 0) return 0;
   return parseFloat(((rawScore / classSize) * 100).toFixed(2));
 }
-
-// ==================== CLASS REPRESENTATIVE ====================
 
 export async function startCRElection(classId: number) {
   await requireRole("admin", "teacher");
@@ -68,7 +62,6 @@ export async function startCRElection(classId: number) {
 
   const season = currentSeason();
 
-  // Notify all students in the class
   const studentIds = cls.students.map((s) => s.id);
   await createNotificationsForUsers({
     title: "CR Election Started",
@@ -100,7 +93,6 @@ export async function electClassRepresentative(classId: number, studentId: strin
     update: { studentId, season, electedAt: new Date(), isActive: true },
   });
 
-  // Notify the elected student
   await createNotificationsForUsers({
     title: "You Have Been Elected CR!",
     message: `Congratulations! You are the Class Representative for ${cls.name} this season.`,
@@ -136,8 +128,6 @@ export async function amITheCR() {
   return cr?.studentId === userId && cr?.isActive === true;
 }
 
-// ==================== RIVALRY PROPOSAL ====================
-
 export async function proposeRivalry(input: {
   classAId: number;
   classBId: number;
@@ -148,12 +138,10 @@ export async function proposeRivalry(input: {
 
   if (classAId === classBId) throw new Error("Cannot rival your own class");
 
-  // Check student belongs to one of the classes
   if (student.classId !== classAId && student.classId !== classBId) {
     throw new Error("You can only propose a rivalry involving your own class");
   }
 
-  // Check for existing active rivalry between these classes
   const existing = await prisma.classRivalry.findFirst({
     where: {
       OR: [
@@ -165,7 +153,6 @@ export async function proposeRivalry(input: {
   });
   if (existing) throw new Error("An active rivalry already exists between these classes");
 
-  // Check if student has proposed in the last month
   const oneMonthAgo = new Date();
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
   const recentProposal = await prisma.classRivalry.findFirst({
@@ -179,7 +166,6 @@ export async function proposeRivalry(input: {
   const autoExpiresAt = new Date();
   autoExpiresAt.setDate(autoExpiresAt.getDate() + 7);
 
-  // Look up active season (college-specific → global fallback)
   const myClass = await prisma.class.findUnique({ where: { id: student.classId }, select: { collegeId: true } });
   const activeSeason = await getActiveSeasonForWar(myClass?.collegeId ?? null, "BRANCH");
 
@@ -195,7 +181,6 @@ export async function proposeRivalry(input: {
     },
   });
 
-  // Notify all admins
   const admins = await prisma.admin.findMany({ select: { id: true } });
   await createNotificationsForUsers({
     title: "New Rivalry Proposal",
@@ -208,8 +193,6 @@ export async function proposeRivalry(input: {
   revalidatePath("/student/rivalry");
   return rivalry;
 }
-
-// ==================== ADMIN APPROVAL ====================
 
 export async function adminApproveRivalry(rivalryId: string) {
   await requireRole("admin");
@@ -225,7 +208,6 @@ export async function adminApproveRivalry(rivalryId: string) {
   if (!rivalry) throw new Error("Rivalry not found");
   if (rivalry.status !== "PENDING_ADMIN") throw new Error("Rivalry is not pending admin review");
 
-  // Look up CRs for both classes
   const [crA, crB] = await Promise.all([
     prisma.classRepresentative.findUnique({ where: { classId: rivalry.classAId } }),
     prisma.classRepresentative.findUnique({ where: { classId: rivalry.classBId } }),
@@ -242,7 +224,6 @@ export async function adminApproveRivalry(rivalryId: string) {
     },
   });
 
-  // Notify all students in both classes
   const allStudentIds = [
     ...rivalry.classA.students.map((s) => s.id),
     ...rivalry.classB.students.map((s) => s.id),
@@ -255,7 +236,6 @@ export async function adminApproveRivalry(rivalryId: string) {
     studentIds: allStudentIds,
   });
 
-  // Specific notification to CRs
   const crIds = [crA?.studentId, crB?.studentId].filter(Boolean) as string[];
   if (crIds.length > 0) {
     await createNotificationsForUsers({
@@ -304,8 +284,6 @@ export async function deleteRivalry(rivalryId: string) {
   return { success: true };
 }
 
-// ==================== CR APPROVAL & WAR ACTIVATION ====================
-
 export async function crApproveRivalry(rivalryId: string) {
   const student = await getCallerStudent();
 
@@ -316,7 +294,6 @@ export async function crApproveRivalry(rivalryId: string) {
   if (!rivalry) throw new Error("Rivalry not found");
   if (rivalry.status !== "PENDING_CR") throw new Error("Rivalry is not pending CR approval");
 
-  // Look up current CRs for both classes
   const [liveCrA, liveCrB] = await Promise.all([
     prisma.classRepresentative.findUnique({ where: { classId: rivalry.classAId } }),
     prisma.classRepresentative.findUnique({ where: { classId: rivalry.classBId } }),
@@ -330,7 +307,6 @@ export async function crApproveRivalry(rivalryId: string) {
   const isCrB = isLiveCrB || isStoredCrB;
   if (!isCrA && !isCrB) throw new Error("You are not a Class Representative for this rivalry");
 
-  // Sync stored IDs if they drifted (folded into the activation transaction below).
   const syncData: any = {};
   if (liveCrA && rivalry.crAId !== liveCrA.studentId) syncData.crAId = liveCrA.studentId;
   if (liveCrB && rivalry.crBId !== liveCrB.studentId) syncData.crBId = liveCrB.studentId;
@@ -339,19 +315,16 @@ export async function crApproveRivalry(rivalryId: string) {
   if (isCrA) updateData.crAApproved = true;
   if (isCrB) updateData.crBApproved = true;
 
-  // Check if both would now be approved
   const newCrAApproved = isCrA ? true : rivalry.crAApproved;
   const newCrBApproved = isCrB ? true : rivalry.crBApproved;
   const willActivate = newCrAApproved && newCrBApproved;
 
-  // BW-001: wrap server creation + rivalry update in a single transaction so we
-  // never end up with an orphan server or a half-applied state.
   const { updated, activated } = await prisma.$transaction(async (tx) => {
-    // Re-read rivalry inside tx to defend against concurrent CR clicks.
+
     const fresh = await tx.classRivalry.findUnique({ where: { id: rivalryId } });
     if (!fresh) throw new Error("Rivalry not found");
     if (fresh.status !== "PENDING_CR") {
-      // Another concurrent call already moved us forward — noop.
+
       return { updated: fresh, activated: false };
     }
 
@@ -361,11 +334,6 @@ export async function crApproveRivalry(rivalryId: string) {
         tx,
       });
 
-      // Phase 2A: assign CR roles to whichever students currently hold the
-      // class-rep position, and assign Warrior roles to *every* class member
-      // by default. Specific drawn-warrior status is tracked separately via
-      // `RivalryMember`; the role here is the visible "can fight on this side"
-      // marker in the server.
       const crAUserId = liveCrA?.studentId ?? rivalry.crAId ?? null;
       const crBUserId = liveCrB?.studentId ?? rivalry.crBId ?? null;
       if (crAUserId) await assignWarRole(built.serverId, crAUserId, built.crARoleId, rivalry.adminId ?? null, tx);
@@ -385,7 +353,6 @@ export async function crApproveRivalry(rivalryId: string) {
         tx
       );
 
-      // Phase 2A: pin the initial scoreboard message + opening lore drop.
       let scoreboardMessageId: string | null = null;
       if (built.scoreboardChannelId) {
         scoreboardMessageId = await upsertScoreboardMessage(
@@ -437,7 +404,6 @@ export async function crApproveRivalry(rivalryId: string) {
     return { updated: u, activated: false };
   });
 
-  // Notifications fire AFTER the transaction commits so they aren't sent on rollback.
   if (activated) {
     const allStudentIds = [
       ...rivalry.classA.students.map((s) => s.id),
@@ -468,13 +434,6 @@ export async function crApproveRivalry(rivalryId: string) {
   return updated;
 }
 
-// ==================== BATTLEFIELD SERVER ====================
-
-/**
- * Creates the battlefield server (categories, channels, members) AND the
- * Phase 2A war-server roles (CR x2, Warrior x2). Returns every id the caller
- * needs to persist on the `ClassRivalry` row + assign roles afterward.
- */
 async function createBattlefieldServer(
   rivalry: {
     id: string;
@@ -509,13 +468,11 @@ async function createBattlefieldServer(
     },
   });
 
-  // Create channel categories (sequential inside tx is fine and keeps tx semantics)
   const generalCat  = await db.serverChannelCategory.create({ data: { serverId: server.id, name: "BATTLEFIELD", order: 0 } });
   const teamACat    = await db.serverChannelCategory.create({ data: { serverId: server.id, name: `${rivalry.classA.name} HQ`, order: 1 } });
   const teamBCat    = await db.serverChannelCategory.create({ data: { serverId: server.id, name: `${rivalry.classB.name} HQ`, order: 2 } });
   const archiveCat  = await db.serverChannelCategory.create({ data: { serverId: server.id, name: "ARCHIVES", order: 3 } });
 
-  // Create channels
   await db.serverChannel.createMany({
     data: [
       { serverId: server.id, categoryId: generalCat.id, name: "war-room", order: 0 },
@@ -530,7 +487,6 @@ async function createBattlefieldServer(
     ],
   });
 
-  // Auto-add all students from both classes
   const allStudents = [...rivalry.classA.students, ...rivalry.classB.students];
   if (allStudents.length > 0) {
     await db.serverMember.createMany({
@@ -545,7 +501,6 @@ async function createBattlefieldServer(
     });
   }
 
-  // Phase 2A: war custom roles (CR + Warrior, per side).
   const roles = await createBranchWarRoles(
     server.id,
     { name: rivalry.classA.name },
@@ -553,8 +508,6 @@ async function createBattlefieldServer(
     db
   );
 
-  // Phase 2A: pre-resolve the well-known channel ids so the war engine can
-  // post scoreboard + lore + final summary without re-querying every time.
   const [scoreboardCh, loreCh, hallCh] = await Promise.all([
     findWarChannelByName(server.id, "scoreboard", db),
     findWarChannelByName(server.id, "lore-archive", db),
@@ -569,8 +522,6 @@ async function createBattlefieldServer(
     ...roles,
   };
 }
-
-// ==================== SIDE SELECTION (dual-class students) ====================
 
 export async function selectRivalrySide(rivalryId: string, classId: number) {
   const student = await getCallerStudent();
@@ -589,9 +540,6 @@ export async function selectRivalrySide(rivalryId: string, classId: number) {
     data: { rivalryId, studentId: student.id, classId },
   });
 
-  // Phase 2A: ensure the picked side's Warrior role is on the user. The auto-add
-  // already covers students whose primary class matches one of the rivalry sides;
-  // dual-class students who only get a role here.
   const warriorRoleId =
     classId === rivalry.classAId ? rivalry.serverRoleWarriorAId : rivalry.serverRoleWarriorBId;
   if (rivalry.battlefieldServerId && warriorRoleId) {
@@ -602,25 +550,6 @@ export async function selectRivalrySide(rivalryId: string, classId: number) {
   return member;
 }
 
-// ==================== BOUT MANAGEMENT ====================
-
-/**
- * Records a bout in a branch war. Phase 2A upgrades:
- *  - **BW-005**: optional per-warrior point breakdown updates `RivalryMember.pointsContributed`
- *    (and `boutsParticipated`/`boutsWon`) so individual conversions to GECX work.
- *    If `perWarriorPoints` is omitted, points are evenly split across all
- *    `RivalryMember`s on the winning side(s).
- *  - **War-type metadata**: optional `warTypeId` / `teacherId` mirror what
- *    `StudentRivalryBout` already supports.
- *  - **Live scoreboard**: edits the pinned scoreboard `ServerMessage` in place.
- *  - **Lore auto-post**: writes the new weekly lore narrative into `#lore-archive`.
- *  - **Real-time**: publishes `war:bout` + `war:score` Ably events.
- *
- * The DB writes (bout + rivalry totals + member contribution + lore row) run
- * in a single transaction to keep score consistent on partial failure.
- * Server-side message edits / Ably publishes happen post-commit because they
- * are best-effort UI signals.
- */
 export async function recordBout(input: {
   rivalryId: string;
   title: string;
@@ -663,9 +592,6 @@ export async function recordBout(input: {
       ? rivalry.classBId
       : null;
 
-  // Pre-compute the per-warrior contribution map (BW-005). Caller-supplied
-  // values win; otherwise we fall back to an even split across registered
-  // RivalryMembers on the winning side(s).
   const contribMap = new Map<string, number>();
   if (perWarriorPoints && perWarriorPoints.length > 0) {
     for (const p of perWarriorPoints) {
@@ -685,7 +611,6 @@ export async function recordBout(input: {
     }
   }
 
-  // MVP for the bout = highest single contribution, breaks ties by registration order.
   let mvpStudentId: string | null = null;
   let mvpPoints = 0;
   for (const [sid, pts] of contribMap.entries()) {
@@ -715,7 +640,7 @@ export async function recordBout(input: {
   });
 
   const { bout } = await prisma.$transaction(async (tx) => {
-    // Re-check status under tx to be safe vs. concurrent conclude.
+
     const fresh = await tx.classRivalry.findUnique({ where: { id: rivalryId }, select: { status: true } });
     if (!fresh || fresh.status !== "ACTIVE") throw new Error("Rivalry is no longer active");
 
@@ -742,8 +667,6 @@ export async function recordBout(input: {
       data: { classAScore: newClassAScore, classBScore: newClassBScore },
     });
 
-    // BW-005: per-warrior contribution updates. We use individual updates
-    // (instead of `updateMany`) because the increment is per-row.
     for (const [studentId, pts] of contribMap.entries()) {
       await tx.rivalryMember.updateMany({
         where: { rivalryId, studentId },
@@ -765,7 +688,6 @@ export async function recordBout(input: {
     return { bout };
   });
 
-  // ---- Post-commit best-effort UI signals ----
   if (rivalry.scoreboardChannelId) {
     try {
       const newMessageId = await upsertScoreboardMessage(
@@ -786,7 +708,7 @@ export async function recordBout(input: {
           data: { scoreboardMessageId: newMessageId },
         });
       }
-      // Bout-result post under the scoreboard.
+
       await postWarSystemMessage({
         channelId: rivalry.scoreboardChannelId,
         content:
@@ -842,11 +764,8 @@ export async function recordBout(input: {
   return bout;
 }
 
-// ==================== RIVALRY POINTS → KARMA + GECX CONVERSION ====================
-// 100 RP = 2500 karma = 100 GECX
-
-const RP_TO_KARMA = 25;   // 1 RP = 25 karma
-const RP_TO_GECX  = 1;    // 1 RP = 1 GECX
+const RP_TO_KARMA = 25;
+const RP_TO_GECX  = 1;
 
 export async function convertRivalryPoints(rivalryId: string, rivalryPoints: number) {
   const student = await getCallerStudent();
@@ -856,7 +775,6 @@ export async function convertRivalryPoints(rivalryId: string, rivalryPoints: num
   const karmaEarned = rivalryPoints * RP_TO_KARMA;
   const gecxEarned  = rivalryPoints * RP_TO_GECX;
 
-  // BW-006: atomic read-deduct-award to prevent negative RP on concurrent calls.
   await prisma.$transaction(async (tx) => {
     const member = await tx.rivalryMember.findUnique({
       where: { rivalryId_studentId: { rivalryId, studentId: student.id } },
@@ -879,7 +797,6 @@ export async function convertRivalryPoints(rivalryId: string, rivalryPoints: num
     }
   });
 
-  // Award GECX outside tx (idempotent on retry)
   await awardGecX({
     userId: student.id,
     userType: "student",
@@ -893,8 +810,6 @@ export async function convertRivalryPoints(rivalryId: string, rivalryPoints: num
   return { karmaEarned, gecxEarned, rpSpent: rivalryPoints };
 }
 
-// ==================== MODERATION ====================
-
 export async function issueStrike(rivalryId: string, studentId: string, reason: string) {
   await requireRole("admin", "teacher");
 
@@ -904,7 +819,6 @@ export async function issueStrike(rivalryId: string, studentId: string, reason: 
   });
   if (!rivalry) throw new Error("Rivalry not found");
 
-  // Count existing strikes for this student in this rivalry
   const strikes = await prisma.rivalryStrike.findMany({
     where: { rivalryId, studentId },
   });
@@ -916,7 +830,6 @@ export async function issueStrike(rivalryId: string, studentId: string, reason: 
     data: { rivalryId, studentId, reason, mutedUntil },
   });
 
-  // Notify student
   await createNotificationsForUsers({
     title: "⚠️ Rivalry Strike Issued",
     message: `You received a strike in the ${rivalry.classA.name} vs ${rivalry.classB.name} rivalry. Reason: ${reason}. You are muted from cross-class channels for 48 hours.`,
@@ -925,8 +838,6 @@ export async function issueStrike(rivalryId: string, studentId: string, reason: 
     studentIds: [studentId],
   });
 
-  // BW-007: third strike deducts 50 pts atomically inside a tx with a re-read
-  // so concurrent strikes don't overwrite each other's score changes.
   if (strikes.length + 1 >= 3) {
     await prisma.$transaction(async (tx) => {
       const member = await tx.rivalryMember.findUnique({
@@ -953,7 +864,6 @@ export async function issueStrike(rivalryId: string, studentId: string, reason: 
     });
   }
 
-  // Phase 2A: real-time strike notification.
   await publishWarEvent("branch", {
     type: "war:strike",
     rivalryId,
@@ -966,16 +876,6 @@ export async function issueStrike(rivalryId: string, studentId: string, reason: 
   return { strike, strikeCount: strikes.length + 1 };
 }
 
-// ==================== CONCLUDE RIVALRY ====================
-
-/**
- * Concludes a branch war. Phase 2A upgrades:
- *  - Status flip + winner-bonus + lore + idempotency under a single transaction (BW-004).
- *  - **MVP awards**: top per-side `pointsContributed` is flagged on `RivalryMember.isMvp`.
- *  - **Archive**: war server is renamed `[Concluded] ...`, a hall-of-fame summary is posted,
- *    and the final scoreboard is edited one last time.
- *  - **Real-time**: `war:concluded` + final `war:score` + `war:archived` Ably events.
- */
 export async function concludeRivalry(rivalryId: string) {
   await requireRole("admin");
 
@@ -1003,7 +903,6 @@ export async function concludeRivalry(rivalryId: string) {
   const winnerName = winnerClassId === rivalry.classAId ? rivalry.classA.name :
     winnerClassId === rivalry.classBId ? rivalry.classB.name : undefined;
 
-  // Compute MVP per side from existing pointsContributed (now populated by recordBout).
   const topInClass = (cid: number) =>
     rivalry.members
       .filter((m) => m.classId === cid)
@@ -1012,7 +911,6 @@ export async function concludeRivalry(rivalryId: string) {
   const mvpB = topInClass(rivalry.classBId);
   const mvpStudentIds = [mvpA?.studentId, mvpB?.studentId].filter(Boolean) as string[];
 
-  // Generate season-closing lore
   const { title: loreTitle, narrative } = generateSeasonClosingLore({
     classAName: rivalry.classA.name,
     classBName: rivalry.classB.name,
@@ -1023,8 +921,6 @@ export async function concludeRivalry(rivalryId: string) {
     winnerName,
   });
 
-  // Status flip + lore + winner bonus + MVP marks all happen in one tx, with
-  // the same idempotency guard as Phase 1 (BW-004) so a double-click is safe.
   const { updated, didConclude } = await prisma.$transaction(async (tx) => {
     const fresh = await tx.classRivalry.findUnique({ where: { id: rivalryId } });
     if (!fresh || fresh.status !== "ACTIVE") {
@@ -1058,7 +954,6 @@ export async function concludeRivalry(rivalryId: string) {
 
   if (!didConclude) return updated;
 
-  // Season point recording (best-effort; guarded by seasonPointsDistributed flag in the action)
   if (updated?.seasonId && !updated.seasonPointsDistributed) {
     try {
       await recordBranchWarSeasonPoints(rivalryId, updated.seasonId);
@@ -1067,7 +962,6 @@ export async function concludeRivalry(rivalryId: string) {
     }
   }
 
-  // Notify all students
   const allStudentIds = [
     ...rivalry.classA.students.map((s) => s.id),
     ...rivalry.classB.students.map((s) => s.id),
@@ -1080,8 +974,6 @@ export async function concludeRivalry(rivalryId: string) {
     studentIds: allStudentIds,
   });
 
-  // ---- Phase 2A archive flow ----
-  // Final scoreboard edit + hall-of-fame post + server rename. All best-effort.
   if (rivalry.scoreboardChannelId) {
     try {
       const newMessageId = await upsertScoreboardMessage(
@@ -1153,8 +1045,6 @@ export async function concludeRivalry(rivalryId: string) {
   return updated;
 }
 
-// ==================== AUTO-EXPIRE CHECK ====================
-
 export async function expireStaleRivalries() {
   await requireRole("admin");
 
@@ -1167,8 +1057,6 @@ export async function expireStaleRivalries() {
     include: { classA: true, classB: true },
   });
 
-  // BW-003: each expiry is its own tx with an idempotency re-check so a retry of
-  // the cron cannot double-fire notifications.
   let expiredCount = 0;
   for (const rivalry of stale) {
     const didExpire = await prisma.$transaction(async (tx) => {
@@ -1192,11 +1080,8 @@ export async function expireStaleRivalries() {
   return { expired: expiredCount };
 }
 
-// ==================== DRAW PARTICIPANTS ====================
-
 export async function drawRivalryParticipants(rivalryId: string, count: number = 5) {
-  // BW-002: require admin/teacher and run eligibility read + insert inside a single tx
-  // so two concurrent draws cannot exceed `count` per side.
+
   await requireRole("admin", "teacher");
 
   function shuffle<T>(arr: T[]): T[] {
@@ -1243,9 +1128,6 @@ export async function drawRivalryParticipants(rivalryId: string, count: number =
     return { drawnA, drawnB };
   });
 
-  // Phase 2A: warrior-role assignment for the freshly drawn participants. The
-  // server membership already exists (they were auto-added at activation), so
-  // these are just role grants.
   const fresh = await prisma.classRivalry.findUnique({
     where: { id: rivalryId },
     select: {
@@ -1354,7 +1236,6 @@ export async function selectRivalryParticipants(rivalryId: string, selectedIds: 
   const student = await prisma.student.findUnique({ where: { id: userId } });
   if (!student) throw new Error("Student not found");
 
-  // Verify caller is CR of their class
   const cr = await prisma.classRepresentative.findUnique({ where: { classId: student.classId } });
   const isCr = cr?.studentId === userId;
   if (!isCr) throw new Error("Only the Class Representative can select warriors");
@@ -1371,7 +1252,6 @@ export async function selectRivalryParticipants(rivalryId: string, selectedIds: 
   const isClassB = rivalry.classBId === myClassId;
   if (!isClassA && !isClassB) throw new Error("You are not in this rivalry");
 
-  // Validate all selected IDs belong to the caller's class
   const classStudents = isClassA ? rivalry.classA.students : rivalry.classB.students;
   const classStudentIds = new Set(classStudents.map((s) => s.id));
   for (const id of selectedIds) {
@@ -1392,8 +1272,6 @@ export async function selectRivalryParticipants(rivalryId: string, selectedIds: 
   revalidatePath(`/student/rivalry/${rivalryId}`);
   return { ok: true };
 }
-
-// ==================== QUERIES ====================
 
 export async function getRivalryById(rivalryId: string) {
   return prisma.classRivalry.findUnique({

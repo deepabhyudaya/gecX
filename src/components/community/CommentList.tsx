@@ -55,7 +55,7 @@ function CommentItemWithReplies({
   depth = 0,
 }: CommentItemWithRepliesProps) {
   const isReplying = replyingTo === comment.id;
-  const maxDepth = 5; // Limit nesting depth
+  const maxDepth = 5;
 
   return (
     <div className={depth > 0 ? "border-l-2 border-border pl-4 ml-4" : ""}>
@@ -71,7 +71,6 @@ function CommentItemWithReplies({
         onUnmarkHelpful={onUnmarkHelpful}
       />
 
-      {/* Reply Form */}
       {isReplying && (
         <div className="py-2 pl-11">
           <CommentCreator
@@ -91,7 +90,6 @@ function CommentItemWithReplies({
         </div>
       )}
 
-      {/* Nested Replies - Recursive */}
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-2">
           {comment.replies.map((reply) => (
@@ -130,7 +128,6 @@ export function CommentList({ comments, postId, userImage, clerkUserId, postAuth
   const [commentList, setCommentList] = useState<CommentData[]>(comments);
   const router = useRouter();
 
-  // Sync with server data when comments prop changes (after router.refresh())
   useEffect(() => {
     setCommentList(comments);
   }, [comments]);
@@ -141,12 +138,12 @@ export function CommentList({ comments, postId, userImage, clerkUserId, postAuth
 
   const handleCommentCreated = () => {
     setReplyingTo(null);
-    // Soft refresh - updates data without full page reload
+
     router.refresh();
   };
 
   const handleDelete = (commentId: string) => {
-    // Recursively remove comment from nested structure
+
     const removeComment = (list: CommentData[]): CommentData[] => {
       return list.filter((c) => c.id !== commentId).map((c) => ({
         ...c,
@@ -155,7 +152,7 @@ export function CommentList({ comments, postId, userImage, clerkUserId, postAuth
     };
 
     setCommentList((prev) => removeComment(prev));
-    // Soft refresh
+
     router.refresh();
   };
 

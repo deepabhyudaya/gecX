@@ -12,8 +12,6 @@ import {
   deleteRivalry,
 } from "@/actions/rivalry.actions";
 
-// ── Admin approve/reject ──────────────────────────────────────────────────────
-
 export function AdminRivalryButtons({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -104,8 +102,6 @@ export function DeleteRivalryButton({ rivalryId }: { rivalryId: string }) {
   );
 }
 
-// ── Conclude rivalry (admin) ──────────────────────────────────────────────────
-
 export function ConcludeRivalryButton({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(false);
@@ -144,8 +140,6 @@ export function ConcludeRivalryButton({ rivalryId }: { rivalryId: string }) {
   );
 }
 
-// ── CR approve ────────────────────────────────────────────────────────────────
-
 export function CRApproveButton({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -173,8 +167,6 @@ export function CRApproveButton({ rivalryId }: { rivalryId: string }) {
     </button>
   );
 }
-
-// ── Side selector (for dual-class students) ────────────────────────────────────
 
 export function SideSelectorButtons({
   rivalryId,
@@ -219,8 +211,6 @@ export function SideSelectorButtons({
     </div>
   );
 }
-
-// ── RP → Karma + GECX conversion ──────────────────────────────────────────────
 
 export function ConvertRPButton({ rivalryId, availableRP }: { rivalryId: string; availableRP: number }) {
   const [amount, setAmount] = useState(100);

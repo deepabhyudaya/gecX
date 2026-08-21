@@ -10,17 +10,17 @@ async function toggleProgress(formData: FormData) {
   const isCompleted = formData.get("isCompleted") === "true";
 
   if (isCompleted) {
-    // Delete progress record or set to false
+
     await prisma.courseProgress.deleteMany({
       where: { lectureId, studentId }
     });
   } else {
-    // Upsert to complete
+
     await prisma.courseProgress.create({
       data: { lectureId, studentId, completed: true }
     });
   }
-  
+
   revalidatePath("/teacher-courses/[username]/course/[courseId]", "page");
 }
 
@@ -32,7 +32,7 @@ export default async function CoursePlayerPage({ params }: { params: { username:
       sections: {
         include: {
           lectures: {
-            include: { progress: true } // should filter by studentId when auth is active
+            include: { progress: true }
           }
         }
       }
@@ -41,15 +41,13 @@ export default async function CoursePlayerPage({ params }: { params: { username:
 
   if (!course) return notFound();
 
-  // Pick first lecture to play by default
   const firstLecture = course.sections[0]?.lectures[0];
   const activeVideoUrl = firstLecture?.videoUrl || "https://www.youtube.com/embed/placeholder";
 
-  const studentId = "student1"; // In real usage, extracted from Clerk session
+  const studentId = "student1";
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col">
-      {/* Header */}
       <header className="bg-white border-b border-[#ebebeb] px-8 py-4 flex justify-between items-center shadow-[rgba(0,0,0,0.04)_0px_2px_2px]">
         <div>
           <h1 className="text-[20px] font-semibold text-[#171717] leading-tight">{course.title}</h1>
@@ -61,27 +59,25 @@ export default async function CoursePlayerPage({ params }: { params: { username:
       </header>
 
       <div className="flex flex-1 flex-col lg:flex-row max-w-[1600px] w-full mx-auto">
-        {/* Video Player */}
         <div className="flex-1 p-8">
           <div className="w-full aspect-video bg-black rounded-[12px] overflow-hidden shadow-[rgba(0,0,0,0.08)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_8px_8px_-8px]">
-            <iframe 
-              width="100%" 
-              height="100%" 
+            <iframe
+              width="100%"
+              height="100%"
               src={activeVideoUrl}
-              title="YouTube video player" 
-              frameBorder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
           </div>
-          
+
           <div className="mt-8">
             <h2 className="text-[24px] font-semibold text-[#171717] tracking-tight mb-2">About this Course</h2>
             <p className="text-[16px] text-[#4d4d4d] leading-relaxed">{course.description}</p>
           </div>
         </div>
 
-        {/* Playlist / Sections */}
         <div className="w-full lg:w-[400px] bg-white border-l border-[#ebebeb] flex flex-col h-full self-stretch">
           <div className="p-6 border-b border-[#ebebeb]">
             <h3 className="text-[18px] font-semibold text-[#171717]">Course Content</h3>

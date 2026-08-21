@@ -47,8 +47,6 @@ import {
 } from "@/actions/color-shop.actions";
 import { useTheme } from "next-themes";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface ColorItem {
   id: string;
   name: string;
@@ -75,8 +73,6 @@ interface ColorShopData {
   balance: { balance: number };
   activeImpersonation: { targetUserId: string; targetUsername: string; expiresAt: Date } | null;
 }
-
-// ─── Category config ──────────────────────────────────────────────────────────
 
 const COLOR_CATEGORIES = [
   { key: "all", label: "All Items", icon: Layers, accent: "text-foreground" },
@@ -108,8 +104,6 @@ const HUE_CATEGORIES = [
   { key: "rose", label: "Rose", hex: "#F43F5E" },
   { key: "monochrome", label: "Mono", hex: "#6B7280" },
 ] as const;
-
-// ─── Color swatch card ────────────────────────────────────────────────────────
 
 function ColorCard({
   item,
@@ -160,13 +154,11 @@ function ColorCard({
         item.owned && !item.equipped && "ring-1 ring-emerald-500/40"
       )}
     >
-      {/* Colour swatch */}
       <div
         className="w-full aspect-square rounded-t-xl border-b border-border/40"
         style={swatchStyle}
       />
 
-      {/* Badges */}
       {item.equipped && (
         <div className="absolute top-2 left-2 z-10">
           <span className="inline-flex items-center gap-0.5 bg-primary/90 text-primary-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold shadow">
@@ -182,13 +174,11 @@ function ColorCard({
         </div>
       )}
 
-      {/* Price chip */}
       <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-background/80 backdrop-blur-sm border border-border/60 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums shadow-sm">
         <Coins className="w-3 h-3 text-amber-500 shrink-0" />
         {item.cost}
       </div>
 
-      {/* Footer */}
       <div className="px-2.5 py-2 flex flex-col gap-1.5">
         <p className="text-[12px] font-semibold truncate leading-tight">{item.name}</p>
 
@@ -234,8 +224,6 @@ function ColorCard({
     </div>
   );
 }
-
-// ─── Hue sub-group ────────────────────────────────────────────────────────────
 
 function HueGroup({
   hueKey,
@@ -302,8 +290,6 @@ function HueGroup({
   );
 }
 
-// ─── Section (Username or Background) ────────────────────────────────────────
-
 function ColorSection({
   title,
   icon: Icon,
@@ -329,7 +315,7 @@ function ColorSection({
   isEquipping: string | null;
   balance: number;
 }) {
-  // Group by hue
+
   const byHue = useMemo(() => {
     const map = new Map<string, ColorItem[]>();
     items.forEach((it) => {
@@ -343,7 +329,6 @@ function ColorSection({
 
   return (
     <section>
-      {/* Section header */}
       <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/40">
         <Icon className={cn("w-4 h-4", accent)} />
         <h2 className="text-sm font-bold">{title}</h2>
@@ -383,8 +368,6 @@ function ColorSection({
   );
 }
 
-// ─── Main client component ────────────────────────────────────────────────────
-
 export function ColorShopClient({ initialData }: { initialData: ColorShopData }) {
   const [data, setData] = useState(initialData);
   const [isPurchasing, setIsPurchasing] = useState<string | null>(null);
@@ -394,7 +377,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
   const searchRef = useRef<HTMLInputElement>(null);
   const { setTheme } = useTheme();
 
-  // Flatten all color items for search/filtering
   const allUsernameItems = useMemo((): ColorItem[] => {
     return Object.values(data.usernameColors).flat();
   }, [data.usernameColors]);
@@ -410,7 +392,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
   const [isActivatingImpersonation, setIsActivatingImpersonation] = useState(false);
   const [showImpersonateDialog, setShowImpersonateDialog] = useState(false);
 
-  // Press "/" to focus search
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
@@ -600,23 +581,21 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
         equippedThemeId: item.id,
         appThemes: prev.appThemes.map((i) => ({ ...i, equipped: i.id === item.id })),
       }));
-      // Apply theme vars instantly to <html> so they beat html.dark class rules
+
       if (item.colorValue) {
         try {
           const themeVars = JSON.parse(item.colorValue) as Record<string, string>;
           const htmlEl = document.documentElement;
 
-          // Apply all CSS custom properties to <html>
           Object.entries(themeVars).forEach(([key, value]) => {
             if (key === "backgroundImage") {
-              // Gradient background goes on body, not as a CSS var
+
               document.body.style.backgroundImage = value;
             } else {
               htmlEl.style.setProperty(key, value);
             }
           });
 
-          // Determine light vs dark and sync next-themes
           const bg = themeVars["--background"];
           let mode: "light" | "dark" = "dark";
           if (bg) {
@@ -629,7 +608,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
           htmlEl.style.colorScheme = mode;
           setTheme(mode);
 
-          // Persist to localStorage so the login page can restore it
           localStorage.setItem("gecx_equipped_theme", JSON.stringify({ vars: themeVars, mode }));
         } catch (e) { }
       }
@@ -650,11 +628,11 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
         equippedThemeId: null,
         appThemes: prev.appThemes.map((i) => ({ ...i, equipped: false })),
       }));
-      // Remove all custom vars from <html> and gradient from <body>
+
       document.documentElement.removeAttribute("style");
       document.body.style.backgroundImage = "";
       setTheme("dark");
-      // Clear persisted theme so login page reverts too
+
       localStorage.removeItem("gecx_equipped_theme");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
@@ -697,7 +675,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
     }
   };
 
-  // Filter items by search
   const filteredUsername = useMemo(() => {
     if (!search.trim()) return allUsernameItems;
     const q = search.toLowerCase();
@@ -757,7 +734,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
   const ownedCount = [...allUsernameItems, ...allBgItems, ...allThemeItems, ...allNameplateItems, ...allCustomMediaItems].filter((i) => i.owned).length;
   const isSearching = search.trim().length > 0;
 
-  // Counts per top-level category
   const counts: Record<string, number> = {
     all: allUsernameItems.length + allBgItems.length + allThemeItems.length + allNameplateItems.length + allCustomMediaItems.length + allImpersonateItems.length,
     username: allUsernameItems.length,
@@ -785,7 +761,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
 
   return (
     <div className="h-full flex overflow-hidden">
-      {/* ── Left sidebar ─────────────────────────────────────────── */}
       <aside className="hidden md:flex flex-col w-52 shrink-0 border-r border-border bg-sidebar h-full overflow-hidden">
         <div className="px-3 pt-4 pb-3 border-b border-border/60">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
@@ -793,7 +768,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
           </p>
         </div>
 
-        {/* Balance */}
         <div className="mx-2 mt-3 mb-1 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/15 px-3 py-2">
           <Coins className="w-4 h-4 text-amber-500 shrink-0" />
           <div className="min-w-0">
@@ -810,7 +784,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
           )}
         </div>
 
-        {/* Category nav */}
         <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 px-2 pt-1 pb-1.5">
             Categories
@@ -842,7 +815,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
             );
           })}
 
-          {/* Hue quick-filters */}
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 px-2 pt-3 pb-1.5">
             Filter by Hue
           </p>
@@ -862,12 +834,9 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
         </div>
       </aside>
 
-      {/* ── Main content ──────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* Top bar */}
         <div className="shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
-          {/* Main row: title + search */}
           <div className="flex items-center gap-3 px-4 py-3">
             <div className="min-w-0">
               <h1 className="text-sm font-bold leading-none">
@@ -880,7 +849,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
               </p>
             </div>
 
-            {/* Mobile Balance */}
             <div className="md:hidden ml-auto flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/15 rounded-lg px-2 py-1 shrink-0">
               <Coins className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span className="text-xs font-bold tabular-nums leading-none">
@@ -888,7 +856,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
               </span>
             </div>
 
-            {/* Search */}
             <div className="hidden sm:block md:ml-auto relative w-48 sm:w-56 shrink-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               <input
@@ -913,7 +880,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
             </div>
           </div>
 
-          {/* Mobile Search Bar (Full width on mobile) */}
           <div className="sm:hidden px-4 pb-3">
             <div className="relative w-full shrink-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
@@ -939,7 +905,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
             </div>
           </div>
 
-          {/* Mobile-only category chips row */}
           <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 pb-3">
             {COLOR_CATEGORIES.map((cat) => {
               const Icon = cat.icon;
@@ -962,7 +927,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
           </div>
         </div>
 
-        {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 pb-24 space-y-10">
             {totalVisible === 0 ? (
@@ -975,7 +939,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
               </div>
             ) : (
               <>
-                {/* App Themes Section */}
                 {showTheme && filteredTheme.length > 0 && (
                   <ColorSection
                     title="App Themes"
@@ -992,7 +955,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                   />
                 )}
 
-                {/* Nameplates Section */}
                 {showNameplate && filteredNameplate.length > 0 && (
                   <ColorSection
                     title="Nameplates"
@@ -1009,7 +971,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                   />
                 )}
 
-                {/* Username Colors Section */}
                 {showUsername && filteredUsername.length > 0 && (
                   <ColorSection
                     title="Username Colors"
@@ -1026,7 +987,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                   />
                 )}
 
-                {/* Profile Background Section */}
                 {showBg && filteredBg.length > 0 && (
                   <ColorSection
                     title="Profile Backgrounds"
@@ -1043,7 +1003,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                   />
                 )}
 
-                {/* Custom Media Section */}
                 {showSpecial && filteredCustomMedia.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/40">
@@ -1062,7 +1021,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                             item.owned && "ring-1 ring-emerald-500/40"
                           )}
                         >
-                          {/* Feature preview */}
                           <div className="w-full aspect-[2/1] bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 border-b border-border/40 flex items-center justify-center">
                             {item.type === "customAvatar" ? (
                               <UserCircle className="w-12 h-12 text-pink-500/60" />
@@ -1071,7 +1029,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                             )}
                           </div>
 
-                          {/* Content */}
                           <div className="p-3">
                             <div className="flex items-start justify-between gap-2">
                               <div>
@@ -1095,7 +1052,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                               )}
                             </div>
 
-                            {/* Action */}
                             {!item.owned && (
                               <Button
                                 size="sm"
@@ -1131,7 +1087,6 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
                   </section>
                 )}
 
-                {/* Impersonation Items Section */}
                 {showConsumable && filteredImpersonate.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/40">
@@ -1225,7 +1180,7 @@ export function ColorShopClient({ initialData }: { initialData: ColorShopData })
         </div>
       </div>
 
-      {/* Impersonation Target Dialog */}
+      
       <Dialog open={showImpersonateDialog} onOpenChange={setShowImpersonateDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

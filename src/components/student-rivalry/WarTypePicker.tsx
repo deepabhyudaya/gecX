@@ -24,13 +24,13 @@ export default function WarTypePicker({
 
   const handleCardClick = (type: WarTypeConfig) => {
     if (expandedId === type.id) {
-      // If already expanded, select it
+
       onSelect(type.id);
       if (!type.requiresTeacher) {
         onSelectTeacher(null);
       }
     } else {
-      // Otherwise expand it to read details
+
       setExpandedId(type.id);
     }
   };
@@ -54,7 +54,6 @@ export default function WarTypePicker({
                   : "border-border bg-card hover:border-muted-foreground/30 hover:bg-muted/30"
               }`}
             >
-              {/* Teacher Required Badge */}
               {type.requiresTeacher && (
                 <div
                   className={`absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full flex items-center gap-1 font-semibold ${
@@ -78,7 +77,6 @@ export default function WarTypePicker({
                 Favors: {type.favors} · {type.durationHint}
               </p>
 
-              {/* Expanded Description */}
               {isExpanded && !isSelected && (
                 <div className="mt-3 pt-3 border-t border-border/50 text-sm animate-in fade-in slide-in-from-top-2">
                   <p className="text-muted-foreground">{type.description}</p>
@@ -101,7 +99,6 @@ export default function WarTypePicker({
                 </div>
               )}
 
-              {/* Selected State Description */}
               {isSelected && (
                 <div className="mt-3 pt-3 border-t border-white/20 text-sm">
                   <p className="text-white/90">{type.description}</p>
@@ -110,8 +107,7 @@ export default function WarTypePicker({
             </div>
           );
         })}
-        
-        {/* Auto Random Option */}
+
         <div
           onClick={() => {
             onSelect("AUTO_RANDOM");
@@ -129,7 +125,6 @@ export default function WarTypePicker({
         </div>
       </div>
 
-      {/* Teacher Nomination Field */}
       {selectedType?.requiresTeacher && (
         <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl animate-in fade-in slide-in-from-top-2">
           <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide block mb-2">

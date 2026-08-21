@@ -46,11 +46,11 @@ export function SeasonCreateForm() {
         conquerorSize,
         iconUrl: iconUrl || undefined,
       });
-      // Auto-create default ranks for convenience
+
       try {
         await setupDefaultSeasonRanks(season.id);
       } catch {
-        // Ignore if default ranks fail; admin can configure manually
+
       }
       toast.success("Season created successfully!");
       setOpen(false);

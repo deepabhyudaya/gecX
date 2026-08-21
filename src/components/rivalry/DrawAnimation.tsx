@@ -32,7 +32,6 @@ export default function DrawAnimation({ rivalryId, classAName, classBName, isCR 
   const [tab, setTab] = useState<"random" | "select">("random");
   const [count, setCount] = useState(5);
 
-  // Random-draw state
   const [phase, setPhase] = useState<"idle" | "spinning" | "done">("idle");
   const [drawn, setDrawn] = useState<{ classA: Participant[]; classB: Participant[] } | null>(null);
   const [spinning, setSpinning] = useState(false);
@@ -40,7 +39,6 @@ export default function DrawAnimation({ rivalryId, classAName, classBName, isCR 
 
   type WarriorItem = Participant & { isEnrolled: boolean; memberId: string | null };
 
-  // CR-select state
   const [warriors, setWarriors] = useState<WarriorItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [initialEnrolled, setInitialEnrolled] = useState<Set<string>>(new Set());
@@ -127,7 +125,6 @@ export default function DrawAnimation({ rivalryId, classAName, classBName, isCR 
 
   return (
     <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-      {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-border pb-3">
         <button
           onClick={() => setTab("random")}

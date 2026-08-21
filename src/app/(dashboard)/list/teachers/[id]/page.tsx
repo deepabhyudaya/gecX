@@ -61,7 +61,6 @@ const SingleTeacherPage = async ({
     return notFound();
   }
 
-  // Fetch real attendance stats for students in this teacher's lessons
   const [totalAttendance, presentAttendance] = await prisma.$transaction([
     prisma.attendance.count({
       where: { lesson: { teacherId: id } },
@@ -76,7 +75,6 @@ const SingleTeacherPage = async ({
       ? Math.round((presentAttendance / totalAttendance) * 100)
       : null;
 
-  // Fetch Teacher Performance (Average Result Score of their students)
   const teacherResults = await prisma.result.aggregate({
     _avg: { score: true },
     where: {
@@ -88,7 +86,6 @@ const SingleTeacherPage = async ({
   });
   const averageScore = teacherResults._avg.score || 0;
 
-  // Validate Access
   let hasAccess = false;
   if (role === "admin" || userId === teacher.id) {
     hasAccess = true;
@@ -104,11 +101,10 @@ const SingleTeacherPage = async ({
     if (validAccess) hasAccess = true;
   }
 
-  // Fetch recent attendance records for display if access granted
   let recentAttendance: any[] = [];
   let recentAssignments: any[] = [];
   let recentExams: any[] = [];
-  
+
   if (hasAccess) {
     recentAttendance = await prisma.attendance.findMany({
       where: { lesson: { teacherId: id } },
@@ -119,7 +115,7 @@ const SingleTeacherPage = async ({
       orderBy: { date: "desc" },
       take: 5,
     });
-    
+
     recentAssignments = await prisma.assignment.findMany({
       where: { lesson: { teacherId: id } },
       include: { lesson: { include: { subject: true, class: true } } },
@@ -151,9 +147,7 @@ const SingleTeacherPage = async ({
       layoutKey="teacher-profile-layout"
       leftContent={
         <div className="flex flex-col gap-4">
-          {/* TOP */}
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* USER INFO CARD */}
             <CometCard className="flex-1" rotateDepth={8} translateDepth={10}>
               <div className="bg-card border border-border rounded-2xl flex gap-5 p-6 h-full">
                 <div className="shrink-0">
@@ -206,7 +200,6 @@ const SingleTeacherPage = async ({
               </div>
             </CometCard>
 
-            {/* STAT CARDS */}
             <div className="flex-1 grid grid-cols-2 gap-3">
               {statCards.map(({ icon: Icon, label, value }) => (
                 <CometCard key={label} rotateDepth={10} translateDepth={8}>
@@ -224,7 +217,6 @@ const SingleTeacherPage = async ({
             </div>
           </div>
 
-          {/* FACULTY IDENTITY */}
           {((teacher as any).employeeId || (teacher as any).designation || (teacher as any).department || (teacher as any).qualification || (teacher as any).experienceYears != null || (teacher as any).joiningDate) && (
             <div className="bg-card border border-border rounded-xl p-4">
               <h2 className="font-semibold mb-3 text-sm">Faculty Identity</h2>
@@ -271,7 +263,6 @@ const SingleTeacherPage = async ({
             </div>
           )}
 
-          {/* SCHEDULE */}
           <div className="bg-card border border-border rounded-xl p-4 h-[800px]">
             <h2 className="font-semibold mb-3">Teacher&apos;s Schedule</h2>
             <BigCalendarContainer type="teacherId" id={teacher.id} />
@@ -284,8 +275,7 @@ const SingleTeacherPage = async ({
             <div className="flex flex-col gap-4">
               <h2 className="text-lg font-bold">Performance History</h2>
               <Performance score={averageScore} label="Overall Score" subtitle="Student Average" />
-              
-              {/* ATTENDANCE SUMMARY */}
+
               <div className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-semibold text-sm">Student Attendance</h2>

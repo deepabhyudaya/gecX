@@ -27,7 +27,6 @@ import {
 } from "@/actions/dm-access.actions";
 import { startConversation } from "@/actions/message.actions";
 
-// Types
 interface UserInfo {
   userId: string;
   username: string;
@@ -71,14 +70,12 @@ export default function RequestsPage() {
   const [followSubTab, setFollowSubTab] = useState("incoming");
   const [dmSubTab, setDmSubTab] = useState("incoming");
 
-  // Data states
   const [incomingFollowRequests, setIncomingFollowRequests] = useState<FollowRequest[]>([]);
   const [outgoingFollowRequests, setOutgoingFollowRequests] = useState<FollowRequest[]>([]);
   const [incomingDMRequests, setIncomingDMRequests] = useState<DMAccessRequest[]>([]);
   const [outgoingDMRequests, setOutgoingDMRequests] = useState<DMAccessRequest[]>([]);
   const [dmGrants, setDMGrants] = useState<DMAccessGrant[]>([]);
 
-  // Loading states
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -114,7 +111,6 @@ export default function RequestsPage() {
     loadData();
   }, [loadData]);
 
-  // Follow request actions
   const handleAcceptFollow = async (requestId: string) => {
     setActionLoading(`accept-follow-${requestId}`);
     try {
@@ -157,7 +153,6 @@ export default function RequestsPage() {
     }
   };
 
-  // DM request actions
   const handleAcceptDM = async (requestId: string) => {
     const request = incomingDMRequests.find((r) => r.id === requestId);
     setActionLoading(`accept-dm-${requestId}`);
@@ -165,7 +160,7 @@ export default function RequestsPage() {
       await acceptDMAccessRequest(requestId);
       toast.success("DM request accepted! Opening chat...");
       await loadData();
-      // Auto-navigate to the new conversation
+
       if (request?.requester?.userId) {
         try {
           const convId = await startConversation(request.requester.userId);
@@ -299,7 +294,6 @@ export default function RequestsPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Follow Requests Tab */}
         <TabsContent value="follow" className="space-y-4">
           <Tabs value={followSubTab} onValueChange={setFollowSubTab}>
             <TabsList className="mb-4">
@@ -381,7 +375,6 @@ export default function RequestsPage() {
           </Tabs>
         </TabsContent>
 
-        {/* DM Access Tab */}
         <TabsContent value="dm" className="space-y-4">
           <Tabs value={dmSubTab} onValueChange={setDmSubTab}>
             <TabsList className="mb-4">

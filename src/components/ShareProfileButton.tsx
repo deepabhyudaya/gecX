@@ -20,7 +20,7 @@ export default function ShareProfileButton({
   userType: "teacher" | "student" | "parent";
 }) {
   const [open, setOpen] = useState(false);
-  const [duration, setDuration] = useState<number>(15); // minutes
+  const [duration, setDuration] = useState<number>(15);
   const [loading, setLoading] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -40,7 +40,6 @@ export default function ShareProfileButton({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to generate link");
 
-      // Construct the shareable link
       const url = new URL(window.location.href);
       url.searchParams.set("accessCode", data.code);
       setGeneratedLink(url.toString());
@@ -69,7 +68,7 @@ export default function ShareProfileButton({
           Share Profile
         </button>
       </DialogTrigger>
-      
+
       <DialogContent className="sm:max-w-md bg-card border-border">
         <DialogHeader>
           <DialogTitle className="text-foreground">Temporary Access</DialogTitle>

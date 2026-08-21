@@ -43,10 +43,7 @@ export function EventThemeProvider({
   hasActiveEvent = true,
 }: {
   children: React.ReactNode;
-  // Hint from the server-side root layout: when false, skip all event-theme
-  // work entirely (no server-action call, no confetti import, no dialog).
-  // Defaults to true to preserve existing behavior for callers that don't
-  // pass it.
+
   hasActiveEvent?: boolean;
 }) {
   const [data, setData] = useState<MyEventThemeData | null>(null);
@@ -55,7 +52,7 @@ export function EventThemeProvider({
   const [isDismissing, setIsDismissing] = useState(false);
 
   useEffect(() => {
-    if (!hasActiveEvent) return; // No-op when no event is active
+    if (!hasActiveEvent) return;
     let mounted = true;
     getMyEventThemeState()
       .then((res) => {
@@ -81,9 +78,6 @@ export function EventThemeProvider({
     let cancelled = false;
     let rafId: number | null = null;
 
-    // Dynamic import — `canvas-confetti` (~10KB gz) is now NOT in the initial
-    // dashboard bundle. It only loads on the rare path where an active event
-    // theme exists AND the user hasn't dismissed/reverted it.
     const timer = setTimeout(async () => {
       setShowDialog(true);
       try {
@@ -111,7 +105,7 @@ export function EventThemeProvider({
               ticks: 200,
             });
           } catch {
-            // confetti library may fail in some environments
+
           }
           if (Date.now() < end) {
             rafId = requestAnimationFrame(frame);
@@ -119,7 +113,7 @@ export function EventThemeProvider({
         };
         frame();
       } catch {
-        // import failed — silently skip the celebration
+
       }
     }, 800);
 
@@ -145,7 +139,7 @@ export function EventThemeProvider({
           : prev
       );
     } catch (err) {
-      // ignore
+
     } finally {
       setIsDismissing(false);
     }
@@ -165,10 +159,10 @@ export function EventThemeProvider({
             }
           : prev
       );
-      // Reload to restore previous theme visually
+
       window.location.reload();
     } catch (err) {
-      // ignore
+
     } finally {
       setIsReverting(false);
     }

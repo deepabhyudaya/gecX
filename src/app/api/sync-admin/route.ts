@@ -4,10 +4,6 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Called client-side after sign-in to ensure the Clerk user
- * exists in the local DB Admin table. Safe to call multiple times.
- */
 export async function POST() {
   const { userId } = auth();
   if (!userId) {
@@ -21,7 +17,6 @@ export async function POST() {
     return NextResponse.json({ error: "Not an admin" }, { status: 403 });
   }
 
-  // Upsert so it's idempotent
   await prisma.admin.upsert({
     where: { id: userId },
     update: {},

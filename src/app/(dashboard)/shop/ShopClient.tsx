@@ -62,13 +62,12 @@ const ShopClient = ({ initialData }: ShopClientProps) => {
       const result = await purchaseAvatar(style);
       if (result.success) {
         toast.success(`Purchased avatar! ${result.avatar.cost} gecX deducted.`);
-        
-        // Update local state
+
         setShopData(prev => ({
           ...prev,
           balance: result.remainingBalance,
-          items: prev.items.map(item => 
-            item.style === style 
+          items: prev.items.map(item =>
+            item.style === style
               ? { ...item, owned: true }
               : item
           )
@@ -86,8 +85,7 @@ const ShopClient = ({ initialData }: ShopClientProps) => {
       const result = await equipAvatar(profileType, style);
       if (result.success) {
         toast.success(`Avatar equipped for ${profileType} profile!`);
-        
-        // Update local state
+
         setShopData(prev => ({
           ...prev,
           items: prev.items.map(item => ({
@@ -112,7 +110,7 @@ const ShopClient = ({ initialData }: ShopClientProps) => {
       const result = await randomizeAvatarSeed(style);
       if (result.success) {
         toast.success("Avatar randomized!");
-        // Update preview URL if this avatar is currently being previewed
+
         if (previewAvatar?.style === style) {
           setPreviewAvatar(prev => prev ? {
             ...prev,
@@ -128,7 +126,6 @@ const ShopClient = ({ initialData }: ShopClientProps) => {
   return (
     <div className="flex-1 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold">Avatar Shop</h1>
@@ -137,7 +134,6 @@ const ShopClient = ({ initialData }: ShopClientProps) => {
           <UserGecXBalance balance={shopData.balance.balance} />
         </div>
 
-        {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -159,7 +155,6 @@ const ShopClient = ({ initialData }: ShopClientProps) => {
           </Tabs>
         </div>
 
-        {/* Avatar Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredItems.map((item) => (
             <AvatarCard
@@ -176,14 +171,12 @@ const ShopClient = ({ initialData }: ShopClientProps) => {
           ))}
         </div>
 
-        {/* Empty State */}
         {filteredItems.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No avatars found matching your criteria.</p>
           </div>
         )}
 
-        {/* Preview Modal */}
         {previewAvatar && (
           <AvatarPreviewModal
             avatar={previewAvatar}

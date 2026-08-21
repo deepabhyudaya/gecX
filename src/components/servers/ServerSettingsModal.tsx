@@ -60,8 +60,7 @@ export default function ServerSettingsModal({
   const canManageEmojis = isAdmin || isMod || checkPerm(server.myPermissions, server.myRole, ROLE_PERMISSIONS.MANAGE_EMOJIS);
   const canManageRoles = isAdmin || checkPerm(server.myPermissions, server.myRole, ROLE_PERMISSIONS.MANAGE_ROLES);
   const canManage = canManageServer || canManageEmojis || canManageRoles;
-  
-  // General State
+
   const [name, setName] = useState(server.name);
   const [description, setDescription] = useState(server.description || "");
   const [inviteCode, setInviteCode] = useState(server.inviteCode);
@@ -69,12 +68,10 @@ export default function ServerSettingsModal({
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Media State
   const [iconUrl, setIconUrl] = useState(server.iconUrl || "");
   const [bannerUrl, setBannerUrl] = useState(server.bannerUrl || "");
   const [savingMedia, setSavingMedia] = useState(false);
 
-  // Emojis & Stickers State
   const [emojis, setEmojis] = useState<any[]>([]);
   const [stickers, setStickers] = useState<any[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(false);
@@ -87,17 +84,14 @@ export default function ServerSettingsModal({
     remainingStickerSlots: number;
   } | null>(null);
 
-  // Add new asset form
   const [assetName, setAssetName] = useState("");
   const [assetUrl, setAssetUrl] = useState("");
   const [addingAsset, setAddingAsset] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Roles State
   const [roles, setRoles] = useState<any[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
 
-  // Fetch emojis/stickers and slot info when opening their tabs
   useEffect(() => {
     if (open && (activeTab === "emojis" || activeTab === "stickers")) {
       const fetchAssets = async () => {
@@ -121,7 +115,6 @@ export default function ServerSettingsModal({
     }
   }, [open, activeTab, server.id]);
 
-  // Fetch roles when opening the roles tab
   useEffect(() => {
     if (open && activeTab === "roles" && canManageRoles) {
       const fetchRoles = async () => {
@@ -139,7 +132,6 @@ export default function ServerSettingsModal({
     }
   }, [open, activeTab, server.id, canManageRoles]);
 
-  // Reset state when opening/closing
   useEffect(() => {
     if (open) {
       setName(server.name);
@@ -168,9 +160,9 @@ export default function ServerSettingsModal({
   const handleUpdateMedia = async () => {
     setSavingMedia(true);
     try {
-      await updateServerMedia(server.id, { 
-        iconUrl: iconUrl || undefined, 
-        bannerUrl: bannerUrl || undefined 
+      await updateServerMedia(server.id, {
+        iconUrl: iconUrl || undefined,
+        bannerUrl: bannerUrl || undefined
       });
       router.refresh();
     } catch (error) {
@@ -191,7 +183,6 @@ export default function ServerSettingsModal({
         await addServerStickerWithSlotCheck(server.id, assetName, assetUrl);
       }
 
-      // Refresh list and slot info
       const [res, slots] = await Promise.all([
         getServerEmojis(server.id),
         getServerSlotInfo(server.id),
@@ -218,7 +209,7 @@ export default function ServerSettingsModal({
       } else {
         await removeServerSticker(id);
       }
-      // Refresh list
+
       const res = await getServerEmojis(server.id);
       setEmojis(res.emojis);
       setStickers(res.stickers);
@@ -255,7 +246,6 @@ export default function ServerSettingsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl h-[85vh] sm:h-[600px] flex p-0 overflow-hidden bg-card border-border">
-        {/* Sidebar */}
         <div className="w-48 sm:w-56 bg-muted/30 border-r border-border flex flex-col p-4 shrink-0 overflow-y-auto">
           <h2 className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-3 px-2">
             Server Settings
@@ -318,12 +308,11 @@ export default function ServerSettingsModal({
           </nav>
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 flex flex-col overflow-y-auto p-6 relative">
           {activeTab === "general" && (
             <div className="space-y-6 max-w-lg">
               <h3 className="text-xl font-semibold">Overview</h3>
-              
+
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground uppercase tracking-widest text-[11px] text-muted-foreground">Server Name</label>
@@ -355,12 +344,11 @@ export default function ServerSettingsModal({
                 </button>
               </div>
 
-              {/* Invite Code */}
               <div className="space-y-4 pt-6 border-t border-border">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground text-[11px]">
                   Invite Code
                 </h3>
-                
+
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -393,7 +381,6 @@ export default function ServerSettingsModal({
                 </div>
               </div>
 
-              {/* Discoverable Toggle */}
               {canManageServer && (
                 <div className="space-y-4 pt-6 border-t border-border">
                   <div className="flex items-center justify-between">
@@ -414,7 +401,6 @@ export default function ServerSettingsModal({
                 </div>
               )}
 
-              {/* Delete Server - Owner Only */}
               {isAdmin && (
                 <div className="space-y-4 pt-6 border-t border-border">
                   <div className="space-y-0.5">
@@ -477,7 +463,6 @@ export default function ServerSettingsModal({
                   />
                   {iconUrl && (
                     <div className="mt-2 w-16 h-16 rounded-xl overflow-hidden bg-muted border border-border">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={iconUrl} alt="Preview" className="w-full h-full object-cover" />
                     </div>
                   )}
@@ -493,7 +478,6 @@ export default function ServerSettingsModal({
                   />
                   {bannerUrl && (
                     <div className="mt-2 w-full h-24 rounded-xl overflow-hidden bg-muted border border-border">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={bannerUrl} alt="Preview" className="w-full h-full object-cover" />
                     </div>
                   )}
@@ -517,7 +501,6 @@ export default function ServerSettingsModal({
                 <p className="text-sm text-muted-foreground">Add custom emojis for members to use in this server. Use :name: in messages.</p>
               </div>
 
-              {/* Slot Usage */}
               {slotInfo && (
                 <div className="bg-muted/50 border border-border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -546,14 +529,12 @@ export default function ServerSettingsModal({
                 </div>
               )}
 
-              {/* Error Message */}
               {error && (
                 <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-sm text-destructive">
                   {error}
                 </div>
               )}
 
-              {/* Add form */}
               <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3 shrink-0">
                 <h4 className="text-sm font-medium">Add New Emoji</h4>
                 <div className="flex gap-2">
@@ -583,7 +564,6 @@ export default function ServerSettingsModal({
                 </p>
               </div>
 
-              {/* List */}
               <div className="flex-1 overflow-y-auto">
                 {loadingAssets ? (
                   <div className="flex items-center justify-center h-32"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
@@ -597,7 +577,6 @@ export default function ServerSettingsModal({
                     {emojis.map((emoji) => (
                       <div key={emoji.id} className="flex items-center justify-between gap-2 p-2 bg-muted rounded-md border border-border group">
                         <div className="flex items-center gap-2 min-w-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={emoji.imageUrl} alt={emoji.name} className="w-6 h-6 object-contain shrink-0" />
                           <span className="text-sm truncate">:{emoji.name}:</span>
                         </div>
@@ -622,7 +601,6 @@ export default function ServerSettingsModal({
                 <p className="text-sm text-muted-foreground">Add custom stickers for members to send as standalone messages.</p>
               </div>
 
-              {/* Slot Usage */}
               {slotInfo && (
                 <div className="bg-muted/50 border border-border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -651,7 +629,6 @@ export default function ServerSettingsModal({
                 </div>
               )}
 
-              {/* Add form */}
               <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3 shrink-0">
                 <h4 className="text-sm font-medium">Add New Sticker</h4>
                 <div className="flex gap-2">
@@ -681,7 +658,6 @@ export default function ServerSettingsModal({
                 </p>
               </div>
 
-              {/* List */}
               <div className="flex-1 overflow-y-auto">
                 {loadingAssets ? (
                   <div className="flex items-center justify-center h-32"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
@@ -694,7 +670,6 @@ export default function ServerSettingsModal({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {stickers.map((sticker) => (
                       <div key={sticker.id} className="relative aspect-square bg-muted rounded-lg border border-border flex items-center justify-center group overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={sticker.imageUrl} alt={sticker.name} className="w-full h-full object-contain p-2" />
                         <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
                           <span className="text-xs font-medium truncate px-2 w-full text-center">:{sticker.name}:</span>

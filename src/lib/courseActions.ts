@@ -78,7 +78,6 @@ export const rejectCourse = async (currentState: State, data: FormData) => {
 
     const adminIds = await getAllUserIdsByRole("admin");
 
-    // Get username of the admin rejecting the course
     const user = await clerkClient().users.getUser(userId || "");
     const username = user.username || "unknown";
 
@@ -287,7 +286,7 @@ export const createCourse = async (currentState: State, data: FormData) => {
   const baseSlug = toSlug(title);
   const slug = `${baseSlug}-${Date.now()}`;
   try {
-    // Get teacher username before creating course
+
     const teacher = await prisma.teacher.findUnique({
       where: { id: userId || "" },
       select: { username: true }

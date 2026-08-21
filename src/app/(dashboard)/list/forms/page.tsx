@@ -32,7 +32,6 @@ export default async function FormsListPage({
   const { page } = searchParams;
   const p = page ? parseInt(page) : 1;
 
-  // 1. Setup role conditions for querying forms
   const query: Prisma.FormWhereInput = {};
 
   switch (role) {
@@ -59,7 +58,6 @@ export default async function FormsListPage({
       break;
   }
 
-  // 2. Fetch forms and total count
   const [dataRes, totalCount] = await prisma.$transaction([
     prisma.form.findMany({
       where: query,
@@ -75,7 +73,6 @@ export default async function FormsListPage({
     prisma.form.count({ where: query }),
   ]);
 
-  // 3. Fetch related exams/assignments for creation dropdowns (admin/teacher only)
   let exams: Array<{ id: number; title: string }> = [];
   let assignments: Array<{ id: number; title: string }> = [];
 
@@ -103,7 +100,6 @@ export default async function FormsListPage({
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
-      {/* Top Header Section */}
       <div className="bg-card text-card-foreground p-6 rounded-xl border border-border flex items-center justify-between flex-wrap gap-4 shadow-sm">
         <div>
           <h1 className="text-xl font-bold tracking-tight">Dynamic Forms Center</h1>
@@ -118,7 +114,6 @@ export default async function FormsListPage({
         )}
       </div>
 
-      {/* Forms Listing Table */}
       <div className="bg-card text-card-foreground rounded-xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto w-full">
           <table className="w-full text-left border-collapse text-sm">
@@ -168,7 +163,6 @@ export default async function FormsListPage({
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center gap-2 justify-end">
-                        {/* Student Fill Attempt action */}
                         {role === "student" && form.status === "PUBLISHED" && (
                           <Link href={`/list/forms/attempt/${form.id}`}>
                             <Button variant="outline" size="sm" className="h-8 text-xs font-bold border-primary/20 bg-primary/10 hover:bg-primary text-foreground hover:text-primary-foreground flex items-center gap-1">
@@ -178,7 +172,6 @@ export default async function FormsListPage({
                           </Link>
                         )}
 
-                        {/* Creator/Admin Edit action */}
                         {isTeacherOrAdmin && (
                           <>
                             <Link href={`/list/forms/builder/${form.id}`}>

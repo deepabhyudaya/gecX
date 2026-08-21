@@ -4,8 +4,6 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-// ==================== SERVER EMOJIS ====================
-
 export async function getServerEmojis(serverId: string) {
   const [emojis, stickers, server] = await Promise.all([
     prisma.serverEmoji.findMany({
@@ -34,12 +32,10 @@ export async function getServerEmojis(serverId: string) {
   };
 }
 
-// Get all emojis/stickers from all servers the user has joined (for DMs, groups, etc.)
 export async function getAllUserServerEmojisAndStickers() {
   const { userId } = auth();
   if (!userId) return { emojis: [], stickers: [] };
 
-  // Get all server IDs the user is a member of
   const memberships = await prisma.serverMember.findMany({
     where: { userId },
     select: { serverId: true },
@@ -51,7 +47,6 @@ export async function getAllUserServerEmojisAndStickers() {
     return { emojis: [], stickers: [] };
   }
 
-  // Get all emojis and stickers from those servers
   const [emojis, stickers, servers] = await Promise.all([
     prisma.serverEmoji.findMany({
       where: { serverId: { in: serverIds } },
@@ -85,7 +80,6 @@ export async function getAllUserServerEmojisAndStickers() {
   };
 }
 
-// Combined data for emoji picker: server emojis + global packs with ownership info
 export async function getAllEmojiPickerData() {
   const { userId } = auth();
   if (!userId) return { emojis: [], stickers: [] };
@@ -119,7 +113,6 @@ export async function getAllEmojiPickerData() {
   };
 }
 
-// Get all active global emojis for rendering (no ownership check)
 export async function getAllGlobalEmojis() {
   const [emojis, stickers] = await Promise.all([
     prisma.globalEmoji.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
@@ -128,8 +121,6 @@ export async function getAllGlobalEmojis() {
   return { emojis, stickers };
 }
 
-// Get ALL emojis/stickers from every source for rendering messages (no ownership/membership check).
-// This ensures any user can SEE custom emojis in messages even if they haven't purchased a pack.
 export async function getAllEmojisForRendering() {
   const [serverEmojis, serverStickers, globalEmojis, globalStickers] = await Promise.all([
     prisma.serverEmoji.findMany({
@@ -180,7 +171,6 @@ export async function addServerEmoji(serverId: string, name: string, imageUrl: s
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Must be admin or mod of the server
   const member = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } },
   });
@@ -188,7 +178,6 @@ export async function addServerEmoji(serverId: string, name: string, imageUrl: s
     throw new Error("Only server admins/mods can add emojis");
   }
 
-  // Clean name: lowercase, no spaces, alphanumeric + underscores
   const cleanName = name.toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
   if (!cleanName) throw new Error("Invalid emoji name");
   if (!imageUrl.startsWith("http")) throw new Error("Invalid image URL");
@@ -262,14 +251,11 @@ export async function removeServerSticker(stickerId: string) {
   return { success: true };
 }
 
-// ==================== GLOBAL PERSONAL EMOJIS ====================
-
 export async function getUserGlobalEmojis(userId?: string) {
   const { userId: authUserId } = auth();
   const targetId = userId || authUserId;
   if (!targetId) return { emojis: [], stickers: [] };
 
-  // Get owned emoji IDs
   const ownedEmojis = await prisma.userOwnedGlobalEmoji.findMany({
     where: { userId: targetId },
     include: { emoji: true },
@@ -290,14 +276,12 @@ export async function purchaseGlobalEmojiPack(packId: string, isSticker: boolean
   if (!userId) throw new Error("Unauthorized");
   const userType = ((sessionClaims?.metadata as { role?: string })?.role || "student").toLowerCase();
 
-  // Get all emojis/stickers in this pack
   if (isSticker) {
     const stickers = await prisma.globalSticker.findMany({
       where: { packId, isActive: true },
     });
     if (stickers.length === 0) throw new Error("Pack not found or empty");
 
-    // Grant ownership of all stickers in pack
     await prisma.userOwnedGlobalSticker.createMany({
       data: stickers.map((s) => ({ userId, stickerId: s.id })),
       skipDuplicates: true,
@@ -318,14 +302,11 @@ export async function purchaseGlobalEmojiPack(packId: string, isSticker: boolean
   return { success: true };
 }
 
-// ==================== GLOBAL EMOJI SHOP DATA ====================
-
 export async function getEmojiShopData() {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
   const userType = ((sessionClaims?.metadata as { role?: string })?.role || "student").toLowerCase();
 
-  // Seed default packs if none exist
   await seedDefaultEmojiPacks();
 
   const [allEmojis, allStickers, ownedEmojis, ownedStickers, balance] = await Promise.all([
@@ -339,7 +320,6 @@ export async function getEmojiShopData() {
   const ownedEmojiIds = new Set(ownedEmojis.map((o) => o.emojiId));
   const ownedStickerIds = new Set(ownedStickers.map((o) => o.stickerId));
 
-  // Group by pack
   const emojiPacks = groupByPack(allEmojis, ownedEmojiIds);
   const stickerPacks = groupByPack(allStickers, ownedStickerIds);
 
@@ -366,11 +346,9 @@ function groupByPack<T extends { packId: string; id: string }>(
   return Object.values(packs);
 }
 
-// ==================== SEED DEFAULT EMOJI PACKS ====================
-
 async function seedDefaultEmojiPacks() {
   const count = await prisma.globalEmoji.count();
-  if (count > 0) return; // Already seeded
+  if (count > 0) return;
 
   const EMOJI_PACKS = [
     {
@@ -422,8 +400,6 @@ async function seedDefaultEmojiPacks() {
   }
 }
 
-// ==================== SERVER MEDIA ====================
-
 export async function updateServerMedia(serverId: string, data: { iconUrl?: string; bannerUrl?: string }) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -447,8 +423,6 @@ export async function updateServerMedia(serverId: string, data: { iconUrl?: stri
   return { success: true };
 }
 
-// ==================== GROUP MEDIA ====================
-
 export async function updateGroupBanner(groupId: number, bannerUrl: string | null) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -468,8 +442,6 @@ export async function updateGroupBanner(groupId: number, bannerUrl: string | nul
   revalidatePath("/messages");
   return { success: true };
 }
-
-// ==================== SERVER EMOJI/STICKER SLOT SYSTEM ====================
 
 const BASE_FREE_EMOJIS = 10;
 const BASE_FREE_STICKERS = 5;
@@ -517,7 +489,6 @@ export async function getUserModeratedServers() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Get all memberships where user is admin or mod
   const memberships = await prisma.serverMember.findMany({
     where: {
       userId,
@@ -528,10 +499,8 @@ export async function getUserModeratedServers() {
 
   if (memberships.length === 0) return [];
 
-  // Get server IDs
   const serverIds = memberships.map((m) => m.serverId);
 
-  // Fetch servers separately
   const servers = await prisma.server.findMany({
     where: { id: { in: serverIds } },
     select: {
@@ -541,10 +510,8 @@ export async function getUserModeratedServers() {
     },
   });
 
-  // Create a map of serverId to server data
   const serverMap = new Map(servers.map((s) => [s.id, s]));
 
-  // Get slot info for each server
   const serversWithSlots = await Promise.all(
     memberships.map(async (m) => {
       const server = serverMap.get(m.serverId);
@@ -571,7 +538,6 @@ export async function purchaseServerSlotPack(serverId: string, planType: "STARTE
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Verify user is admin/mod of this server
   const member = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } },
   });
@@ -582,7 +548,6 @@ export async function purchaseServerSlotPack(serverId: string, planType: "STARTE
   const plan = SLOT_PLANS[planType];
   if (!plan) throw new Error("Invalid plan type");
 
-  // Check if purchase would exceed max limits
   const currentSlotInfo = await getServerSlotInfo(serverId);
   const newTotalEmojis = currentSlotInfo.totalEmojiSlots + plan.emojiSlots;
   const newTotalStickers = currentSlotInfo.totalStickerSlots + plan.stickerSlots;
@@ -594,15 +559,13 @@ export async function purchaseServerSlotPack(serverId: string, planType: "STARTE
     throw new Error(`Purchase would exceed maximum sticker limit of ${MAX_STICKERS}`);
   }
 
-  // Check user balance
   const balance = await prisma.userGecXBalance.findUnique({ where: { userId } });
   if (!balance || balance.balance < plan.cost) {
     throw new Error(`Insufficient gecX balance. Need ${plan.cost} gecX.`);
   }
 
-  // Deduct balance and record purchase in transaction
   await prisma.$transaction([
-    // Deduct from user's balance
+
     prisma.userGecXBalance.update({
       where: { userId },
       data: {
@@ -610,7 +573,7 @@ export async function purchaseServerSlotPack(serverId: string, planType: "STARTE
         totalSpent: { increment: plan.cost },
       },
     }),
-    // Record the purchase
+
     prisma.serverEmojiSlotPurchase.create({
       data: {
         serverId,
@@ -621,7 +584,7 @@ export async function purchaseServerSlotPack(serverId: string, planType: "STARTE
         purchasedById: userId,
       },
     }),
-    // Record transaction for history
+
     prisma.gecXTransaction.create({
       data: {
         userId,
@@ -638,12 +601,10 @@ export async function purchaseServerSlotPack(serverId: string, planType: "STARTE
   return { success: true, planType, emojiSlots: plan.emojiSlots, stickerSlots: plan.stickerSlots };
 }
 
-// Update addServerEmoji to check slot limits
 export async function addServerEmojiWithSlotCheck(serverId: string, name: string, imageUrl: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Must be admin or mod of the server
   const member = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } },
   });
@@ -651,18 +612,15 @@ export async function addServerEmojiWithSlotCheck(serverId: string, name: string
     throw new Error("Only server admins/mods can add emojis");
   }
 
-  // Check slot availability
   const slotInfo = await getServerSlotInfo(serverId);
   if (slotInfo.remainingEmojiSlots <= 0) {
     throw new Error("No emoji slots available. Purchase more slots in the Shop.");
   }
 
-  // Clean name: lowercase, no spaces, alphanumeric + underscores
   const cleanName = name.toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
   if (!cleanName) throw new Error("Invalid emoji name");
   if (!imageUrl.startsWith("http")) throw new Error("Invalid image URL");
 
-  // Validate image URL format
   const validImagePattern = /\.(gif|png|jpg|jpeg|webp)(\?.*)?$/i;
   if (!validImagePattern.test(imageUrl)) {
     throw new Error("URL must point to a valid image file (GIF, PNG, JPG, WEBP)");
@@ -676,7 +634,6 @@ export async function addServerEmojiWithSlotCheck(serverId: string, name: string
   return { success: true };
 }
 
-// Update addServerSticker to check slot limits
 export async function addServerStickerWithSlotCheck(serverId: string, name: string, imageUrl: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -688,7 +645,6 @@ export async function addServerStickerWithSlotCheck(serverId: string, name: stri
     throw new Error("Only server admins/mods can add stickers");
   }
 
-  // Check slot availability
   const slotInfo = await getServerSlotInfo(serverId);
   if (slotInfo.remainingStickerSlots <= 0) {
     throw new Error("No sticker slots available. Purchase more slots in the Shop.");
@@ -698,7 +654,6 @@ export async function addServerStickerWithSlotCheck(serverId: string, name: stri
   if (!cleanName) throw new Error("Invalid sticker name");
   if (!imageUrl.startsWith("http")) throw new Error("Invalid image URL");
 
-  // Validate image URL format
   const validImagePattern = /\.(gif|png|jpg|jpeg|webp)(\?.*)?$/i;
   if (!validImagePattern.test(imageUrl)) {
     throw new Error("URL must point to a valid image file (GIF, PNG, JPG, WEBP)");

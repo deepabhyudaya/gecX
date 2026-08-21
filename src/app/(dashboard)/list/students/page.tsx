@@ -142,8 +142,6 @@ const StudentListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
   const query: Prisma.StudentWhereInput = {};
 
   if (queryParams) {
@@ -198,24 +196,19 @@ const StudentListPage = async ({
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
       <PinnedItemsWrapper entityType="students" baseUrl="/list/students" role={role} />
       <div className="bg-card text-card-foreground p-4 rounded-xl border border-border">
-        {/* TOP */}
         <div className="flex items-center justify-between mb-4">
         <h1 className="hidden md:block text-lg font-semibold">All Students</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch items={searchItems} entityLabel="Students" allowPinning={true} role={role} />
           <div className="flex items-center gap-4 self-end">
             {role === "admin" && (
-              // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-black dark:bg-white [&_img]:invert dark:[&_img]:invert-0">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
+
               <FormContainer table="student" type="create" />
             )}
           </div>
         </div>
       </div>
-      {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={data} />
-      {/* PAGINATION */}
       <Pagination page={p} count={count} />
       </div>
     </div>

@@ -30,7 +30,6 @@ export function FollowButton({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Check for pending request on mount
   useEffect(() => {
     const checkPending = async () => {
       const result = await getPendingFollowRequest(targetUserId);
@@ -47,7 +46,6 @@ export function FollowButton({
 
     if (isLoading) return;
 
-    // If already pending, clicking will cancel
     if (isPending) {
       setIsLoading(true);
       try {
@@ -72,7 +70,7 @@ export function FollowButton({
     try {
       const result = await followUser(targetUserId);
       if (result.pending) {
-        // Request is pending approval
+
         setIsPending(true);
         setIsFollowing(false);
         onFollowChange?.(false);
@@ -90,7 +88,6 @@ export function FollowButton({
     }
   }, [isFollowing, isPending, isLoading, targetUserId, onFollowChange, router]);
 
-  // Get button label
   const getLabel = () => {
     if (isFollowing) return "Following";
     if (isPending) return "Request Sent";
@@ -98,7 +95,6 @@ export function FollowButton({
     return "Follow";
   };
 
-  // On custom-bg profiles bypass shadcn Button variants to avoid dark-theme bg bleeding through
   if (hasCustomBg) {
     const btnStyle: React.CSSProperties = isFollowing || isPending
       ? bgIsLight
@@ -118,7 +114,6 @@ export function FollowButton({
     );
   }
 
-  // Default — use shadcn Button (viewer's theme is fine when no custom profile bg)
   return (
     <Button
       variant={isFollowing || isPending ? "outline" : "default"}

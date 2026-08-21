@@ -32,7 +32,7 @@ export default async function SupportPage({
     try {
       selectedTicketData = await getTicketMessages(Number(searchParams.ticketId));
     } catch (e) {
-      // Invalid ticket id or unauthorized
+
     }
   }
 

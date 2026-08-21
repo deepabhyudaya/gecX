@@ -106,7 +106,6 @@ export default function AcademicSubjectsAdminPage() {
         Manage subjects available for students to tag their questions.
       </p>
 
-      {/* Add new subject */}
       <div className="flex gap-3 items-end mb-8 bg-muted/50 p-4 rounded-lg">
         <div className="flex-1">
           <label className="text-sm font-medium mb-1 block">Subject Name</label>
@@ -133,7 +132,6 @@ export default function AcademicSubjectsAdminPage() {
         </Button>
       </div>
 
-      {/* Subjects list */}
       {loading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="animate-spin text-muted-foreground" />

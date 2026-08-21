@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
 
   revalidatePath("/teacher/courses/builder");
 
-  // Redirect back to the builder page
   return NextResponse.redirect(
     new URL("/teacher/courses/builder", req.url)
   );

@@ -5,7 +5,6 @@ interface CommonControlledStateProps<T> {
   defaultValue?: T;
 }
 
-// eslint-disable-next-line
 export function useControlledState<T, Rest extends any[] = []>(
   props: CommonControlledStateProps<T> & {
     onChange?: (value: T, ...args: Rest) => void;

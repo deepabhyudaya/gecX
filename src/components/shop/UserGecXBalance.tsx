@@ -9,10 +9,10 @@ interface UserGecXBalanceProps {
   totalSpent?: number;
 }
 
-const UserGecXBalance = ({ 
-  balance, 
-  totalEarned = 0, 
-  totalSpent = 0 
+const UserGecXBalance = ({
+  balance,
+  totalEarned = 0,
+  totalSpent = 0
 }: UserGecXBalanceProps) => {
   return (
     <Card className="min-w-fit">
@@ -27,7 +27,7 @@ const UserGecXBalance = ({
               <p className="text-2xl font-bold">{balance.toLocaleString()}</p>
             </div>
           </div>
-          
+
           {(totalEarned > 0 || totalSpent > 0) && (
             <div className="flex gap-4 text-sm">
               <div className="flex items-center gap-1 text-green-600">

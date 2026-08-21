@@ -17,10 +17,10 @@ const SIZE_CONFIG = {
   sticker: { maxWidth: 160, maxHeight: 160 },
 };
 
-export default function ImageEmbed({ 
-  src, 
-  alt, 
-  className = "", 
+export default function ImageEmbed({
+  src,
+  alt,
+  className = "",
   maxHeight: customMaxHeight,
   size = 'default'
 }: ImageEmbedProps) {
@@ -28,12 +28,10 @@ export default function ImageEmbed({
   const [hasError, setHasError] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Get size configuration
   const config = SIZE_CONFIG[size];
   const maxHeight = customMaxHeight ?? config.maxHeight;
   const maxWidth = config.maxWidth;
 
-  // Extract domain for display
   const domain = (() => {
     try {
       return new URL(src).hostname.replace(/^www\./, "");
@@ -64,15 +62,13 @@ export default function ImageEmbed({
 
   return (
     <div className={`group/image ${className}`}>
-      {/* Image container with loading skeleton */}
       <div
         className={`relative rounded-lg overflow-hidden bg-muted ${isLoading ? "animate-pulse" : ""} ${size === 'sticker' ? 'rounded-xl' : ''}`}
-        style={{ 
+        style={{
           maxHeight: isExpanded ? undefined : maxHeight,
           maxWidth: isExpanded ? undefined : maxWidth,
         }}
       >
-        {/* Loading skeleton */}
         {isLoading && (
           <div className="absolute inset-0 bg-muted flex items-center justify-center z-10">
             <div className="w-8 h-8 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
@@ -94,7 +90,6 @@ export default function ImageEmbed({
           loading="lazy"
         />
 
-        {/* Expand hint overlay */}
         {!isLoading && !isExpanded && (
           <div className="absolute bottom-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity z-20">
             <span className="text-[10px] bg-black/50 text-white px-2 py-1 rounded-full">
@@ -104,7 +99,6 @@ export default function ImageEmbed({
         )}
       </div>
 
-      {/* Domain badge for trust */}
       <div className="flex items-center justify-between mt-1.5">
         <a
           href={src}

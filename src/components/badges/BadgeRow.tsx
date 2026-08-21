@@ -13,7 +13,7 @@ export default function BadgeRow({ userId, isSelf }: { userId: string, isSelf?: 
       .then(res => res.json())
       .then(data => {
         if (data.badges) {
-          // Sort badges: highest tier first
+
           const sorted = data.badges.sort((a: any, b: any) => b.tier - a.tier);
           setBadges(sorted);
         }
@@ -29,7 +29,7 @@ export default function BadgeRow({ userId, isSelf }: { userId: string, isSelf?: 
 
   if (badges.length === 0) {
     if (isSelf) return <div className="bg-black/40 rounded-lg px-2 py-1.5 border border-white/5"><span className="text-[10px] text-white/50 whitespace-nowrap">Earn your first badge!</span></div>;
-    return null; 
+    return null;
   }
 
   return (

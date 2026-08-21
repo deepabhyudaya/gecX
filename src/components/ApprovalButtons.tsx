@@ -23,7 +23,7 @@ const ApprovalButtons = ({ id }: { id: number }) => {
     }
     if (approveState.error) {
       toast.error("Something went wrong!");
-    } 
+    }
   }, [approveState]);
 
   useEffect(() => {

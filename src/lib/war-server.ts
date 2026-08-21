@@ -1,46 +1,29 @@
-// War-server helpers (Phase 2A).
-// Centralises every server-side mutation that the war engine needs to perform
-// on a battlefield/duel-arena `Server`:
-//   - creating war-scoped custom `ServerRole`s (CR, Warrior, Duelist) with sensible defaults
-//   - assigning those roles to members
-//   - posting and updating a single "scoreboard" `ServerMessage` per rivalry
-//   - posting system messages into the lore-archive / hall-of-fame channels
-//   - archiving the server at conclude time (rename + freeze flag on the war row)
-//
-// Every function accepts an optional `tx` Prisma client so it composes cleanly
-// inside the `$transaction` blocks added in Phase 1.
+
 
 import prisma from "./prisma";
 import { ROLE_PERMISSIONS } from "./role-permissions";
 
 type Db = typeof prisma | any;
 
-// ============================================================================
-// ROLE CREATION
-// ============================================================================
-
 export interface WarRoleSeed {
   name: string;
   color?: string | null;
   iconUrl?: string | null;
-  position: number; // higher = more powerful (Discord style)
+  position: number;
   permissions?: bigint;
   hoist?: boolean;
 }
 
-/** Default permission bundle for the auto-created Warrior role. */
 const WARRIOR_PERMISSIONS =
   ROLE_PERMISSIONS.VIEW_CHANNELS |
   ROLE_PERMISSIONS.SEND_MESSAGES |
   ROLE_PERMISSIONS.MENTION_EVERYONE;
 
-/** Default permission bundle for the auto-created CR role (warrior + light mod). */
 const CR_PERMISSIONS =
   WARRIOR_PERMISSIONS |
   ROLE_PERMISSIONS.MANAGE_MESSAGES |
   ROLE_PERMISSIONS.MUTE_MEMBERS;
 
-/** Creates a single custom ServerRole on the given war server. */
 export async function createWarServerRole(
   serverId: string,
   seed: WarRoleSeed,
@@ -61,11 +44,6 @@ export async function createWarServerRole(
   return role.id;
 }
 
-/**
- * Create both Warrior roles (one per class) and both CR roles for a branch-war
- * battlefield server. Order is stable so the caller can store the four ids on
- * the `ClassRivalry` row.
- */
 export async function createBranchWarRoles(
   serverId: string,
   classA: { name: string },
@@ -77,7 +55,7 @@ export async function createBranchWarRoles(
   warriorARoleId: string;
   warriorBRoleId: string;
 }> {
-  // Created sequentially so they nest cleanly inside an interactive Prisma tx.
+
   const crARoleId = await createWarServerRole(serverId, {
     name: `CR · ${classA.name}`,
     color: "#FF6B6B",
@@ -105,7 +83,6 @@ export async function createBranchWarRoles(
   return { crARoleId, crBRoleId, warriorARoleId, warriorBRoleId };
 }
 
-/** Create the Duelist role for a 1v1 student duel arena. */
 export async function createStudentWarRoles(
   serverId: string,
   db: Db = prisma
@@ -123,16 +100,6 @@ export async function createStudentWarRoles(
   return { warriorRoleId };
 }
 
-// ============================================================================
-// ROLE ASSIGNMENT (engine-side, no auth check — used inside trusted server actions)
-// ============================================================================
-
-/**
- * Assigns a role to a server member by userId. Idempotent: if the member
- * already has the role this is a silent no-op and returns false. Returns true
- * when a new assignment was created. Silently skips if the user isn't a
- * server member yet.
- */
 export async function assignWarRole(
   serverId: string,
   userId: string,
@@ -151,12 +118,11 @@ export async function assignWarRole(
     });
     return true;
   } catch (err: any) {
-    if (err?.code === "P2002") return false; // already has the role
+    if (err?.code === "P2002") return false;
     throw err;
   }
 }
 
-/** Bulk-assigns one role to many users; idempotent. */
 export async function assignWarRoleToMany(
   serverId: string,
   userIds: string[],
@@ -185,10 +151,6 @@ export async function assignWarRoleToMany(
   return { assigned, skipped: userIds.length - assigned };
 }
 
-// ============================================================================
-// CHANNEL LOOKUP
-// ============================================================================
-
 export async function findWarChannelByName(
   serverId: string,
   name: string,
@@ -201,10 +163,6 @@ export async function findWarChannelByName(
   return ch ?? null;
 }
 
-// ============================================================================
-// SYSTEM MESSAGE POSTING
-// ============================================================================
-
 interface SystemMessageOpts {
   channelId: string;
   content: string;
@@ -214,11 +172,6 @@ interface SystemMessageOpts {
   db?: Db;
 }
 
-/**
- * Posts a system-authored message into a war channel. Uses sentinel sender
- * fields (no FK on `ServerMessage.senderId`) so we don't pollute the audit
- * trail with a real user id.
- */
 export async function postWarSystemMessage(opts: SystemMessageOpts) {
   const db: Db = opts.db ?? prisma;
   return db.serverMessage.create({
@@ -232,10 +185,6 @@ export async function postWarSystemMessage(opts: SystemMessageOpts) {
     },
   });
 }
-
-// ============================================================================
-// SCOREBOARD (single canonical message per rivalry, edited on every score change)
-// ============================================================================
 
 export interface BranchScoreboard {
   classAName: string;
@@ -287,10 +236,6 @@ export function renderStudentScoreboard(s: StudentScoreboard): string {
   return lines.join("\n");
 }
 
-/**
- * Create-or-edit the canonical scoreboard message for a rivalry. Returns the
- * message id (caller should persist it on the rivalry row on first creation).
- */
 export async function upsertScoreboardMessage(
   channelId: string,
   content: string,
@@ -309,8 +254,7 @@ export async function upsertScoreboardMessage(
       });
       return existingMessageId;
     }
-    // The persisted id no longer points to a live message (channel was wiped,
-    // message was hard-deleted, etc.) — fall through and create a new one.
+
   }
   const created = await db.serverMessage.create({
     data: {
@@ -324,10 +268,6 @@ export async function upsertScoreboardMessage(
   });
   return created.id;
 }
-
-// ============================================================================
-// ARCHIVE (renames the server and writes a final summary post)
-// ============================================================================
 
 export async function archiveWarServer(
   serverId: string | null,

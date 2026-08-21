@@ -30,9 +30,6 @@ export async function GET(req: NextRequest) {
       height: Number(gif.images?.fixed_height?.height || 150),
     }));
 
-    // GIFs are static — same query returns same results for hours. Long
-    // public cache (response is non-sensitive) eliminates redundant Giphy
-    // round-trips when users open the picker repeatedly.
     return NextResponse.json(
       { results },
       {

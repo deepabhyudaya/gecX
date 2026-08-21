@@ -146,7 +146,6 @@ export default function EventThemesClient({ initialThemes }: Props) {
 
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; theme: EventTheme | null }>({ open: false, theme: null });
 
-  // Fetch custom emojis on mount
   useEffect(() => {
     fetch("/api/user-emojis")
       .then((res) => res.json())
@@ -330,7 +329,6 @@ export default function EventThemesClient({ initialThemes }: Props) {
         </Button>
       </div>
 
-      {/* Form */}
       {showForm && (
         <Card className="border-primary/20">
           <CardHeader>
@@ -591,7 +589,6 @@ export default function EventThemesClient({ initialThemes }: Props) {
         </Card>
       )}
 
-      {/* Theme List */}
       <div className="grid gap-4 md:grid-cols-2">
         {themes.map((theme) => (
           <Card key={theme.id} className={theme.isActive ? "border-green-500/50 ring-1 ring-green-500/20" : ""}>
@@ -661,7 +658,6 @@ export default function EventThemesClient({ initialThemes }: Props) {
         </div>
       )}
 
-      {/* Delete Dialog */}
       <Dialog open={deleteDialog.open} onOpenChange={(o) => setDeleteDialog({ open: o, theme: deleteDialog.theme })}>
         <DialogContent>
           <DialogHeader>

@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-// Set a custom streak for any user (admin testing)
 export async function setCustomUserStreak(username: string, streak: number) {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -15,7 +14,6 @@ export async function setCustomUserStreak(username: string, streak: number) {
     throw new Error("Invalid username or streak amount");
   }
 
-  // Find user profile
   const profiles = await prisma.$queryRaw`
     SELECT "userId", "currentStreak", "longestStreak"
     FROM "UserCommunityProfile"
@@ -49,7 +47,6 @@ export async function setCustomUserStreak(username: string, streak: number) {
   };
 }
 
-// Set a custom streak for all admins (testing)
 export async function setStreakForAllAdmins(streak: number) {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -64,7 +61,7 @@ export async function setStreakForAllAdmins(streak: number) {
   const lastActive = streak > 0 ? new Date().toISOString() : null;
 
   for (const admin of admins) {
-    // Check if profile exists
+
     const profiles = await prisma.$queryRaw`
       SELECT "userId", "longestStreak" FROM "UserCommunityProfile"
       WHERE "userId" = ${admin.id}
@@ -73,7 +70,7 @@ export async function setStreakForAllAdmins(streak: number) {
     const profile = (profiles as any[])[0];
 
     if (!profile) {
-      // Create profile with streak
+
       await prisma.$executeRaw`
         INSERT INTO "UserCommunityProfile"
           ("userId", "userType", "username", "displayName", "currentStreak", "longestStreak", "lastActiveDate", "createdAt", "updatedAt")
@@ -105,14 +102,12 @@ export async function setStreakForAllAdmins(streak: number) {
   return { success: true, updated: results.length, admins: results };
 }
 
-// Reset streak for any user (admin testing)
 export async function resetUserStreak(username: string) {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
 
   if (role !== "admin") throw new Error("Admin only");
 
-  // Find user profile
   const profiles = await prisma.$queryRaw`
     SELECT "userId", "currentStreak", "longestStreak"
     FROM "UserCommunityProfile"
@@ -122,7 +117,6 @@ export async function resetUserStreak(username: string) {
   const profile = (profiles as any[])[0];
   if (!profile) throw new Error("User not found");
 
-  // Delete activity logs for this user
   await prisma.$executeRaw`
     DELETE FROM "UserActivityLog"
     WHERE "userId" = ${profile.userId}

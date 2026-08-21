@@ -77,7 +77,6 @@ const ResultForm = ({
         <InputField label="Id" name="id" defaultValue={data?.id} register={register} error={errors?.id} hidden />
       )}
 
-      {/* Score */}
       <div className="flex flex-wrap gap-4">
         <InputField
           label="Score (0–100)"
@@ -89,7 +88,6 @@ const ResultForm = ({
         />
       </div>
 
-      {/* Student */}
       <div className="flex flex-col gap-1 w-full">
         <label className={lbl}>Student</label>
         <select className={sel} {...register("studentId")} defaultValue={data?.studentId ?? ""}>
@@ -101,7 +99,6 @@ const ResultForm = ({
         {errors.studentId?.message && <p className={err}>{errors.studentId.message.toString()}</p>}
       </div>
 
-      {/* Exam or Assignment - pick one */}
       <div className="flex flex-wrap gap-4">
         <div className="flex flex-col gap-1 w-full md:w-[45%]">
           <label className={lbl}>Exam (optional)</label>

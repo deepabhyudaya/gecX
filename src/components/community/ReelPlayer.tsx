@@ -80,7 +80,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
   const youtubeId = useMemo(() => getYouTubeId(reel.videoUrl), [reel.videoUrl]);
   const isYouTube = !!youtubeId;
 
-  // Handle Play/Pause based on active state
   useEffect(() => {
     if (active) {
       setIsPlaying(true);
@@ -89,7 +88,7 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
           setIsPlaying(false);
         });
       } else if (isYouTube && iframeRef.current) {
-        // Send command to play YouTube video
+
         iframeRef.current.contentWindow?.postMessage(
           JSON.stringify({ event: "command", func: "playVideo" }),
           "*"
@@ -101,7 +100,7 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
         videoRef.current.pause();
         videoRef.current.currentTime = 0;
       } else if (isYouTube && iframeRef.current) {
-        // Send command to pause YouTube video
+
         iframeRef.current.contentWindow?.postMessage(
           JSON.stringify({ event: "command", func: "pauseVideo" }),
           "*"
@@ -110,7 +109,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
     }
   }, [active, isYouTube]);
 
-  // Sync volume mute state to elements when isMuted or active changes
   useEffect(() => {
     if (!active) return;
 
@@ -125,7 +123,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
     }
   }, [isMuted, isYouTube, active]);
 
-  // Log a view after 2.5 seconds of active watch
   useEffect(() => {
     if (!active || viewLoggedRef.current) return;
 
@@ -144,7 +141,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
     return () => clearTimeout(timer);
   }, [active, reel.id]);
 
-  // Handle Toggle Play
   const togglePlay = () => {
     if (isYouTube && iframeRef.current) {
       if (isPlaying) {
@@ -174,13 +170,11 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
     }
   };
 
-  // Handle Toggle Mute
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     onMuteToggle();
   };
 
-  // Handle Social Like Action
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -192,14 +186,12 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
     }
   };
 
-  // Handle Share Click
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(`${window.location.origin}/community/post/${reel.id}`);
     toast.success("Link copied!");
   };
 
-  // Author details formatting
   const nameColorStyle = useMemo(() => {
     if (reel.author.equippedColor) return { color: reel.author.equippedColor };
     return getKarmaTierTextGradientStyle(reel.author.karmaPoints || 0) || {
@@ -214,7 +206,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
       onClick={togglePlay}
       className="relative w-full h-full flex items-center justify-center bg-black snap-start overflow-hidden select-none cursor-pointer"
     >
-      {/* Player Section */}
       {isYouTube ? (
         <div className={cn("w-full relative", isPortrait ? "h-full" : "aspect-video max-h-full")}>
           <iframe
@@ -225,7 +216,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
             allow="autoplay; encrypted-media"
             title={reel.content}
           />
-          {/* Transparent Overlay for visual layering only — clicks go to the YouTube iframe */}
           <div className="absolute inset-0 bg-transparent z-10 pointer-events-none" />
         </div>
       ) : (
@@ -239,7 +229,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
         />
       )}
 
-      {/* Play/Pause Overlay Indicator */}
       {!isPlaying && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-10 transition-opacity duration-300">
           <div className="p-4 rounded-full bg-black/60 text-white scale-110 transition-transform">
@@ -248,7 +237,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
         </div>
       )}
 
-      {/* Bottom Info Details Overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white z-10 pointer-events-none flex flex-col justify-end min-h-[100px]">
         <div className="flex items-center gap-3 pointer-events-auto max-w-[75%]">
           <UserCardTrigger userId={reel.author.userId}>
@@ -284,9 +272,7 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
         </p>
       </div>
 
-      {/* Floating Right Actions Bar */}
       <div className="absolute right-3 bottom-20 landscape:bottom-4 z-20 flex flex-col items-center gap-2 sm:gap-3 landscape:flex-row landscape:left-1/2 landscape:-translate-x-1/2 landscape:right-auto landscape:gap-4">
-        {/* Mute */}
         <button
           onClick={toggleMute}
           className="group flex flex-col items-center gap-1 focus:outline-none"
@@ -296,7 +282,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
           </div>
         </button>
 
-        {/* Like */}
         <button
           onClick={handleLike}
           className="group flex flex-col items-center gap-1 focus:outline-none"
@@ -307,7 +292,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
           <span className="text-[10px] font-medium text-white/90 text-shadow whitespace-nowrap">{formatCount(likeCount)}</span>
         </button>
 
-        {/* Comments */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -321,7 +305,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
           <span className="text-[10px] font-medium text-white/90 text-shadow whitespace-nowrap">{formatCount(reel.commentCount)}</span>
         </button>
 
-        {/* Repost */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -335,7 +318,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
           <span className="text-[10px] font-medium text-white/90 text-shadow whitespace-nowrap">{formatCount(repostCount)}</span>
         </button>
 
-        {/* Share */}
         <button
           onClick={handleShare}
           className="group flex flex-col items-center gap-1 focus:outline-none"
@@ -346,7 +328,6 @@ export function ReelPlayer({ reel, active, isMuted, onMuteToggle, onCommentsClic
           <span className="text-[10px] font-medium text-white/90 text-shadow whitespace-nowrap">Share</span>
         </button>
 
-        {/* Views */}
         <div className="flex flex-col items-center gap-1">
           <div className="p-2 sm:p-2.5 rounded-full bg-black/20 text-white/70 border border-white/5 backdrop-blur-sm cursor-default">
             <Eye className="size-4 sm:size-5" />

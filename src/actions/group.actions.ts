@@ -89,7 +89,6 @@ export async function addMemberToGroup(groupId: number, userIdToAdd: string) {
   const existingMember = group.members.find((m) => m.userId === userIdToAdd);
   if (existingMember) throw new Error("User is already a member");
 
-  // Lookup user details
   const student = await prisma.student.findUnique({ where: { id: userIdToAdd } });
   const teacher = await prisma.teacher.findUnique({ where: { id: userIdToAdd } });
   const parent = await prisma.parent.findUnique({ where: { id: userIdToAdd } });
@@ -149,7 +148,7 @@ export async function getMyGroups() {
             orderBy: { createdAt: "desc" },
             take: 1,
           },
-          members: true, // Included for reaction popovers
+          members: true,
         },
       },
     },
@@ -208,10 +207,8 @@ export async function getGroupMessages(groupId: number, limit: number = 50, befo
     take: limit,
   });
 
-  // Get unique sender IDs
   const senderIds = [...new Set(messages.map((m) => m.senderId).filter((id) => id && id !== "system"))];
 
-  // Batch fetch karma, equipped colors, and avatars
   const [karmaProfiles, equippedColors, communityProfiles] = await Promise.all([
     prisma.userCommunityProfile.findMany({
       where: { userId: { in: senderIds } },
@@ -221,7 +218,7 @@ export async function getGroupMessages(groupId: number, limit: number = 50, befo
       where: { userId: { in: senderIds } },
       include: { usernameColorItem: true, nameplateItem: true },
     }),
-    // Fallback avatar from community profile
+
     prisma.userCommunityProfile.findMany({
       where: { userId: { in: senderIds } },
       select: { userId: true, avatar: true },
@@ -245,7 +242,6 @@ export async function getGroupMessages(groupId: number, limit: number = 50, befo
     senderCustomAvatar: customAvatarMap.get(msg.senderId) || null,
   }));
 }
-
 
 export async function sendGroupMessage(groupId: number, content: string, replyToId?: number) {
   const { userId, sessionClaims } = auth();
@@ -272,12 +268,10 @@ export async function sendGroupMessage(groupId: number, content: string, replyTo
     include: { reactions: true },
   });
 
-  // Award karma for sending a group message
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.messageSent, "group_message_sent");
   await recordUserActivity(userId, "message");
 
-  // Broadcast via Ably
   await ablyPublish(getGroupChannelName(groupId), {
     type: "message:new",
     message: msg,
@@ -326,7 +320,6 @@ export async function sendGroupPoll(groupId: number, question: string, options: 
     },
   });
 
-  // Award karma for sending a group message (poll)
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.messageSent, "group_poll_sent");
   await recordUserActivity(userId, "message");
@@ -367,7 +360,6 @@ export async function sendGroupCommandMessage(
     },
   });
 
-  // Award karma for sending a group message (command)
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.messageSent, "group_command_sent");
 
@@ -394,7 +386,6 @@ export async function deleteGroupMessage(messageId: number) {
 
   await prisma.groupMessage.delete({ where: { id: messageId } });
 
-  // Broadcast deletion via Ably
   await ablyPublish(getGroupChannelName(msg.groupId), {
     type: "message:delete",
     messageId,
@@ -434,7 +425,6 @@ export async function toggleGroupMessageReaction(messageId: number, emoji: strin
       },
     });
 
-    // Award karma to message sender when someone reacts to their message (1 point)
     const message = await prisma.groupMessage.findUnique({
       where: { id: messageId },
       select: { senderId: true, groupId: true },
@@ -449,7 +439,6 @@ export async function toggleGroupMessageReaction(messageId: number, emoji: strin
     eventType = "reaction:add";
   }
 
-  // Get groupId if not already set
   if (!groupId) {
     const msg = await prisma.groupMessage.findUnique({
       where: { id: messageId },
@@ -537,7 +526,6 @@ export async function toggleMuteMember(groupId: number, targetUserId: string) {
     data: { isMuted: newMuted },
   });
 
-  // Broadcast mute change to all group members via Ably
   await ablyPublish(getGroupChannelName(groupId), {
     type: "member:muted",
     userId: targetUserId,

@@ -27,7 +27,6 @@ export function LeaderboardClient({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Function to fetch fresh data
   const refreshData = useCallback(async (newTimeframe?: Timeframe) => {
     const tf = newTimeframe || timeframe;
     setIsRefreshing(true);
@@ -39,8 +38,7 @@ export function LeaderboardClient({
         if (typeof window !== 'undefined') {
           setLastUpdated(new Date());
         }
-        
-        // Calculate my rank from the data
+
         if (userId && data.leaderboard) {
           const myEntry = data.leaderboard.find((e: LeaderboardEntry) => e.userId === userId);
           setMyRank(myEntry?.rank || null);
@@ -53,7 +51,6 @@ export function LeaderboardClient({
     }
   }, [timeframe, userId]);
 
-  // Auto-refresh every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       refreshData();
@@ -62,17 +59,15 @@ export function LeaderboardClient({
     return () => clearInterval(interval);
   }, [refreshData]);
 
-  // Refresh when timeframe changes
   const handleTimeframeChange = (newTimeframe: Timeframe) => {
     setTimeframe(newTimeframe);
-    // Update URL without reload
+
     const url = new URL(window.location.href);
     url.searchParams.set("timeframe", newTimeframe);
     window.history.pushState({}, "", url);
     refreshData(newTimeframe);
   };
 
-  // Listen for karma update events from other tabs/windows
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "karmaUpdate") {
@@ -83,7 +78,6 @@ export function LeaderboardClient({
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [refreshData]);
 
-  // Set mounted state and initial time only on client side (prevents hydration mismatch)
   useEffect(() => {
     setIsMounted(true);
     setLastUpdated(new Date());
@@ -91,7 +85,6 @@ export function LeaderboardClient({
 
   return (
     <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -121,12 +114,10 @@ export function LeaderboardClient({
             </button>
           </div>
 
-          {/* Timeframe Tabs */}
           <TimeframeTabs current={timeframe} onChange={handleTimeframeChange} />
         </div>
       </div>
 
-      {/* My Rank Card (if user is logged in) */}
       <AnimatePresence mode="wait">
         {userId && myRank && (
           <motion.div
@@ -148,7 +139,6 @@ export function LeaderboardClient({
         )}
       </AnimatePresence>
 
-      {/* Leaderboard Content */}
       <div className="flex-1 p-4">
         <AnimatePresence mode="wait">
           <motion.div
@@ -166,7 +156,6 @@ export function LeaderboardClient({
           </motion.div>
         </AnimatePresence>
 
-        {/* Footer */}
         <div className="mt-8 pt-6 border-t border-border text-center">
           <p className="text-xs text-muted-foreground">
             Earn karma by posting, commenting, getting likes, and maintaining good attendance.

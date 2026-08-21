@@ -11,7 +11,6 @@ const EventList = async ({ dateParam }: { dateParam: string | undefined }) => {
   const dayEnd = new Date(date);
   dayEnd.setHours(23, 59, 59, 999);
 
-  // Role-based class filter — students/teachers/parents only see their class events
   const roleConditions: Record<string, object> = {
     teacher: { lessons: { some: { teacherId: userId! } } },
     student: { students: { some: { id: userId! } } },
@@ -21,7 +20,7 @@ const EventList = async ({ dateParam }: { dateParam: string | undefined }) => {
   const classFilter =
     role && role !== "admin" && roleConditions[role]
       ? { OR: [{ classId: null }, { class: roleConditions[role] }] }
-      : {}; // admins see all events
+      : {};
 
   let data = await prisma.event.findMany({
     where: {

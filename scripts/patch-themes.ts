@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Fetching all themes...");
   const allThemes = await prisma.usernameColorShopItem.findMany({ where: { type: "theme" } });
-  
+
   let updatedCount = 0;
   for (const theme of APP_THEMES) {
     const existing = allThemes.find(t => t.name === theme.name);
@@ -18,7 +18,7 @@ async function main() {
       updatedCount++;
     }
   }
-  
+
   console.log(`Updated ${updatedCount} themes successfully.`);
 }
 

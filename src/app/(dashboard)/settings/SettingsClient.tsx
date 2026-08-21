@@ -176,19 +176,16 @@ function Divider() {
   return <div className="h-px bg-border/40" />;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
 export default function SettingsClient({ userInfo }: { userInfo: UserInfo }) {
   const [activeTab, setActiveTab] = useState<Tab>("account");
   const { theme, setTheme } = useTheme();
 
-  /* notification toggles */
   const [notifEmail, setNotifEmail] = useState(true);
   const [notifAnnouncements, setNotifAnnouncements] = useState(true);
   const [notifEvents, setNotifEvents] = useState(true);
   const [notifResults, setNotifResults] = useState(false);
   const [notifAttendance, setNotifAttendance] = useState(false);
 
-  /* security toggles */
   const [twoFA, setTwoFA] = useState(false);
   const [sessionAlerts, setSessionAlerts] = useState(true);
 
@@ -268,7 +265,7 @@ export default function SettingsClient({ userInfo }: { userInfo: UserInfo }) {
               <code className="px-3 py-1.5 rounded-md bg-muted font-mono text-sm border border-border">
                 {userInfo.accessCode || "Not generated"}
               </code>
-              <button 
+              <button
                 onClick={() => setShowRerollDialog(true)}
                 className="p-2 rounded-md border border-border bg-background hover:bg-muted transition-colors"
                 title="Reroll Access Code"
@@ -566,7 +563,6 @@ export default function SettingsClient({ userInfo }: { userInfo: UserInfo }) {
     <div className="h-full overflow-y-auto custom-scrollbar">
       <div className="flex-1 p-4 md:p-6 pb-24">
         <div className="max-w-4xl mx-auto flex flex-col gap-6">
-          {/* Page header */}
           <div>
             <h1 className="text-2xl font-bold">Settings</h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -575,7 +571,6 @@ export default function SettingsClient({ userInfo }: { userInfo: UserInfo }) {
           </div>
 
           <div className="flex flex-col md:flex-row gap-6">
-            {/* Sidebar */}
             <nav
               className="w-full md:w-52 shrink-0 flex md:flex-col gap-1"
               aria-label="Settings navigation"
@@ -592,7 +587,6 @@ export default function SettingsClient({ userInfo }: { userInfo: UserInfo }) {
               ))}
             </nav>
 
-            {/* Panel */}
             <div className="flex-1 min-w-0">{content[activeTab]}</div>
           </div>
         </div>

@@ -22,7 +22,6 @@ export default async function TeacherStorefrontPage({ params }: { params: { user
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      {/* Hero Section */}
       <div className="bg-white border-b border-[#ebebeb] pt-24 pb-16 px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-[48px] font-semibold text-[#171717] tracking-tight leading-[1.1] mb-4">
@@ -34,7 +33,6 @@ export default async function TeacherStorefrontPage({ params }: { params: { user
         </div>
       </div>
 
-      {/* Courses List */}
       <div className="max-w-4xl mx-auto py-16 px-8">
         <h2 className="text-[32px] font-semibold text-[#171717] tracking-tight mb-8">Available Courses</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

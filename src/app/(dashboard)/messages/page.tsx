@@ -27,11 +27,11 @@ const MessagesPage = async ({
     getMyGroups(),
     getMyCommunityProfile(),
   ]);
-  
+
   const selectedId = searchParams.convId ? parseInt(searchParams.convId) : null;
   const isGroup = searchParams.type === "group";
   let selectedData = null;
-  
+
   if (selectedId) {
     if (isGroup) {
       const messages = await getGroupMessages(selectedId);
@@ -58,7 +58,7 @@ const MessagesPage = async ({
 
   return (
     <div className="flex-1 p-4 flex flex-col h-full">
-      <DirectMessageClient 
+      <DirectMessageClient
         conversations={conversations}
         groups={groups as any}
         selectedData={selectedData}

@@ -9,8 +9,7 @@ type Props = {
 
 export default function CreativeClashManager({ bout }: Props) {
   const [submitting, setSubmitting] = useState(false);
-  
-  // Voting / Grading State
+
   const [gradesA, setGradesA] = useState({ creativity: 0, execution: 0, impact: 0 });
   const [gradesB, setGradesB] = useState({ creativity: 0, execution: 0, impact: 0 });
 
@@ -21,7 +20,7 @@ export default function CreativeClashManager({ bout }: Props) {
     if (scoreA === 0 && scoreB === 0) {
       return alert("Please enter grades before finalizing.");
     }
-    
+
     setSubmitting(true);
     try {
       await recordStudentBout({
@@ -40,9 +39,9 @@ export default function CreativeClashManager({ bout }: Props) {
   }
 
   const renderSlider = (
-    label: string, 
-    value: number, 
-    setter: (val: number) => void, 
+    label: string,
+    value: number,
+    setter: (val: number) => void,
     color: "blue" | "red"
   ) => (
     <div className="space-y-2">
@@ -71,7 +70,6 @@ export default function CreativeClashManager({ bout }: Props) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Student A */}
         <div className="bg-card border border-blue-500/30 rounded-2xl p-6 shadow-[0_0_15px_-3px_rgba(59,130,246,0.1)]">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-border">
             <div>
@@ -80,7 +78,7 @@ export default function CreativeClashManager({ bout }: Props) {
             </div>
             <div className="text-4xl font-black text-blue-500 tabular-nums">{scoreA}</div>
           </div>
-          
+
           <div className="space-y-6">
             {renderSlider("Creativity", gradesA.creativity, (v) => setGradesA({ ...gradesA, creativity: v }), "blue")}
             {renderSlider("Execution", gradesA.execution, (v) => setGradesA({ ...gradesA, execution: v }), "blue")}
@@ -88,7 +86,6 @@ export default function CreativeClashManager({ bout }: Props) {
           </div>
         </div>
 
-        {/* Student B */}
         <div className="bg-card border border-red-500/30 rounded-2xl p-6 shadow-[0_0_15px_-3px_rgba(239,68,68,0.1)]">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-border">
             <div>
@@ -97,7 +94,7 @@ export default function CreativeClashManager({ bout }: Props) {
             </div>
             <div className="text-4xl font-black text-red-500 tabular-nums">{scoreB}</div>
           </div>
-          
+
           <div className="space-y-6">
             {renderSlider("Creativity", gradesB.creativity, (v) => setGradesB({ ...gradesB, creativity: v }), "red")}
             {renderSlider("Execution", gradesB.execution, (v) => setGradesB({ ...gradesB, execution: v }), "red")}
@@ -109,9 +106,9 @@ export default function CreativeClashManager({ bout }: Props) {
       <div className="bg-card border border-border rounded-2xl p-6 text-center">
         <h3 className="font-bold text-lg mb-2">Final Verdict</h3>
         <p className="text-sm text-muted-foreground mb-6">
-          {scoreA > scoreB 
+          {scoreA > scoreB
             ? `${bout.rivalry.studentA.name} takes the lead with a more compelling submission!`
-            : scoreB > scoreA 
+            : scoreB > scoreA
             ? `${bout.rivalry.studentB.name} takes the win with superior creativity!`
             : "It's currently a dead heat. Adjust the sliders to break the tie, or submit a draw."}
         </p>

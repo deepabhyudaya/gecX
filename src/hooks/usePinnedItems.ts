@@ -4,7 +4,7 @@ export type PinnedItem = {
   id: string | number;
   name: string;
   info: string;
-  type: string; // e.g., 'student', 'teacher', 'exam'
+  type: string;
 };
 
 export const usePinnedItems = (type?: string) => {
@@ -34,7 +34,7 @@ export const usePinnedItems = (type?: string) => {
       }
     };
     window.addEventListener("storage", handleStorageChange);
-    // Custom event for same-tab updates
+
     window.addEventListener("app_pins_changed", loadPins);
 
     return () => {
@@ -47,15 +47,15 @@ export const usePinnedItems = (type?: string) => {
     try {
       const stored = localStorage.getItem("app_pinned_items");
       let current: PinnedItem[] = stored ? JSON.parse(stored) : [];
-      
+
       const exists = current.some((p) => p.id === item.id && p.type === item.type);
-      
+
       if (exists) {
         current = current.filter((p) => !(p.id === item.id && p.type === item.type));
       } else {
         current.push(item);
       }
-      
+
       localStorage.setItem("app_pinned_items", JSON.stringify(current));
       window.dispatchEvent(new Event("app_pins_changed"));
     } catch (e) {

@@ -41,8 +41,6 @@ export async function POST(req: Request) {
         const username = data.username || data.email_addresses?.[0]?.email_address || userId;
         const role = (data.public_metadata as { role?: string })?.role;
 
-        // Only sync admins automatically (they only need id and username)
-        // Other roles require additional fields that must be collected via forms
         if (role === "admin") {
           await prisma.admin.upsert({
             where: { id: userId },

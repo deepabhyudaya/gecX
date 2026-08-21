@@ -115,7 +115,6 @@ export const createClass = async (
 
     await createClassServer(created.id, created.name);
 
-    // revalidatePath("/list/class");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -161,7 +160,6 @@ export const updateClass = async (
       excludeUserId: userId || null,
     });
 
-    // revalidatePath("/list/class");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -205,7 +203,6 @@ export const deleteClass = async (
       excludeUserId: userId || null,
     });
 
-    // revalidatePath("/list/class");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -269,7 +266,6 @@ export const createTeacher = async (
       excludeUserId: userId || null,
     });
 
-    // revalidatePath("/list/teachers");
     return { success: true, error: false };
   } catch (err) {
     console.error("createTeacher error:", err);
@@ -305,7 +301,6 @@ export const deleteTeacher = async (
       excludeUserId: userId || null,
     });
 
-    // revalidatePath("/list/teachers");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -370,7 +365,7 @@ export const updateTeacher = async (
       adminIds,
       excludeUserId: userId || null,
     });
-    // revalidatePath("/list/teachers");
+
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -455,7 +450,6 @@ export const createStudent = async (
       `${data.name} ${data.surname}`
     );
 
-    // revalidatePath("/list/students");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -575,7 +569,6 @@ export const updateStudent = async (
       );
     }
 
-    // revalidatePath("/list/students");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -614,7 +607,6 @@ export const deleteStudent = async (
       excludeUserId: userId || null,
     });
 
-    // revalidatePath("/list/students");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -649,7 +641,6 @@ export const createExam = async (
       const parentIds = lesson.class.students.map((s) => s.parentId);
       const adminIds = await getAllUserIdsByRole("admin");
 
-      // Get username of the user creating the exam
       const user = await clerkClient().users.getUser(userId || "");
       const username = user.username || "unknown";
 
@@ -666,7 +657,6 @@ export const createExam = async (
       });
     }
 
-    // revalidatePath("/list/subjects");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -774,7 +764,7 @@ export const createEvent = async (
     const adminIds = await getAllUserIdsByRole("admin");
 
     if (data.classId) {
-      // Class-specific event — only notify users in that class
+
       const classData = await prisma.class.findUnique({
         where: { id: typeof data.classId === "string" ? parseInt(data.classId) : data.classId },
         include: {
@@ -790,7 +780,7 @@ export const createEvent = async (
           .map((s) => s.parentId!);
       }
     } else {
-      // General event — notify everyone
+
       [teacherIds, studentIds, parentIds] = await Promise.all([
         getAllUserIdsByRole("teacher"),
         getAllUserIdsByRole("student"),
@@ -1055,7 +1045,7 @@ export const createAnnouncement = async (
     const adminIds = await getAllUserIdsByRole("admin");
 
     if (announcementData.classId) {
-      // Class-specific announcement — only notify users in that class
+
       const classData = await prisma.class.findUnique({
         where: { id: announcementData.classId },
         include: {
@@ -1071,7 +1061,7 @@ export const createAnnouncement = async (
           .map((s: any) => s.parentId!);
       }
     } else {
-      // General announcement — notify everyone
+
       [teacherIds, studentIds, parentIds] = await Promise.all([
         getAllUserIdsByRole("teacher"),
         getAllUserIdsByRole("student"),
@@ -1555,7 +1545,6 @@ export const createResult = async (
       excludeUserId: userId || null,
     });
 
-    // Award gecX for result (async, don't block result saving)
     try {
       const examOrAssignment = data.examId ? "exam" : "assignment";
       await awardGecXForResult(data.studentId, result.score, examOrAssignment);
@@ -1618,7 +1607,7 @@ export const deleteResult = async (
   const { userId } = auth();
   const id = data.get("id") as string;
   try {
-    // Get result data before deletion for specific notification
+
     const result = await prisma.result.findUnique({
       where: { id: parseInt(id) },
       select: {
@@ -1628,7 +1617,6 @@ export const deleteResult = async (
       }
     });
 
-    // Get username of the user performing the deletion
     const user = await clerkClient().users.getUser(userId || "");
     const username = user.username || "unknown";
 
@@ -1744,7 +1732,7 @@ export const updateParent = async (
       parentIds: [data.id],
       excludeUserId: userId || null,
     });
-    // revalidatePath("/list/parents");
+
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -1758,7 +1746,7 @@ export const deleteParent = async (
   const { userId } = auth();
   const id = data.get("id") as string;
   try {
-    // Get parent data before deletion for notification
+
     const parent = await prisma.parent.findUnique({
       where: { id },
       select: { username: true }
@@ -1781,7 +1769,6 @@ export const deleteParent = async (
       excludeUserId: userId || null,
     });
 
-    // revalidatePath("/list/parents");
     return { success: true, error: false };
   } catch (err) {
     return { success: false, error: true };
@@ -1795,7 +1782,7 @@ export const createGrade = async (
   const { userId } = auth();
   try {
     const createdGrade = await prisma.grade.create({ data: { level: data.level } });
-    // Get username of the user creating the grade
+
     const user = await clerkClient().users.getUser(userId || "");
     const username = user.username || "unknown";
 
@@ -1826,7 +1813,7 @@ export const updateGrade = async (
   const { userId } = auth();
   if (!data.id) return { success: false, error: true };
   try {
-    // Get username of the user updating the grade
+
     const user = await clerkClient().users.getUser(userId || "");
     const username = user.username || "unknown";
 
@@ -1865,13 +1852,12 @@ export const deleteGrade = async (
   const { userId } = auth();
   const id = data.get("id") as string;
   try {
-    // Get grade data before deletion for specific notification
+
     const grade = await prisma.grade.findUnique({
       where: { id: parseInt(id) },
       select: { level: true }
     });
 
-    // Get username of the user performing the deletion
     const user = await clerkClient().users.getUser(userId || "");
     const username = user.username || "unknown";
 
@@ -1923,8 +1909,6 @@ export const createTicket = async (
     return { success: false, error: true };
   }
 };
-
-// ==================== COLLEGE ACTIONS ====================
 
 export const createCollege = async (
   currentState: CurrentState,
@@ -2023,7 +2007,7 @@ export const deleteCollege = async (
   const id = data.get("id") as string;
   if (!id) return { success: false, error: true };
   try {
-    // Detach from branches/students before delete (FK is SetNull-friendly via nullable field)
+
     await prisma.$transaction([
       prisma.class.updateMany({ where: { collegeId: id }, data: { collegeId: null } }),
       prisma.student.updateMany({ where: { collegeId: id }, data: { collegeId: null } }),

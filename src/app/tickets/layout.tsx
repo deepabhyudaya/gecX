@@ -3,11 +3,6 @@
 import { useEffect } from "react";
 import { GraduationCap } from "lucide-react";
 
-/**
- * Restores the user's custom theme on the tickets page (unauthenticated)
- * the same way the login page does — reads gecx_equipped_theme from
- * localStorage and applies all CSS vars as inline styles on <html>.
- */
 function ThemeRestorer() {
   useEffect(() => {
     try {
@@ -29,7 +24,7 @@ function ThemeRestorer() {
       htmlEl.classList.remove("light", "dark");
       htmlEl.classList.add(mode);
     } catch {
-      // ignore corrupt storage
+
     }
   }, []);
   return null;
@@ -39,7 +34,6 @@ export default function TicketsLayout({ children }: { children: React.ReactNode 
   return (
     <div className="h-screen overflow-y-auto bg-background/90 backdrop-blur-md text-foreground font-sans custom-scrollbar">
       <ThemeRestorer />
-      {/* Branded header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">

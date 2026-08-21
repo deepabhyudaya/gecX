@@ -62,7 +62,7 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  // Dashboards
+
   {
     label: "Admin Dashboard",
     href: "/admin",
@@ -93,7 +93,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["parent"],
   },
 
-  // Account
   {
     label: "Profile",
     href: "/profile",
@@ -127,7 +126,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["admin", "teacher", "student", "parent"],
   },
 
-  // People
   {
     label: "Teachers",
     href: "/list/teachers",
@@ -153,7 +151,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["admin", "teacher"],
   },
 
-  // Academics
   {
     label: "Colleges",
     href: "/list/colleges",
@@ -251,7 +248,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["admin", "teacher", "student", "parent"],
   },
 
-  // Courses
   {
     label: "All Courses",
     href: "/list/courses",
@@ -309,7 +305,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["student"],
   },
 
-  // Communication
   {
     label: "Messages",
     href: "/messages",
@@ -351,7 +346,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["student"],
   },
 
-  // Community
   {
     label: "Feed",
     href: "/community",
@@ -393,7 +387,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["admin", "teacher", "student", "parent"],
   },
 
-  // Support
   {
     label: "Get Support",
     href: "/support",
@@ -427,7 +420,6 @@ const NAV_ITEMS: NavItem[] = [
     visible: ["admin", "teacher", "student", "parent"],
   },
 
-  // Admin System
   {
     label: "Academic Subjects",
     href: "/admin/academic-subjects",
@@ -494,7 +486,6 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-// Group the items
 const GROUPS = Array.from(new Set(NAV_ITEMS.map((i) => i.group)));
 
 export function GlobalSearch() {
@@ -503,11 +494,9 @@ export function GlobalSearch() {
   const { user } = useUser();
   const userRole = (user?.publicMetadata.role as string) || "";
 
-  // Filter nav items based on user role
   const filteredNavItems = NAV_ITEMS.filter((item) => item.visible.includes(userRole));
   const filteredGroups = Array.from(new Set(filteredNavItems.map((i) => i.group)));
 
-  // ⌘K / Ctrl+K shortcut
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -529,7 +518,6 @@ export function GlobalSearch() {
 
   return (
     <>
-      {/* Trigger button in navbar */}
       <button
         id="global-search-trigger"
         onClick={() => setOpen(true)}
@@ -543,7 +531,6 @@ export function GlobalSearch() {
         </kbd>
       </button>
 
-      {/* Mobile icon-only trigger */}
       <button
         onClick={() => setOpen(true)}
         className="flex md:hidden items-center justify-center h-8 w-8 rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"

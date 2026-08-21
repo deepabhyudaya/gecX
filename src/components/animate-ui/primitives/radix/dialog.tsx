@@ -143,7 +143,7 @@ function DialogContent({
           ...(isXAxis ? { rotateY: rotationValue } : { rotateX: rotationValue }),
         }}
         transition={transition}
-        style={{ 
+        style={{
           perspective: 500,
           translateX: '-50%',
           translateY: '-50%',

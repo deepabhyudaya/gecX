@@ -17,7 +17,7 @@ async function main() {
         requiresTeacher: type.requiresTeacher,
         minDurationHours: type.durationHint.includes("Mins") ? 1 : parseInt(type.durationHint) * 24 || 24,
         maxDurationHours: type.durationHint.includes("Mins") ? 1 : parseInt(type.durationHint) * 24 || 24,
-        probabilityWeightForRandom: 15, // Arbitrary for seed
+        probabilityWeightForRandom: 15,
       },
       create: {
         id: type.id,

@@ -8,7 +8,6 @@ import { Announcement, Class, Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { markNotificationsByTypesAsRead } from "@/actions/notification.actions";
 
-
 type AnnouncementList = Announcement & { class: Class };
 const AnnouncementListPage = async ({
   searchParams,
@@ -20,11 +19,11 @@ const AnnouncementListPage = async ({
     "ANNOUNCEMENT_UPDATED",
     "ANNOUNCEMENT_DELETED",
   ]);
-  
+
   const { userId, sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const currentUserId = userId;
-  
+
   const columns = [
     {
       header: "Title",
@@ -48,7 +47,7 @@ const AnnouncementListPage = async ({
         ]
       : []),
   ];
-  
+
   const renderRow = (item: AnnouncementList) => (
     <tr
       key={item.id}
@@ -75,8 +74,6 @@ const AnnouncementListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
   const query: Prisma.AnnouncementWhereInput = {};
 
   if (queryParams) {
@@ -93,7 +90,6 @@ const AnnouncementListPage = async ({
     }
   }
 
-  // ROLE CONDITIONS — admins see all, others only see general + their class announcements
   const roleConditions = {
     teacher: { lessons: { some: { teacherId: currentUserId! } } },
     student: { students: { some: { id: currentUserId! } } },
@@ -111,7 +107,6 @@ const AnnouncementListPage = async ({
       query.classId = null;
     }
   }
-  // Admins: no additional filter — see all announcements
 
   const [data, count, allAnnouncements] = await prisma.$transaction([
     prisma.announcement.findMany({
@@ -139,7 +134,6 @@ const AnnouncementListPage = async ({
 
   return (
     <div className="bg-card text-card-foreground p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">
           All Announcements
@@ -153,9 +147,7 @@ const AnnouncementListPage = async ({
           </div>
         </div>
       </div>
-      {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={data} />
-      {/* PAGINATION */}
       <Pagination page={p} count={count} />
     </div>
   );

@@ -17,14 +17,12 @@ const EventsNotificationList = async ({
   const { userId, sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-  // Default to today when no date param (matches calendar initial selection)
   const date = dateParam ? new Date(dateParam) : new Date();
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);
   const dayEnd = new Date(date);
   dayEnd.setHours(23, 59, 59, 999);
 
-  // Build role-based class filter so class-specific events only show to relevant users
   const roleConditions: Record<string, object> = {
     teacher: { lessons: { some: { teacherId: userId! } } },
     student: { students: { some: { id: userId! } } },
@@ -33,7 +31,7 @@ const EventsNotificationList = async ({
 
   const classFilter = role && roleConditions[role]
     ? { OR: [{ classId: null }, { class: roleConditions[role] }] }
-    : {}; // admins see all events
+    : {};
 
   const data = await prisma.event.findMany({
     where: {
@@ -61,7 +59,6 @@ const EventsNotificationList = async ({
       ? all.slice(0, 5)
       : [{ id: 0, title: "No events", subtitle: dateParam ? "No events for this date" : "No upcoming events", time: "" }];
 
-  // For the dialog, show empty state item if no events
   const allForDialog: NotificationItem[] =
     all.length > 0
       ? all

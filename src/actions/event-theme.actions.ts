@@ -22,10 +22,9 @@ export type EventThemeInput = {
   panelBgOpacity?: number;
   greetingMessage?: string;
   greetingAuthorName?: string;
-  themeVars: string; // JSON string
+  themeVars: string;
 };
 
-// Create a new event theme
 export async function createEventTheme(input: EventThemeInput) {
   const { userId } = checkAdmin();
   if (!userId) throw new Error("Unauthorized");
@@ -51,7 +50,6 @@ export async function createEventTheme(input: EventThemeInput) {
   return { success: true, theme };
 }
 
-// Update an event theme
 export async function updateEventTheme(id: string, input: EventThemeInput) {
   checkAdmin();
 
@@ -76,7 +74,6 @@ export async function updateEventTheme(id: string, input: EventThemeInput) {
   return { success: true, theme };
 }
 
-// Delete an event theme
 export async function deleteEventTheme(id: string) {
   checkAdmin();
 
@@ -85,7 +82,6 @@ export async function deleteEventTheme(id: string) {
   return { success: true };
 }
 
-// Get all event themes
 export async function getEventThemes() {
   checkAdmin();
   const themes = await prisma.eventTheme.findMany({
@@ -94,7 +90,6 @@ export async function getEventThemes() {
   return themes;
 }
 
-// Get the currently active event theme (public)
 export async function getActiveEventTheme() {
   const theme = await prisma.eventTheme.findFirst({
     where: { isActive: true },
@@ -103,29 +98,24 @@ export async function getActiveEventTheme() {
   return theme;
 }
 
-// Push an event theme to all users
 export async function pushEventTheme(themeId: string) {
   const { userId } = checkAdmin();
   if (!userId) throw new Error("Unauthorized");
 
-  // Deactivate all other themes
   await prisma.eventTheme.updateMany({
     where: { id: { not: themeId } },
     data: { isActive: false },
   });
 
-  // Activate the selected theme
   const theme = await prisma.eventTheme.update({
     where: { id: themeId },
     data: { isActive: true },
   });
 
-  // Get all users with equipped themes so we can store their previous theme
   const equippedColors = await prisma.userEquippedColors.findMany({
     select: { userId: true, themeId: true },
   });
 
-  // Create user states for those who don't have one for this event yet
   const existingStates = await prisma.userEventThemeState.findMany({
     where: { eventThemeId: themeId },
     select: { userId: true },
@@ -141,23 +131,17 @@ export async function pushEventTheme(themeId: string) {
     }));
 
   if (newStates.length > 0) {
-    // Prisma createMany isn't available for this model in all versions, use raw or batch
-    // Since we might have many, do a loop but it's fine for admin action
+
     for (const state of newStates) {
       await prisma.userEventThemeState.create({ data: state });
     }
   }
-
-  // Also create states for users who don't have equipped colors (null previousThemeId)
-  // We can't easily find all users without a raw query, but for now we rely on the client dialog
-  // to handle users without existing states by creating on-the-fly when they first visit.
 
   revalidatePath("/", "layout");
   revalidatePath("/admin/event-themes");
   return { success: true, theme };
 }
 
-// End active event theme
 export async function endEventTheme(themeId: string) {
   checkAdmin();
 
@@ -171,7 +155,6 @@ export async function endEventTheme(themeId: string) {
   return { success: true };
 }
 
-// Get current user's event theme state
 export async function getMyEventThemeState() {
   const { userId } = auth();
   if (!userId) return null;
@@ -193,7 +176,7 @@ export async function getMyEventThemeState() {
   });
 
   if (!state) {
-    // Auto-create state for this user
+
     const equipped = await prisma.userEquippedColors.findUnique({
       where: { userId },
       select: { themeId: true },
@@ -221,7 +204,6 @@ export async function getMyEventThemeState() {
   };
 }
 
-// Dismiss the event theme dialog (user saw it)
 export async function dismissEventTheme(eventThemeId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -234,7 +216,6 @@ export async function dismissEventTheme(eventThemeId: string) {
   return { success: true };
 }
 
-// Dismiss the event banner (user closed it)
 export async function dismissBanner(eventThemeId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -247,7 +228,6 @@ export async function dismissBanner(eventThemeId: string) {
   return { success: true };
 }
 
-// Revert to previous theme
 export async function revertEventTheme(eventThemeId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -263,7 +243,6 @@ export async function revertEventTheme(eventThemeId: string) {
 
   if (!state) throw new Error("No event theme state found");
 
-  // Restore previous theme
   const existing = await prisma.userEquippedColors.findUnique({
     where: { userId },
   });
@@ -279,7 +258,6 @@ export async function revertEventTheme(eventThemeId: string) {
     });
   }
 
-  // Mark reverted
   await prisma.userEventThemeState.updateMany({
     where: { userId, eventThemeId },
     data: { revertedAt: new Date() },

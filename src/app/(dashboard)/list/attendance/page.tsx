@@ -105,8 +105,6 @@ const AttendanceListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
   const query: Prisma.AttendanceWhereInput = {};
 
   if (queryParams) {
@@ -128,8 +126,6 @@ const AttendanceListPage = async ({
       }
     }
   }
-
-  // ROLE CONDITIONS
 
   switch (role) {
     case "admin":
@@ -180,7 +176,6 @@ const AttendanceListPage = async ({
     href: `/list/students/${s.id}`,
   }));
 
-  // Fetch lessons for the kanban picker (admin sees all, teacher sees own)
   const lessons = await getLessons();
 
   return (
@@ -197,7 +192,6 @@ const AttendanceListPage = async ({
             feature="attendance-summary"
           />
         )}
-        {/* TOP */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="hidden md:block text-lg font-semibold">All Attendance Records</h1>
           <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
@@ -209,9 +203,7 @@ const AttendanceListPage = async ({
             </div>
           </div>
         </div>
-        {/* LIST */}
         <Table columns={columns} renderRow={renderRow} data={data} />
-        {/* PAGINATION */}
         <Pagination page={p} count={count} />
       </div>
     </div>

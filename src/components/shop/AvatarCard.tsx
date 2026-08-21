@@ -62,7 +62,7 @@ const AvatarCard = ({
         <h3 className="font-semibold text-lg">{item.name}</h3>
         <p className="text-sm text-muted-foreground">{item.style}</p>
       </CardHeader>
-      
+
       <CardContent className="p-4 pt-0">
         <div className="relative">
           <div className="aspect-square rounded-lg overflow-hidden bg-muted flex items-center justify-center">
@@ -72,8 +72,7 @@ const AvatarCard = ({
               className="w-full h-full object-cover"
             />
           </div>
-          
-          {/* Status badges */}
+
           <div className="absolute top-2 right-2 flex gap-1">
             {item.equippedAcademic && (
               <Badge variant="secondary" className="text-xs">
@@ -96,9 +95,8 @@ const AvatarCard = ({
           </div>
         </div>
       </CardContent>
-      
+
       <CardFooter className="p-4 pt-0 space-y-2">
-        {/* Preview button */}
         <Button
           variant="outline"
           size="sm"
@@ -108,8 +106,7 @@ const AvatarCard = ({
           <Eye className="w-4 h-4 mr-2" />
           Preview
         </Button>
-        
-        {/* Action buttons */}
+
         {item.owned ? (
           <div className="grid grid-cols-2 gap-2">
             <Button
@@ -144,8 +141,7 @@ const AvatarCard = ({
             {isPurchasing ? "Purchasing..." : `Buy for ${item.cost} gecX`}
           </Button>
         )}
-        
-        {/* Randomize button for owned avatars */}
+
         {item.owned && (
           <Button
             variant="ghost"

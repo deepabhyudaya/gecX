@@ -45,7 +45,6 @@ export default async function FormAnalyticsPage({
 
   if (!form) return notFound();
 
-  // Teachers can only view analytics for forms they created
   if (role === "teacher" && form.createdById !== userId) {
     return <div>Access Denied: You do not own this form.</div>;
   }

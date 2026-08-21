@@ -22,10 +22,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface ShopItem {
-  id: string;       // unique: `${style}--${seed}`
+  id: string;
   style: string;
   seed: string;
   name: string;
@@ -47,8 +45,6 @@ interface ShopData {
     communitySeed?: string;
   };
 }
-
-// ─── Category config ──────────────────────────────────────────────────────────
 
 const CATEGORIES = [
   { key: "all", label: "All Styles", icon: Layers, accent: "text-foreground" },
@@ -73,7 +69,6 @@ const CATEGORY_BADGE: Record<string, string> = {
   orbs: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20",
 };
 
-// Human-readable style family names (from the DiceBear slug)
 const STYLE_LABELS: Record<string, string> = {
   "adventurer": "Adventurer",
   "adventurer-neutral": "Adventurer Neutral",
@@ -109,8 +104,6 @@ const STYLE_LABELS: Record<string, string> = {
   "orb": "Orb",
 };
 
-// ─── Avatar image with error fallback ────────────────────────────────────────
-
 function AvatarImg({ src, alt }: { src: string; alt: string }) {
   const [errored, setErrored] = useState(false);
 
@@ -131,8 +124,6 @@ function AvatarImg({ src, alt }: { src: string; alt: string }) {
     />
   );
 }
-
-// ─── Avatar Card ─────────────────────────────────────────────────────────────
 
 function AvatarCard({
   item,
@@ -158,13 +149,11 @@ function AvatarCard({
         item.owned && "ring-1 ring-emerald-500/40"
       )}
     >
-      {/* Price chip — top right */}
       <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-background/80 backdrop-blur-sm border border-border/60 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums shadow-sm">
         <Coins className="w-3 h-3 text-amber-500 shrink-0" />
         {item.cost}
       </div>
 
-      {/* Owned badge — top left */}
       {item.owned && (
         <div className="absolute top-2 left-2 z-10">
           <span className="inline-flex items-center gap-0.5 bg-emerald-500/15 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 rounded-full px-2 py-0.5 text-[10px] font-semibold">
@@ -174,12 +163,10 @@ function AvatarCard({
         </div>
       )}
 
-      {/* Avatar preview */}
       <div className="relative mx-2.5 mt-2.5 mb-0 rounded-lg overflow-hidden bg-muted/50 dark:bg-muted/25 aspect-square flex items-center justify-center">
         <AvatarImg src={item.previewUrl} alt={item.name} />
       </div>
 
-      {/* Footer */}
       <div className="px-2.5 py-2.5 flex flex-col gap-2">
         <p className="text-[12px] font-semibold truncate leading-tight">{item.name}</p>
 
@@ -240,8 +227,6 @@ function AvatarCard({
   );
 }
 
-// ─── Style-family group inside a category section ────────────────────────────
-
 function StyleFamilyGroup({
   styleSlug,
   items,
@@ -262,7 +247,6 @@ function StyleFamilyGroup({
 
   return (
     <div>
-      {/* Style-family header */}
       <button
         onClick={() => setExpanded((v) => !v)}
         className="flex items-center gap-1.5 mb-2 group/header"
@@ -299,8 +283,6 @@ function StyleFamilyGroup({
   );
 }
 
-// ─── Category section (used in "All" view and single-category view) ──────────
-
 function CategorySection({
   catKey,
   items,
@@ -316,11 +298,10 @@ function CategorySection({
   onEquip: (style: string, seed: string, profileType: "academic" | "community") => void;
   isPurchasing: string | null;
   balance: number;
-  compact?: boolean; // in "All" view, collapse style sub-groups
+  compact?: boolean;
 }) {
   const cat = CATEGORIES.find((c) => c.key === catKey);
 
-  // Group items by style family
   const byStyle = useMemo(() => {
     const map = new Map<string, ShopItem[]>();
     items.forEach((it) => {
@@ -336,7 +317,6 @@ function CategorySection({
 
   return (
     <section>
-      {/* Category header */}
       <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/40">
         <Icon className={cn("w-4 h-4", cat.accent)} />
         <h2 className="text-sm font-bold">{cat.label}</h2>
@@ -351,7 +331,6 @@ function CategorySection({
         </Badge>
       </div>
 
-      {/* Style-family sub-groups */}
       <div className="space-y-5">
         {Array.from(byStyle.entries()).map(([slug, styleItems]) => (
           <StyleFamilyGroup
@@ -369,8 +348,6 @@ function CategorySection({
   );
 }
 
-// ─── Main client component ────────────────────────────────────────────────────
-
 const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
   const [shopData, setShopData] = useState(initialData);
   const [isPurchasing, setIsPurchasing] = useState<string | null>(null);
@@ -378,7 +355,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
   const [search, setSearch] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Press "/" to focus search
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
@@ -393,7 +369,7 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
   const handlePurchase = async (itemId: string, cost: number) => {
     setIsPurchasing(itemId);
     try {
-      // Extract the style and seed from the id (`${style}--${seed}`)
+
       const [style, seed] = itemId.split("--");
       if (!style || !seed) {
         throw new Error("Invalid item ID");
@@ -401,7 +377,7 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
       const result = await purchaseAvatar(style, seed);
       if (result.success) {
         toast.success("Avatar purchased! 🎉");
-        // Update shop data to mark ONLY this specific variant as owned
+
         setShopData(prev => ({
           ...prev,
           balance: result.remainingBalance,
@@ -424,7 +400,7 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
       const result = await equipAvatar(profileType, style, seed);
       if (result.success) {
         toast.success(`Avatar equipped for ${profileType} profile! ✨`);
-        // Update local state to reflect equipped status for this specific variant
+
         setShopData(prev => ({
           ...prev,
           items: prev.items.map(item => ({
@@ -444,7 +420,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
     }
   };
 
-  // Counts per category
   const counts = useMemo(() => {
     const map: Record<string, number> = { all: shopData.items.length };
     shopData.items.forEach((it) => {
@@ -453,7 +428,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
     return map;
   }, [shopData.items]);
 
-  // Items after category + search filters
   const filteredItems = useMemo(() => {
     let list = shopData.items;
     if (activeCategory !== "all") {
@@ -472,7 +446,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
     return list;
   }, [shopData.items, activeCategory, search]);
 
-  // Items grouped by category (for "All" view)
   const byCategory = useMemo(() => {
     const map = new Map<string, ShopItem[]>();
     filteredItems.forEach((it) => {
@@ -487,7 +460,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
 
   return (
     <div className="h-full flex overflow-hidden">
-      {/* ── Left sidebar ─────────────────────────────────────────── */}
       <aside className="hidden md:flex flex-col w-52 shrink-0 border-r border-border bg-sidebar h-full overflow-hidden">
         <div className="px-3 pt-4 pb-3 border-b border-border/60">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
@@ -495,7 +467,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
           </p>
         </div>
 
-        {/* Balance */}
         <div className="mx-2 mt-3 mb-1 rounded-lg bg-amber-500/10 border border-amber-500/15 p-3">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
@@ -516,7 +487,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
           </div>
         </div>
 
-        {/* Category nav */}
         <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 px-2 pt-1 pb-1.5">
             Categories
@@ -550,12 +520,9 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
         </div>
       </aside>
 
-      {/* ── Main content ──────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* Top bar: title + search + mobile chips */}
         <div className="shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
-          {/* Main row: title + search */}
           <div className="flex items-center gap-3 px-4 py-3">
             <div className="min-w-0 overflow-hidden">
               <h1 className="text-sm font-bold leading-none truncate">
@@ -568,7 +535,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
               </p>
             </div>
 
-            {/* Mobile Balance */}
             <div className="md:hidden ml-auto flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/15 rounded-lg px-2 py-1 shrink-0">
               <Coins className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span className="text-xs font-bold tabular-nums leading-none">
@@ -576,7 +542,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
               </span>
             </div>
 
-            {/* Search bar */}
             <div className="hidden sm:block md:ml-auto relative w-48 sm:w-56 shrink-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               <input
@@ -601,7 +566,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
             </div>
           </div>
 
-          {/* Mobile Search Bar (Full width on mobile) */}
           <div className="sm:hidden px-4 pb-3">
             <div className="relative w-full shrink-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
@@ -627,7 +591,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
             </div>
           </div>
 
-          {/* Mobile-only category chips row */}
           <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 pb-3">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
@@ -650,7 +613,6 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
           </div>
         </div>
 
-        {/* Scrollable grid */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 pb-24">
             {filteredItems.length === 0 ? (
@@ -662,7 +624,7 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
                 </Button>
               </div>
             ) : isSearching ? (
-              // Search results: flat grid (no sub-grouping, show category badge on card)
+
               <div>
                 <p className="text-[11px] text-muted-foreground mb-4">
                   Results across all categories
@@ -681,7 +643,7 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
                 </div>
               </div>
             ) : activeCategory === "all" ? (
-              // "All" view: one section per category, each section has style sub-groups
+
               <div className="space-y-10">
                 {CATEGORIES
                   .filter((c) => c.key !== "all" && byCategory.has(c.key))
@@ -698,7 +660,7 @@ const WorkingShopClient = ({ initialData }: { initialData: ShopData }) => {
                   ))}
               </div>
             ) : (
-              // Single category: show style sub-groups directly
+
               <CategorySection
                 catKey={activeCategory}
                 items={filteredItems}

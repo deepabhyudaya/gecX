@@ -1,6 +1,5 @@
 import withPWA from "next-pwa";
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     dangerouslyAllowSVG: true,
@@ -20,8 +19,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    // Tree-shake barrel imports from heavy ESM packages — Next will rewrite
-    // `import { X } from "pkg"` to deep imports, dropping unused subtrees.
+
     optimizePackageImports: [
       "lucide-react",
       "@radix-ui/react-icons",
@@ -43,7 +41,7 @@ const nextConfig = {
       },
     },
   },
-  // Long-cache static images served from /public — covers the 40+ PNGs in /public.
+
   async headers() {
     return [
       {

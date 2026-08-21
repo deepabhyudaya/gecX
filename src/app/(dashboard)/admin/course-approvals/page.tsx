@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 async function approveCourse(formData: FormData) {
   "use server";
   const id = parseInt(formData.get("id") as string);
-  
+
   await prisma.course.update({
     where: { id },
     data: { status: "APPROVED" },
@@ -17,7 +17,7 @@ async function approveCourse(formData: FormData) {
 async function rejectCourse(formData: FormData) {
   "use server";
   const id = parseInt(formData.get("id") as string);
-  
+
   await prisma.course.update({
     where: { id },
     data: { status: "REJECTED" },
@@ -57,7 +57,7 @@ export default async function AdminCourseApprovalsPage() {
                   <p className="text-[14px] text-[#4d4d4d] mb-4">By: {course.teacher.name} {course.teacher.surname}</p>
                   <p className="text-[16px] text-[#171717] mb-6 max-w-2xl">{course.description}</p>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <form action={rejectCourse}>
                     <input type="hidden" name="id" value={course.id} />
@@ -83,7 +83,7 @@ export default async function AdminCourseApprovalsPage() {
                       <ul className="list-disc pl-5">
                         {section.lectures.map((lecture) => (
                           <li key={lecture.id} className="text-[14px] text-[#4d4d4d]">
-                            {lecture.title} 
+                            {lecture.title}
                             <span className="text-[#0072f5] ml-2 text-[12px] opacity-80 truncate inline-block max-w-[200px] align-bottom">({lecture.videoUrl})</span>
                           </li>
                         ))}

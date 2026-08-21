@@ -68,10 +68,8 @@ export default async function MyCommunityProfilePage() {
         } as React.CSSProperties
       : {};
 
-  // Get effective avatar URL (custom avatar takes priority over Clerk)
   const effectiveAvatar = profile.customAvatar || profile.avatar || "/noAvatar.png";
 
-  // Background: equipped solid color > karma gradient (Cosmic gets purple glow)
   const bgStyle = {
     ...themeVariables,
     ...(equippedColors.profileBgColor
@@ -86,14 +84,12 @@ export default async function MyCommunityProfilePage() {
         : {}),
   };
 
-  // Username color: equipped solid > karma tier color/gradient
   const usernameStyle = equippedColors.usernameColor
     ? { color: equippedColors.usernameColor }
     : getKarmaTierTextGradientStyle(profile.karmaPoints) || { color: getKarmaTierColor(profile.karmaPoints) || undefined };
 
   return (
     <div className="flex-1 flex flex-col w-full relative" style={bgStyle}>
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-3 flex items-center gap-4 max-w-2xl mx-auto">
           <Link
@@ -111,12 +107,9 @@ export default async function MyCommunityProfilePage() {
         </div>
       </div>
 
-      {/* Content Container */}
       <div className="flex-1 max-w-2xl mx-auto w-full">
-      {/* Banner - shown if set */}
       {profile.bannerUrl && (
         <div className="w-full sm:rounded-t-xl overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={profile.bannerUrl}
             alt="Profile banner"
@@ -125,7 +118,6 @@ export default async function MyCommunityProfilePage() {
         </div>
       )}
 
-      {/* Profile Info */}
       <div className="px-4 pb-6 pt-4 border-b border-border">
         <div className="flex items-start justify-between">
           <div className={`relative ${profile.bannerUrl ? "-mt-14 sm:-mt-16" : ""}`}>
@@ -161,7 +153,6 @@ export default async function MyCommunityProfilePage() {
             <p className="mt-3 text-sm whitespace-pre-wrap">{profile.bio}</p>
           )}
 
-          {/* View Academic Profile Button - only for students and teachers */}
           {(role === "student" || role === "teacher") && (
             <Link href="/profile">
               <Button variant="outline" size="sm" className="mt-3 gap-2">
@@ -171,7 +162,6 @@ export default async function MyCommunityProfilePage() {
             </Link>
           )}
 
-          {/* Karma Breakdown - Client component for real-time updates */}
           {profile.karmaPoints > 0 && (
             <KarmaBreakdown
               userId={profile.userId}
@@ -184,7 +174,6 @@ export default async function MyCommunityProfilePage() {
             />
           )}
 
-          {/* Stats */}
           <div className="flex items-center gap-6 mt-4">
             <Link href={`/${profile.username}/following`} className="hover:underline">
               <span className="font-semibold">{profile.followingCount}</span>
@@ -205,7 +194,6 @@ export default async function MyCommunityProfilePage() {
         </div>
       </div>
 
-      {/* Posts */}
       <div>
         {posts.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">

@@ -41,7 +41,6 @@ export default async function RivalriesAdminPage({
     getActiveSeasonForWar(admin?.collegeId ?? null, "BRANCH"),
   ]);
 
-  // Get all classes for CR management
   const classes = await prisma.class.findMany({
     include: { students: { select: { id: true, name: true, surname: true, username: true } } },
     orderBy: { name: "asc" },
@@ -49,7 +48,6 @@ export default async function RivalriesAdminPage({
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
-      {/* Header */}
       <div className="bg-card border border-border rounded-2xl p-6">
         <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
           <div>
@@ -85,7 +83,6 @@ export default async function RivalriesAdminPage({
           </div>
         </div>
 
-        {/* Status filter tabs */}
         <div className="flex gap-2 flex-wrap">
           {[undefined, "PENDING_ADMIN", "PENDING_CR", "ACTIVE", "CONCLUDED", "REJECTED", "EXPIRED"].map((s) => (
             <Link
@@ -103,7 +100,6 @@ export default async function RivalriesAdminPage({
         </div>
       </div>
 
-      {/* Rivalry list */}
       <div className="space-y-3">
         {rivalries.length === 0 && (
           <div className="bg-card border border-border rounded-2xl p-12 text-center text-muted-foreground">
@@ -114,7 +110,6 @@ export default async function RivalriesAdminPage({
           <div key={r.id} className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                {/* Class names */}
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="font-bold text-base text-blue-400">{r.classA.name}</span>
                   <span className="text-muted-foreground font-black">VS</span>
@@ -124,7 +119,6 @@ export default async function RivalriesAdminPage({
                   </span>
                 </div>
 
-                {/* Meta */}
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
                   <span>Season: <strong className="text-foreground">{r.seasonRef?.seasonCode || r.season}</strong></span>
                   <span>Bouts: <strong className="text-foreground">{r.bouts.length}</strong></span>
@@ -135,7 +129,6 @@ export default async function RivalriesAdminPage({
                   )}
                 </div>
 
-                {/* Score preview for active */}
                 {r.status === "ACTIVE" && (
                   <div className="mt-2 text-sm">
                     <span className="text-blue-400 font-bold">{Math.round(r.classAScore)}</span>
@@ -146,7 +139,6 @@ export default async function RivalriesAdminPage({
                 )}
               </div>
 
-              {/* Actions */}
               <div className="flex flex-col items-end gap-2 shrink-0">
                 <Link
                   href={`/student/rivalry/${r.id}`}
@@ -163,7 +155,6 @@ export default async function RivalriesAdminPage({
         ))}
       </div>
 
-      {/* Branch Representative Management */}
       <div className="bg-card border border-border rounded-2xl p-6">
         <h2 className="font-bold text-lg mb-1">Branch Representative Management</h2>
         <p className="text-sm text-muted-foreground mb-5">

@@ -13,7 +13,7 @@ interface KarmaBreakdownData {
 interface KarmaBreakdownProps {
   userId: string;
   initialData: KarmaBreakdownData;
-  // Profile-bg-aware color classes (optional; falls back to muted/background)
+
   cardBgClass?: string;
   cardTextClass?: string;
   mutedClass?: string;
@@ -68,7 +68,6 @@ export function KarmaBreakdown({
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [refreshData]);
 
-  // Inner card: slightly more opaque than the outer wrapper
   const innerCardBg = cardBgClass.includes("white")
     ? "bg-white/80"
     : cardBgClass.includes("black")

@@ -56,7 +56,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
   const [scoreResult, setScoreResult] = useState<{ score: number | null; autoGraded: boolean } | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
-  // Initialize timer if form has time limit
   useEffect(() => {
     if (form.timeLimit && !submitted) {
       const storedStartTimeKey = `form_start_${form.id}`;
@@ -74,7 +73,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
     }
   }, [form.timeLimit, form.id, submitted]);
 
-  // Countdown effect
   useEffect(() => {
     if (timeLeft === null || submitted) return;
 
@@ -91,14 +89,12 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
     return () => clearInterval(timer);
   }, [timeLeft, submitted]);
 
-  // Format time remaining
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  // Build dynamic zod schema based on questions
   const schemaShape: Record<string, any> = {};
   form.questions.forEach((q) => {
     if (["SINGLE_CHOICE", "DROPDOWN"].includes(q.type)) {
@@ -220,8 +216,8 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
           )}
 
           <p className="text-xs text-muted-foreground">
-            {form.type === "GENERAL" 
-              ? "Thank you for taking the time to complete this survey/feedback form." 
+            {form.type === "GENERAL"
+              ? "Thank you for taking the time to complete this survey/feedback form."
               : "Your score has been updated in the results center."}
           </p>
 
@@ -235,7 +231,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-24 relative">
-      {/* Floating countdown timer */}
       {timeLeft !== null && (
         <div className="sticky top-4 z-30 flex items-center justify-between p-3 rounded-lg bg-card border border-primary/20 shadow-md text-foreground max-w-xs mx-auto">
           <div className="flex items-center gap-2">
@@ -248,7 +243,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
         </div>
       )}
 
-      {/* Form Header Card */}
       <Card className="bg-card border-border shadow-sm">
         <CardHeader className="space-y-1.5 border-b border-border/40 pb-4">
           <CardTitle className="text-2xl font-black text-foreground">{form.title}</CardTitle>
@@ -282,7 +276,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                 )}
               </CardHeader>
               <CardContent className="p-4 space-y-3">
-                {/* Short text */}
                 {q.type === "SHORT_TEXT" && (
                   <Input
                     {...register(q.id)}
@@ -291,7 +284,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                   />
                 )}
 
-                {/* Long text */}
                 {q.type === "LONG_TEXT" && (
                   <Textarea
                     {...register(q.id)}
@@ -300,7 +292,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                   />
                 )}
 
-                {/* Date */}
                 {q.type === "DATE" && (
                   <Input
                     type="date"
@@ -309,7 +300,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                   />
                 )}
 
-                {/* Rating */}
                 {q.type === "RATING" && (
                   <div className="flex items-center gap-1.5 py-1">
                     {[1, 2, 3, 4, 5].map((val) => (
@@ -329,7 +319,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                   </div>
                 )}
 
-                {/* Dropdown Choice */}
                 {q.type === "DROPDOWN" && (
                   <Select onValueChange={(val) => setValue(q.id, val)}>
                     <SelectTrigger className="h-9 text-xs bg-muted/20 border-border text-foreground">
@@ -345,7 +334,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                   </Select>
                 )}
 
-                {/* Single Choice (Radio) */}
                 {q.type === "SINGLE_CHOICE" && (
                   <div className="space-y-2">
                     {q.options.map((opt) => (
@@ -371,7 +359,6 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                   </div>
                 )}
 
-                {/* Multi Choice (Checkbox) */}
                 {q.type === "MULTI_CHOICE" && (
                   <div className="space-y-2">
                     {q.options.map((opt) => {
@@ -399,10 +386,8 @@ export default function FormAttemptWorkspace({ form }: FormAttemptWorkspaceProps
                   </div>
                 )}
 
-                {/* Error messages validation */}
                 {errorMsg && <p className="text-xs text-red-500 mt-1 font-medium">{errorMsg}</p>}
 
-                {/* AI hint for academic forms */}
                 {(form.type === "ASSIGNMENT" || form.type === "EXAM") && (
                   <div className="mt-3 pt-3 border-t border-border/40">
                     <AiHintButton questionTitle={q.title} questionDescription={q.description} />

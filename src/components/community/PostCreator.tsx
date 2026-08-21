@@ -34,7 +34,6 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
 
-  // Fetch subjects on mount
   useEffect(() => {
     if (open) {
       getAcademicSubjects()
@@ -43,7 +42,6 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
     }
   }, [open]);
 
-  // Fetch user's global emojis
   useEffect(() => {
     if (open) {
       fetchUserEmojis()
@@ -89,7 +87,6 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
     const newContent = content.slice(0, start) + text + " " + content.slice(end);
     setContent(newContent.slice(0, maxChars));
 
-    // Focus and set cursor position after inserted text
     setTimeout(() => {
       textarea.focus();
       const newPosition = start + text.length + 1;
@@ -118,7 +115,7 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
           </div>
         </div>
       </DialogTrigger>
-      
+
       <DialogContent className="sm:max-w-[480px] bg-background border border-border p-0 flex flex-col max-h-[90vh] overflow-visible">
         <DialogHeader className="flex flex-row items-center gap-3 border-b border-border p-4 shrink-0">
           <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted">
@@ -136,7 +133,6 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
         </DialogHeader>
 
         <div className="space-y-4 p-5 overflow-visible flex-1">
-          {/* Subject Selector */}
           {subjects.length > 0 && (
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Subject</label>
@@ -156,7 +152,6 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
             </div>
           )}
 
-          {/* Question Text Area */}
           <div className="flex flex-col gap-1.5 relative">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Question</label>
             <div className="border border-border rounded-lg bg-muted p-2 flex flex-col">
@@ -168,12 +163,12 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
                 className="w-full min-h-[120px] bg-transparent border-none resize-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground"
                 disabled={isSubmitting}
               />
-              
+
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
                 <span className="text-[10px] text-muted-foreground">
                   {charCount} / {maxChars}
                 </span>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -186,7 +181,6 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
               </div>
             </div>
 
-            {/* Media Picker Popover */}
             {showMediaPicker && (
               <>
                 <div
@@ -213,14 +207,13 @@ export function PostCreator({ userImage, onPostCreated }: PostCreatorProps) {
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="flex justify-end gap-2 border-t border-border p-4 bg-muted/20 shrink-0">
           <Button variant="outline" onClick={resetForm} disabled={isSubmitting} className="text-xs h-9 px-3">
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={!content.trim() || isSubmitting || charCount > maxChars} 
+          <Button
+            onClick={handleSubmit}
+            disabled={!content.trim() || isSubmitting || charCount > maxChars}
             className="text-xs h-9 px-4 flex items-center gap-1.5"
           >
             {isSubmitting ? (

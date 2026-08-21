@@ -10,7 +10,6 @@ function getOrCreateClient(): Ably.Realtime | null {
 
   if (typeof window === "undefined") return null;
 
-  // Token auth — client requests token from our endpoint
   globalClient = new Ably.Realtime({
     authUrl: "/api/ably/token",
     autoConnect: true,
@@ -37,7 +36,6 @@ export function useAbly(channelName: string | null) {
   const batchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingEventsRef = useRef<ChatEvent[]>([]);
 
-  // Subscribe to connection state
   useEffect(() => {
     const client = getOrCreateClient();
     if (!client) return;
@@ -60,7 +58,6 @@ export function useAbly(channelName: string | null) {
     };
   }, []);
 
-  // Subscribe to channel
   useEffect(() => {
     if (!channelName || !isConnected) return;
 
@@ -73,7 +70,7 @@ export function useAbly(channelName: string | null) {
     const handler = (message: Ably.Message) => {
       const event = message.data as ChatEvent | ChatEvent[];
       if (Array.isArray(event)) {
-        // Handle batched events
+
         event.forEach((e) => {
           setLastEvent(e);
           handlersRef.current.forEach((h) => h(e));
@@ -92,7 +89,6 @@ export function useAbly(channelName: string | null) {
     };
   }, [channelName, isConnected]);
 
-  // Batch publish function with 100ms debounce
   const publish = useCallback(
     (event: ChatEvent) => {
       const channel = channelRef.current;
@@ -107,15 +103,15 @@ export function useAbly(channelName: string | null) {
       batchTimeoutRef.current = setTimeout(() => {
         if (pendingEventsRef.current.length > 0) {
           try {
-            // Send all pending events in a single publish
+
             channel.publish("chat", pendingEventsRef.current);
             pendingEventsRef.current = [];
           } catch {
-            // On failure, clear pending events to avoid infinite retry
+
             pendingEventsRef.current = [];
           }
         }
-      }, 100); // 100ms batch window
+      }, 100);
 
       return true;
     },

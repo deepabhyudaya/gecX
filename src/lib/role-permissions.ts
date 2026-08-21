@@ -1,7 +1,5 @@
-// Role permissions constants - can be imported by both server and client components
-// NOTE: This file does NOT have "use server" directive
 
-// ==================== PERMISSIONS BIT-FIELD ====================
+
 export const ROLE_PERMISSIONS = {
   VIEW_CHANNELS: 1n << 0n,
   SEND_MESSAGES: 1n << 1n,

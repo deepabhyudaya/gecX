@@ -68,13 +68,12 @@ export async function updateAcademicSubject(id: string, name: string, color?: st
 export async function deleteAcademicSubject(id: string) {
   checkAdmin();
 
-  // Check if any posts are using this subject
   const postCount = await prisma.communityPost.count({
     where: { subjectId: id },
   });
 
   if (postCount > 0) {
-    // Soft delete by marking inactive instead
+
     await prisma.academicSubject.update({
       where: { id },
       data: { isActive: false },

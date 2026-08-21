@@ -1,4 +1,4 @@
-// TEMPORARY DATA
+
 
 export let role = "student";
 
@@ -915,8 +915,6 @@ export const announcementsData = [
   },
 ];
 
-
-// YOU SHOULD CHANGE THE DATES OF THE EVENTS TO THE CURRENT DATE TO SEE THE EVENTS ON THE CALENDAR
 export const calendarEvents = [
   {
     title: "Math",

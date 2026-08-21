@@ -49,11 +49,9 @@ const SingleStudentPage = async ({
     return notFound();
   }
 
-  // Calculate Student Performance (Average Result Score)
   const totalScore = student.results.reduce((acc, curr) => acc + curr.score, 0);
   const averageScore = student.results.length > 0 ? totalScore / student.results.length : 0;
 
-  // Validate Access
   let hasAccess = false;
   if (role === "admin" || userId === student.id) {
     hasAccess = true;
@@ -69,7 +67,6 @@ const SingleStudentPage = async ({
     if (validAccess) hasAccess = true;
   }
 
-  // Fetch recent data if hasAccess
   let recentAttendances: any[] = [];
   let recentAssignments: any[] = [];
   if (hasAccess) {
@@ -79,7 +76,7 @@ const SingleStudentPage = async ({
       orderBy: { date: "desc" },
       take: 5,
     });
-    
+
     recentAssignments = await prisma.assignment.findMany({
       where: { lesson: { classId: student.classId } },
       include: { lesson: { include: { subject: true } } },
@@ -93,9 +90,7 @@ const SingleStudentPage = async ({
       layoutKey="student-profile-layout"
       leftContent={
         <div className="flex flex-col gap-4">
-          {/* TOP */}
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* USER INFO CARD */}
             <CometCard className="flex-1" rotateDepth={8} translateDepth={10}>
               <div className="bg-card border border-border rounded-2xl flex gap-5 p-6 h-full">
                 <div className="shrink-0">
@@ -148,7 +143,6 @@ const SingleStudentPage = async ({
               </div>
             </CometCard>
 
-            {/* STAT CARDS */}
             <div className="flex-1 grid grid-cols-2 gap-3">
               <CometCard rotateDepth={10} translateDepth={8}>
                 <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 h-full">
@@ -202,7 +196,6 @@ const SingleStudentPage = async ({
             </div>
           </div>
 
-          {/* ACADEMIC IDENTITY */}
           {(student.rollNumber || student.registrationNumber || student.admissionYear || student.currentSemester || student.program || (student as any).batch || (student as any).section || (student as any).hosteller != null || (student as any).guardianName || (student as any).governmentId) && (
             <div className="bg-card border border-border rounded-xl p-4">
               <h2 className="font-semibold mb-3 text-sm">Academic Identity</h2>
@@ -275,7 +268,6 @@ const SingleStudentPage = async ({
             </div>
           )}
 
-          {/* SCHEDULE */}
           <div className="bg-card border border-border rounded-xl p-4 h-[800px]">
             <h2 className="font-semibold mb-3">Student&apos;s Schedule</h2>
             <BigCalendarContainer type="classId" id={student.class.id} />
@@ -288,7 +280,7 @@ const SingleStudentPage = async ({
             <div className="flex flex-col gap-4">
               <h2 className="text-lg font-bold">Performance History</h2>
               <Performance score={averageScore} label="Overall Score" subtitle="Average Result" />
-              
+
               <div className="bg-card border border-border rounded-xl p-4">
                 <h3 className="font-semibold mb-3 text-sm">Recent Results</h3>
                 {student.results.length === 0 ? (

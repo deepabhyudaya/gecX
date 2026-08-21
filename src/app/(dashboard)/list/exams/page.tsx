@@ -29,7 +29,6 @@ const { userId, sessionClaims } = auth();
 const role = (sessionClaims?.metadata as { role?: string })?.role;
 const currentUserId = userId;
 
-
 const columns = [
   {
     header: "Subject Name",
@@ -89,8 +88,6 @@ const renderRow = (item: ExamList) => (
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
   const query: Prisma.ExamWhereInput = {};
 
   query.lesson = {};
@@ -115,8 +112,6 @@ const renderRow = (item: ExamList) => (
       }
     }
   }
-
-  // ROLE CONDITIONS
 
   switch (role) {
     case "admin":
@@ -184,7 +179,6 @@ const renderRow = (item: ExamList) => (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
       <PinnedItemsWrapper entityType="exams" baseUrl="/list/exams" role={role} />
       <div className="bg-card text-card-foreground p-4 rounded-xl border border-border">
-        {/* TOP */}
         <div className="flex items-center justify-between mb-4">
         <h1 className="hidden md:block text-lg font-semibold">All Exams</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
@@ -196,12 +190,10 @@ const renderRow = (item: ExamList) => (
           </div>
         </div>
       </div>
-      {/* LIST (Wrapped in Kanban View) */}
       <ExamsKanbanWrapper
         data={data}
         tableComponent={<Table columns={columns} renderRow={renderRow} data={data} />}
       />
-      {/* PAGINATION */}
       <Pagination page={p} count={count} />
       </div>
     </div>

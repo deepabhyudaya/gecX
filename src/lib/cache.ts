@@ -1,8 +1,8 @@
-// Simple in-memory cache with TTL for frequently accessed data
+
 class MemoryCache {
   private cache = new Map<string, { value: any; expires: number }>();
 
-  set(key: string, value: any, ttlMs: number = 30000) { // 30 second default TTL
+  set(key: string, value: any, ttlMs: number = 30000) {
     this.cache.set(key, {
       value,
       expires: Date.now() + ttlMs,
@@ -29,7 +29,6 @@ class MemoryCache {
     this.cache.clear();
   }
 
-  // Clean up expired items
   cleanup() {
     const now = Date.now();
     for (const [key, item] of this.cache.entries()) {
@@ -40,10 +39,8 @@ class MemoryCache {
   }
 }
 
-// Global cache instance
 export const memoryCache = new MemoryCache();
 
-// Clean up expired items every 5 minutes
 if (typeof window === "undefined") {
   setInterval(() => {
     memoryCache.cleanup();

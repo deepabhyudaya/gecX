@@ -143,7 +143,6 @@ const GecXSettingsClient = ({ initialSettings }: GecXSettingsClientProps) => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Student Earning Rates */}
           <Card>
             <CardHeader>
               <CardTitle>Student Earning Rates</CardTitle>
@@ -256,7 +255,6 @@ const GecXSettingsClient = ({ initialSettings }: GecXSettingsClientProps) => {
             </CardContent>
           </Card>
 
-          {/* Teacher & Parent Bonuses */}
           <Card>
             <CardHeader>
               <CardTitle>Bonus Percentages</CardTitle>
@@ -327,7 +325,6 @@ const GecXSettingsClient = ({ initialSettings }: GecXSettingsClientProps) => {
           </Card>
         </div>
 
-        {/* Testing Tools Section - Admin Only */}
         <Card className="border-yellow-500/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -339,7 +336,6 @@ const GecXSettingsClient = ({ initialSettings }: GecXSettingsClientProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Add Custom gecX */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Add Custom gecX to User</Label>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -377,10 +373,8 @@ const GecXSettingsClient = ({ initialSettings }: GecXSettingsClientProps) => {
               </p>
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-border" />
 
-            {/* Add to All Admins */}
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-sm font-medium">Add 5M gecX to All Admins</Label>

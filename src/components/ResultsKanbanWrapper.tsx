@@ -28,7 +28,7 @@ export default function ResultsKanbanWrapper({ data, tableComponent }: Props) {
       title: `${result.studentName} ${result.studentSurname}`,
       subtitle: result.title,
       meta: `Score: ${result.score}`,
-      status: defaultStatus, // Lock to calculated status instead of local storage? We can use the same KanbanBoard and just let them drag it if they want, but here we can force initial status.
+      status: defaultStatus,
     };
   });
 

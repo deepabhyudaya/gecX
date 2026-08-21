@@ -1,4 +1,4 @@
-// Template-based lore generator — no AI required
+
 
 export type LoreContext = {
   classAName: string;

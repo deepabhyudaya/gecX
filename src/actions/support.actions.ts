@@ -13,7 +13,6 @@ export async function getTickets() {
     throw new Error("Unauthorized");
   }
 
-  // Admin gets all tickets, others get only theirs
   if (role === "admin") {
     return await prisma.ticket.findMany({
       orderBy: { createdAt: "desc" },
@@ -60,7 +59,6 @@ export async function createTicket(subject: string, description: string, categor
 
   const ticket = await prisma.ticket.create({ data });
 
-  // Create the initial message so it's fully reactable and part of the chat stream
   await prisma.ticketMessage.create({
     data: {
       content: description,
@@ -111,10 +109,8 @@ export async function getTicketMessages(ticketId: number) {
 
   if (!ticket) throw new Error("Ticket not found");
 
-  // Get unique sender IDs
   const senderIds = [...new Set(ticket.messages.map((m) => m.senderId).filter(Boolean))];
 
-  // Batch fetch karma, equipped colors, and avatars
   const [karmaProfiles, equippedColors, communityProfiles] = await Promise.all([
     prisma.userCommunityProfile.findMany({
       where: { userId: { in: senderIds } },
@@ -136,7 +132,6 @@ export async function getTicketMessages(ticketId: number) {
   const avatarMap = new Map(communityProfiles.map((p: any) => [p.userId, p.avatar || null]));
   const customAvatarMap = new Map(communityProfiles.map((p: any) => [p.userId, p.customAvatar || null]));
 
-  // Enrich messages
   const enrichedMessages = ticket.messages.map((msg) => ({
     ...msg,
     senderKarma: karmaMap.get(msg.senderId) ?? 0,

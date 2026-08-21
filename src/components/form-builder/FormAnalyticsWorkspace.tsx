@@ -85,7 +85,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
   const totalSubmissions = form.responses.length;
   const examOrAssignment = form.type === "EXAM" || form.type === "ASSIGNMENT";
 
-  // Calculate stats
   let averageScore = 0;
   let highestScore = 0;
   let gradedCount = 0;
@@ -97,7 +96,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
     gradedCount = form.responses.filter((r) => r.isGraded).length;
   }
 
-  // Calculate score brackets for distribution chart
   const brackets = [
     { name: "0-59", count: 0 },
     { name: "60-69", count: 0 },
@@ -117,15 +115,14 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
     });
   }
 
-  // Open grading modal for a specific response
   const handleOpenGrading = (response: typeof form.responses[0]) => {
     setSelectedResponse(response);
     const initialScores: Record<string, number> = {};
-    // Load existing scoring
+
     response.answers.forEach((ans) => {
       const question = form.questions.find((q) => q.id === ans.questionId);
       if (question && (question.type === "SHORT_TEXT" || question.type === "LONG_TEXT")) {
-        // If already graded, we estimate based on response total score (defaulting to points for now)
+
         initialScores[ans.questionId] = 0;
       }
     });
@@ -147,7 +144,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
     });
   };
 
-  // Helper to compile choice stats for charts
   const getQuestionChartData = (qId: string) => {
     const question = form.questions.find((q) => q.id === qId);
     if (!question) return [];
@@ -178,7 +174,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-24">
-      {/* Header Summary */}
       <div className="flex items-center justify-between bg-card border border-border p-6 rounded-xl shadow-sm flex-wrap gap-4">
         <div>
           <h1 className="text-[26px] font-black text-foreground tracking-tight">{form.title}</h1>
@@ -198,7 +193,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
         </div>
       </div>
 
-      {/* Numerical Stats overview */}
       {examOrAssignment && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-card border-border shadow-sm">
@@ -244,7 +238,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Score Distribution Chart */}
         {examOrAssignment && (
           <Card className="bg-card border-border shadow-sm lg:col-span-2">
             <CardHeader className="py-3 border-b border-border/40">
@@ -267,11 +260,10 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
           </Card>
         )}
 
-        {/* Dynamic choice breakouts */}
         <div className={`space-y-6 ${examOrAssignment ? "lg:col-span-1" : "lg:col-span-3"}`}>
           {form.questions
             .filter((q) => ["SINGLE_CHOICE", "MULTI_CHOICE", "DROPDOWN"].includes(q.type))
-            .slice(0, 3) // show first 3 choices charts
+            .slice(0, 3)
             .map((q) => {
               const data = getQuestionChartData(q.id);
               const hasResponses = data.some((d) => d.count > 0);
@@ -320,7 +312,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
         </div>
       </div>
 
-      {/* Submissions List Table */}
       <Card className="bg-card border-border shadow-sm">
         <CardHeader className="py-3 border-b border-border/40">
           <CardTitle className="text-sm font-bold text-foreground">Respondent Submissions List</CardTitle>
@@ -343,8 +334,8 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
               </thead>
               <tbody>
                 {form.responses.map((resp) => {
-                  const studentName = resp.student 
-                    ? `${resp.student.name} ${resp.student.surname}` 
+                  const studentName = resp.student
+                    ? `${resp.student.name} ${resp.student.surname}`
                     : `User ${resp.submittedById.slice(-8)}`;
 
                   return (
@@ -393,7 +384,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
         </CardContent>
       </Card>
 
-      {/* Manual Grading Modal / Details Dialog */}
       <Dialog open={selectedResponse !== null} onOpenChange={(val) => { if (!val) setSelectedResponse(null); }}>
         {selectedResponse && (
           <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto bg-card border-border text-foreground">
@@ -420,7 +410,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
                       )}
                     </div>
 
-                    {/* Student Answers */}
                     <div className="space-y-1.5">
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Answer Answered:</span>
                       {["SHORT_TEXT", "LONG_TEXT"].includes(q.type) ? (
@@ -443,7 +432,6 @@ export default function FormAnalyticsWorkspace({ form }: FormAnalyticsWorkspaceP
                       )}
                     </div>
 
-                    {/* Grading scoring field for text responses */}
                     {examOrAssignment && (q.type === "SHORT_TEXT" || q.type === "LONG_TEXT") && points > 0 && (
                       <div className="flex items-center gap-2 pt-2">
                         <Label htmlFor={`grade-${q.id}`} className="text-[11px] font-semibold text-muted-foreground">

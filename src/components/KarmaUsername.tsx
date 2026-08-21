@@ -8,28 +8,28 @@ interface KarmaUsernameProps {
   username: string;
   href?: string;
   className?: string;
-  prefix?: string; // e.g., "@" for @username
+  prefix?: string;
 }
 
-export function KarmaUsername({ 
-  karmaPoints, 
-  username, 
-  href, 
+export function KarmaUsername({
+  karmaPoints,
+  username,
+  href,
   className = "",
   prefix = ""
 }: KarmaUsernameProps) {
   const color = getKarmaTierColor(karmaPoints);
   const style = color ? { color } : undefined;
-  
+
   const content = (
-    <span 
+    <span
       style={style}
       className={`font-medium transition-colors ${className}`}
     >
       {prefix}{username}
     </span>
   );
-  
+
   if (href) {
     return (
       <Link href={href} className="hover:opacity-80 transition-opacity">
@@ -37,24 +37,23 @@ export function KarmaUsername({
       </Link>
     );
   }
-  
+
   return content;
 }
 
-// Simple text version without link
-export function KarmaUsernameText({ 
-  karmaPoints, 
+export function KarmaUsernameText({
+  karmaPoints,
   children,
   className = ""
-}: { 
-  karmaPoints: number; 
+}: {
+  karmaPoints: number;
   children: React.ReactNode;
   className?: string;
 }) {
   const color = getKarmaTierColor(karmaPoints);
-  
+
   return (
-    <span 
+    <span
       style={color ? { color } : undefined}
       className={`font-medium ${className}`}
     >

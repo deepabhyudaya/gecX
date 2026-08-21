@@ -9,14 +9,10 @@ interface EmojiEntry {
 
 interface EmojiRendererProps {
   content: string;
-  emojiMap: Record<string, string>; // name -> imageUrl
+  emojiMap: Record<string, string>;
   className?: string;
 }
 
-/**
- * Parses :name: tokens in content and replaces them with emoji images.
- * Falls back to plaintext for unrecognized tokens.
- */
 export default function EmojiRenderer({ content, emojiMap, className }: EmojiRendererProps) {
   const parts = useMemo(() => {
     if (!content || Object.keys(emojiMap).length === 0) {
@@ -73,9 +69,6 @@ export default function EmojiRenderer({ content, emojiMap, className }: EmojiRen
   );
 }
 
-/**
- * Build an emoji lookup map from multiple sources.
- */
 export function buildEmojiMap(
   serverEmojis: EmojiEntry[],
   personalEmojis: EmojiEntry[]
@@ -85,7 +78,7 @@ export function buildEmojiMap(
     const key = e.name.replace(/^:+|:+$/g, "");
     map[key] = e.imageUrl;
   }
-  // Server emojis override personal (higher priority)
+
   for (const e of serverEmojis) {
     const key = e.name.replace(/^:+|:+$/g, "");
     map[key] = e.imageUrl;

@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { getGecXSettings } from "./gecx-settings.actions";
 
-// Get or create user gecX balance (upsert prevents P2002 race)
 export async function getOrCreateGecXBalance(userId: string, userType: string) {
   const settings = await getGecXSettings();
   return prisma.userGecXBalance.upsert({
@@ -20,7 +19,6 @@ export async function getOrCreateGecXBalance(userId: string, userType: string) {
   });
 }
 
-// Get user gecX balance
 export async function getUserGecXBalance(userId?: string) {
   const { userId: currentUserId, sessionClaims } = auth();
   const targetUserId = userId || currentUserId;
@@ -32,7 +30,6 @@ export async function getUserGecXBalance(userId?: string) {
   return balance;
 }
 
-// Get transaction history
 export async function getGecXTransactionHistory(userId?: string, limit: number = 50) {
   const { userId: currentUserId } = auth();
   const targetUserId = userId || currentUserId;
@@ -48,7 +45,6 @@ export async function getGecXTransactionHistory(userId?: string, limit: number =
   return transactions;
 }
 
-// Award gecX (internal function)
 export async function awardGecX({
   userId,
   userType,
@@ -66,7 +62,6 @@ export async function awardGecX({
 }) {
   const balance = await getOrCreateGecXBalance(userId, userType);
 
-  // Update balance
   await prisma.userGecXBalance.update({
     where: { userId },
     data: {
@@ -75,7 +70,6 @@ export async function awardGecX({
     },
   });
 
-  // Record transaction
   await prisma.gecXTransaction.create({
     data: {
       userId,
@@ -90,7 +84,6 @@ export async function awardGecX({
   return { success: true, newBalance: balance.balance + amount };
 }
 
-// Deduct gecX for purchase
 export async function deductGecXForPurchase({
   userId,
   amount,
@@ -129,14 +122,12 @@ export async function deductGecXForPurchase({
   return { success: true, newBalance: balance.balance - amount };
 }
 
-// Award gecX for attendance (called from attendance.actions.ts)
 export async function awardGecXForAttendance(studentId: string, date: Date, present: boolean) {
   if (!present) return { success: false, reason: "Not present" };
 
   const settings = await getGecXSettings();
   const amount = settings.attendancePerDay;
 
-  // Get student info
   const student = await prisma.student.findUnique({
     where: { id: studentId },
     include: {
@@ -147,7 +138,6 @@ export async function awardGecXForAttendance(studentId: string, date: Date, pres
 
   if (!student) throw new Error("Student not found");
 
-  // Award student
   await awardGecX({
     userId: studentId,
     userType: "student",
@@ -156,7 +146,6 @@ export async function awardGecXForAttendance(studentId: string, date: Date, pres
     description: `Attendance on ${date.toDateString()}`,
   });
 
-  // Award teacher bonus
   if (student.class?.teacher) {
     const teacherAmount = Math.ceil(amount * settings.teacherAttendanceBonusPercent / 100);
     if (teacherAmount > 0) {
@@ -171,7 +160,6 @@ export async function awardGecXForAttendance(studentId: string, date: Date, pres
     }
   }
 
-  // Award parent bonus
   if (student.parent) {
     const parentAmount = Math.ceil(amount * settings.parentAttendanceBonusPercent / 100);
     if (parentAmount > 0) {
@@ -189,11 +177,9 @@ export async function awardGecXForAttendance(studentId: string, date: Date, pres
   return { success: true, amount, studentId };
 }
 
-// Award gecX for result (called when results are posted)
 export async function awardGecXForResult(studentId: string, score: number, examOrAssignment: string) {
   const settings = await getGecXSettings();
 
-  // Determine amount based on score
   let amount = 0;
   if (score >= 95) amount = settings.resultAbove95;
   else if (score >= 90) amount = settings.resultAbove90;
@@ -204,7 +190,6 @@ export async function awardGecXForResult(studentId: string, score: number, examO
 
   if (amount === 0) return { success: false, reason: "Score below threshold" };
 
-  // Get student info
   const student = await prisma.student.findUnique({
     where: { id: studentId },
     include: {
@@ -215,7 +200,6 @@ export async function awardGecXForResult(studentId: string, score: number, examO
 
   if (!student) throw new Error("Student not found");
 
-  // Award student
   await awardGecX({
     userId: studentId,
     userType: "student",
@@ -224,7 +208,6 @@ export async function awardGecXForResult(studentId: string, score: number, examO
     description: `${examOrAssignment} score: ${score}%`,
   });
 
-  // Award teacher bonus
   if (student.class?.teacher) {
     const teacherAmount = Math.ceil(amount * settings.teacherResultBonusPercent / 100);
     if (teacherAmount > 0) {
@@ -239,7 +222,6 @@ export async function awardGecXForResult(studentId: string, score: number, examO
     }
   }
 
-  // Award parent bonus
   if (student.parent) {
     const parentAmount = Math.ceil(amount * settings.parentResultBonusPercent / 100);
     if (parentAmount > 0) {
@@ -257,7 +239,6 @@ export async function awardGecXForResult(studentId: string, score: number, examO
   return { success: true, amount, studentId, score };
 }
 
-// Admin: manually grant gecX
 export async function adminGrantGecX(userId: string, amount: number, reason?: string) {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -268,16 +249,15 @@ export async function adminGrantGecX(userId: string, amount: number, reason?: st
     throw new Error("Amount must be a positive integer");
   }
 
-  // Determine user type from existing balance or check all tables
   let userType = "student";
   const existingBalance = await prisma.userGecXBalance.findUnique({
     where: { userId },
   });
-  
+
   if (existingBalance) {
     userType = existingBalance.userType;
   } else {
-    // Try to find user type from other tables
+
     const teacher = await prisma.teacher.findUnique({ where: { id: userId } });
     if (teacher) userType = "teacher";
     else {
@@ -301,7 +281,6 @@ export async function adminGrantGecX(userId: string, amount: number, reason?: st
   return { success: true, newBalance: result.newBalance };
 }
 
-// Get balance for all users (admin only)
 export async function getAllGecXBalances() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -315,14 +294,12 @@ export async function getAllGecXBalances() {
   return balances;
 }
 
-// Add 5M gecX to all admins (one-time testing function)
 export async function addGecXToAdminsForTesting() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
 
   if (role !== "admin") throw new Error("Admin only");
 
-  // Get all admins
   const admins = await prisma.admin.findMany({
     select: { id: true, username: true },
   });
@@ -330,14 +307,14 @@ export async function addGecXToAdminsForTesting() {
   const results = [];
 
   for (const admin of admins) {
-    // Determine user type and get/create balance
+
     let userType = "admin";
     let balance = await prisma.userGecXBalance.findUnique({
       where: { userId: admin.id },
     });
 
     if (!balance) {
-      // Create balance if doesn't exist
+
       balance = await prisma.userGecXBalance.create({
         data: {
           userId: admin.id,
@@ -348,7 +325,7 @@ export async function addGecXToAdminsForTesting() {
         },
       });
     } else {
-      // Add 5M to existing balance
+
       balance = await prisma.userGecXBalance.update({
         where: { userId: admin.id },
         data: {
@@ -358,7 +335,6 @@ export async function addGecXToAdminsForTesting() {
       });
     }
 
-    // Record the transaction
     await prisma.gecXTransaction.create({
       data: {
         userId: admin.id,
@@ -379,7 +355,6 @@ export async function addGecXToAdminsForTesting() {
   return { success: true, updated: results.length, admins: results };
 }
 
-// Add custom gecX to any user by username (testing function for admins)
 export async function addCustomGecXToUser(username: string, amount: number) {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -390,7 +365,6 @@ export async function addCustomGecXToUser(username: string, amount: number) {
     throw new Error("Invalid username or amount");
   }
 
-  // Search for user across all tables
   const [student, teacher, parent, admin] = await Promise.all([
     prisma.student.findUnique({
       where: { username: username.toLowerCase() },
@@ -416,13 +390,11 @@ export async function addCustomGecXToUser(username: string, amount: number) {
     throw new Error("User not found");
   }
 
-  // Determine user type
   let userType = "admin";
   if (student) userType = "student";
   else if (teacher) userType = "teacher";
   else if (parent) userType = "parent";
 
-  // Get or create balance
   let balance = await prisma.userGecXBalance.findUnique({
     where: { userId: user.id },
   });
@@ -449,7 +421,6 @@ export async function addCustomGecXToUser(username: string, amount: number) {
     });
   }
 
-  // Record the transaction
   await prisma.gecXTransaction.create({
     data: {
       userId: user.id,

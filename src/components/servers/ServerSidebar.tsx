@@ -28,7 +28,6 @@ export default function ServerSidebar({ servers, selectedServerId }: ServerSideb
   return (
     <TooltipProvider delayDuration={100}>
     <div className="flex flex-col h-full w-[72px] bg-muted/30 border-r border-border py-3 items-center gap-2 shrink-0">
-      {/* Home / Messages button */}
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
@@ -45,10 +44,8 @@ export default function ServerSidebar({ servers, selectedServerId }: ServerSideb
         <TooltipContent side="right">Messages</TooltipContent>
       </Tooltip>
 
-      {/* Divider */}
       <div className="w-8 h-[2px] bg-border rounded-full my-1" />
 
-      {/* Server list */}
       {servers.map((server) => (
         <Tooltip key={server.id}>
           <TooltipTrigger asChild>
@@ -67,8 +64,7 @@ export default function ServerSidebar({ servers, selectedServerId }: ServerSideb
               ) : (
                 <span className="text-xs font-bold uppercase">{server.name.substring(0, 2)}</span>
               )}
-              
-              {/* Unread indicator */}
+
               {server.unreadCount && server.unreadCount > 0 && (
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-destructive rounded-full flex items-center justify-center text-[10px] font-bold text-destructive-foreground border-2 border-muted">
                   {server.unreadCount > 9 ? "9+" : server.unreadCount}
@@ -80,10 +76,8 @@ export default function ServerSidebar({ servers, selectedServerId }: ServerSideb
         </Tooltip>
       ))}
 
-      {/* Divider */}
       <div className="w-8 h-[2px] bg-border rounded-full my-1" />
 
-      {/* Create Server Button */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -100,7 +94,6 @@ export default function ServerSidebar({ servers, selectedServerId }: ServerSideb
         <TooltipContent side="right">Create Server</TooltipContent>
       </Tooltip>
 
-      {/* Join Server Button */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -117,7 +110,6 @@ export default function ServerSidebar({ servers, selectedServerId }: ServerSideb
         <TooltipContent side="right">Join Server</TooltipContent>
       </Tooltip>
 
-      {/* Discover Servers Button */}
       <Tooltip>
         <TooltipTrigger asChild>
           <Link

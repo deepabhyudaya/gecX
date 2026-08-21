@@ -12,4 +12,3 @@ async function patch() {
   }
 }
 patch().catch(console.error).finally(() => prisma.$disconnect());
-    

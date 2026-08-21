@@ -5,16 +5,9 @@ import { generateWeeklyLore } from "@/lib/student-rivalry-lore";
 import { upsertScoreboardMessage, postWarSystemMessage, renderStudentScoreboard } from "@/lib/war-server";
 import { publishWarEvent } from "@/lib/war-events";
 
-/**
- * processAutomatedWars
- * 
- * This function should be called by a CRON job (e.g. Vercel Cron or GitHub Actions)
- * every hour to check for automated bouts that have expired and need their scores finalized.
- */
 export async function processAutomatedWars() {
   const now = new Date();
 
-  // Find all active automated bouts where the time is up
   const activeBouts = await prisma.studentRivalryBout.findMany({
     where: {
       status: { in: ["PENDING", "ACTIVE"] },
@@ -35,12 +28,10 @@ export async function processAutomatedWars() {
     const durationHours = bout.warType?.minDurationHours || 24;
     const endTime = new Date(conductedAt.getTime() + durationHours * 60 * 60 * 1000);
 
-    // If time is up, calculate the final score and record the bout
     if (now >= endTime) {
       let finalScoreA = 0;
       let finalScoreB = 0;
 
-      // 1. Karma Sprint Logic: sum karma earned in the bout window.
       if (bout.warType?.name === "Karma Sprint") {
         const karmaA = await prisma.karmaHistory.aggregate({
           where: {
@@ -59,11 +50,11 @@ export async function processAutomatedWars() {
         finalScoreA = karmaA._sum.karmaEarned ?? 0;
         finalScoreB = karmaB._sum.karmaEarned ?? 0;
       }
-      // 2. Attendance Siege Logic
+
       else if (bout.warType?.name === "Attendance Siege") {
-        // Query Attendance model since conductedAt
+
         const days = durationHours / 24;
-        
+
         const attA = await prisma.studentAttendance.count({
           where: { studentId: bout.rivalry.studentAId, date: { gte: conductedAt, lte: endTime }, present: true }
         });
@@ -71,11 +62,10 @@ export async function processAutomatedWars() {
           where: { studentId: bout.rivalry.studentBId, date: { gte: conductedAt, lte: endTime }, present: true }
         });
 
-        // 100 points per day present
         finalScoreA = attA * 100;
         finalScoreB = attB * 100;
       }
-      // 3. Silent War Logic: 1000 base - 100 per message sent in war server.
+
       else if (bout.warType?.name === "Silent War") {
         finalScoreA = 1000;
         finalScoreB = 1000;
@@ -98,7 +88,7 @@ export async function processAutomatedWars() {
           finalScoreB -= messagesB * 100;
         }
       }
-      // 4. Reputation War Logic: count helpful answer marks (rank 1, 2, 3) during bout.
+
       else if (bout.warType?.name === "Reputation War") {
         const helpfulA = await prisma.communityComment.count({
           where: {
@@ -118,7 +108,6 @@ export async function processAutomatedWars() {
         finalScoreB = helpfulB * 100;
       }
 
-      // SW-003: atomic bout completion with lore, scoreboard, and real-time events.
       try {
         const winnerId = finalScoreA > finalScoreB ? bout.rivalry.studentAId :
                          finalScoreB > finalScoreA ? bout.rivalry.studentBId : null;
@@ -166,7 +155,6 @@ export async function processAutomatedWars() {
           });
         });
 
-        // Post-commit UI updates.
         if (bout.rivalry.scoreboardChannelId) {
           try {
             const newMessageId = await upsertScoreboardMessage(

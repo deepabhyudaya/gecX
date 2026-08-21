@@ -56,14 +56,12 @@ const AttendanceChartContainer = () => {
 
   return (
     <div className="bg-card text-card-foreground rounded-2xl p-4 h-full flex flex-col overflow-hidden">
-      {/* Header with title and tabs */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
         <div>
           <h1 className="text-[16px] font-bold">Attendance</h1>
           <p className="text-[11px] text-muted-foreground">{getRangeLabel()}</p>
         </div>
 
-        {/* Timeline Tabs */}
         <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg">
           {[
             { value: "7days" as TimeRange, label: "7 Days" },
@@ -88,7 +86,6 @@ const AttendanceChartContainer = () => {
         </div>
       </div>
 
-      {/* Chart */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-full">
@@ -99,7 +96,6 @@ const AttendanceChartContainer = () => {
         )}
       </div>
 
-      {/* View Full Records Button */}
       <div className="flex justify-end mt-3">
         <a
           href="/list/attendance"

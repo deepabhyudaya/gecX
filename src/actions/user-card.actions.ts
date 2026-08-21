@@ -17,19 +17,19 @@ export interface UserCardData {
   followingCount: number;
   isPrivate: boolean;
   requireFollowApproval: boolean;
-  // Equipped items
+
   equippedUsernameColor: string | null;
   equippedNameplate: string | null;
   profileBgColor: string | null;
-  // Status
+
   isFollowing: boolean;
   isOwnProfile: boolean;
   hasDMAccess: boolean;
   hasPendingDMRequest: boolean;
   hasPendingFollowRequest: boolean;
-  // Streak
+
   currentStreak: number;
-  // Mutual
+
   mutualServers: Array<{
     id: string;
     name: string;
@@ -50,7 +50,7 @@ export interface UserCardData {
 export async function getUserCardData(targetUserId: string): Promise<UserCardData | null> {
   try {
     const { userId: currentUserId } = auth();
-    
+
     if (!currentUserId) {
       console.error("[getUserCardData] No current user ID (unauthorized)");
       return null;
@@ -61,7 +61,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       return null;
     }
 
-    // Get target user profile
     const profile = await prisma.userCommunityProfile.findUnique({
       where: { userId: targetUserId },
     });
@@ -71,7 +70,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       return null;
     }
 
-  // Sync username/displayName from Clerk if the profile still has a default handle
   let profileUsername = profile.username;
   let profileDisplayName = profile.displayName;
   try {
@@ -103,10 +101,9 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       }
     }
   } catch {
-    // Non-fatal: leave stored username/displayName as-is
+
   }
 
-  // Check for active impersonation
   const impersonation = await prisma.userImpersonation.findUnique({
     where: { userId: targetUserId },
   });
@@ -115,11 +112,10 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
   if (impersonation && impersonation.expiresAt >= new Date()) {
     appearanceUserId = impersonation.targetUserId;
   } else if (impersonation && impersonation.expiresAt < new Date()) {
-    // clean up expired
+
     await prisma.userImpersonation.delete({ where: { userId: targetUserId } }).catch(() => {});
   }
 
-  // Get streak and appearance from the impersonated profile if applicable
   let appearanceProfile = profile;
   if (appearanceUserId !== targetUserId) {
     const impProfile = await prisma.userCommunityProfile.findUnique({
@@ -130,14 +126,12 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
     }
   }
 
-  // Get equipped colors - query related items separately since schema may vary
   const equipped = await prisma.userEquippedColors.findUnique({
     where: { userId: appearanceUserId },
   });
 
-  // Fetch the actual color/nameplate items
   const [usernameColorItem, nameplateItem, profileBgItem] = await Promise.all([
-    equipped?.usernameColorId 
+    equipped?.usernameColorId
       ? prisma.usernameColorShopItem.findUnique({ where: { id: equipped.usernameColorId } })
       : null,
     equipped?.nameplateId
@@ -148,7 +142,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       : null,
   ]);
 
-  // Check follow status
   const followRecord = currentUserId !== targetUserId
     ? await prisma.communityFollow.findUnique({
         where: {
@@ -160,7 +153,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       })
     : null;
 
-  // Check pending follow request
   const pendingFollowRequest = currentUserId !== targetUserId
     ? await prisma.followRequest.findUnique({
         where: {
@@ -172,10 +164,9 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       })
     : null;
 
-  // Check DM access
   const user1Id = currentUserId < targetUserId ? currentUserId : targetUserId;
   const user2Id = currentUserId < targetUserId ? targetUserId : currentUserId;
-  
+
   const dmGrant = currentUserId !== targetUserId
     ? await prisma.dMAccessGrant.findUnique({
         where: {
@@ -187,7 +178,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       })
     : null;
 
-  // Check pending DM request
   const pendingDMRequest = currentUserId !== targetUserId
     ? await prisma.dMAccessRequest.findUnique({
         where: {
@@ -199,7 +189,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       })
     : null;
 
-  // Get mutual servers
   const [currentUserServers, targetUserServers] = await Promise.all([
     prisma.serverMember.findMany({
       where: { userId: currentUserId },
@@ -215,7 +204,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
   const targetUserServerIds = new Set(targetUserServers.map(s => s.serverId));
   const mutualServerIds = [...currentUserServerIds].filter(id => targetUserServerIds.has(id));
 
-  // Fetch mutual servers with target user's custom roles
   const mutualServers = mutualServerIds.length > 0
     ? await Promise.all(
         mutualServerIds.map(async (serverId) => {
@@ -248,7 +236,6 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       ).then((results) => results.filter(Boolean) as any)
     : [];
 
-  // Get mutual groups
   const [currentUserGroups, targetUserGroups] = await Promise.all([
     prisma.groupMember.findMany({
       where: { userId: currentUserId },
@@ -272,10 +259,8 @@ export async function getUserCardData(targetUserId: string): Promise<UserCardDat
       })
     : [];
 
-  // Check if target has pending request FROM current user
   const outgoingFollowPending = pendingFollowRequest?.status === "PENDING";
-  
-  // Check for incoming follow request (target sent to current user)
+
   const incomingFollowRequest = currentUserId !== targetUserId
     ? await prisma.followRequest.findUnique({
         where: {

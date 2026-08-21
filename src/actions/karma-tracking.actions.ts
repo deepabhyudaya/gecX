@@ -5,10 +5,6 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-/**
- * Record karma earned for today
- * This should be called whenever a user earns karma
- */
 export async function recordKarmaEarned(
   userId: string,
   points: number,
@@ -19,12 +15,10 @@ export async function recordKarmaEarned(
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  // Upsert karma history for today using raw SQL
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
   const day = today.getDate();
-  
-  // Upsert karma history for today, avoiding duplicate key race conditions
+
   await prisma.$executeRaw`
     INSERT INTO "KarmaHistory" ("id", "userId", "date", "year", "month", "day", "karmaEarned", "createdAt", "updatedAt")
     VALUES (gen_random_uuid(), ${userId}, ${today}, ${year}, ${month}, ${day}, ${points}, NOW(), NOW())
@@ -33,7 +27,6 @@ export async function recordKarmaEarned(
         "updatedAt" = NOW();
   `;
 
-  // Upsert user's total karma points (auto-create profile after data wipe)
   await prisma.userCommunityProfile.upsert({
     where: { userId },
     update: { karmaPoints: { increment: points } },
@@ -45,7 +38,6 @@ export async function recordKarmaEarned(
     },
   });
 
-  // Revalidate cache for instant UI updates
   revalidateTag("leaderboard");
   revalidatePath("/leaderboard");
   revalidatePath(`/${userId}`);
@@ -53,9 +45,6 @@ export async function recordKarmaEarned(
   console.log(`[Karma] ${userId} earned ${points} points from ${source || "unknown"}`);
 }
 
-/**
- * Get karma history for a specific date range
- */
 export async function getKarmaHistory(
   userId: string,
   startDate: Date,
@@ -75,15 +64,11 @@ export async function getKarmaHistory(
   });
 }
 
-/**
- * Get today's karma for a user
- */
 export async function getTodayKarma(userId: string) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const dateStr = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+  const dateStr = today.toISOString().split('T')[0];
 
-  // Use raw query to bypass PostgreSQL cached plan issue
   const result = await prisma.$queryRaw`
     SELECT "karmaEarned" FROM "KarmaHistory"
     WHERE "userId" = ${userId} AND "date" = ${dateStr}::date
@@ -94,13 +79,10 @@ export async function getTodayKarma(userId: string) {
   return history?.karmaEarned || 0;
 }
 
-/**
- * Get this week's karma for a user
- */
 export async function getThisWeekKarma(userId: string) {
   const now = new Date();
   const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  startOfWeek.setDate(now.getDate() - now.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
 
   const endOfWeek = new Date(startOfWeek);
@@ -109,11 +91,10 @@ export async function getThisWeekKarma(userId: string) {
   const startStr = startOfWeek.toISOString().split('T')[0];
   const endStr = endOfWeek.toISOString().split('T')[0];
 
-  // Use raw query to bypass PostgreSQL cached plan issue
   const result = await prisma.$queryRaw`
     SELECT SUM("karmaEarned") as "totalKarma" FROM "KarmaHistory"
-    WHERE "userId" = ${userId} 
-    AND "date" >= ${startStr}::date 
+    WHERE "userId" = ${userId}
+    AND "date" >= ${startStr}::date
     AND "date" <= ${endStr}::date
   `;
   const total = (result as any[])[0]?.totalKarma;
@@ -121,19 +102,15 @@ export async function getThisWeekKarma(userId: string) {
   return Number(total) || 0;
 }
 
-/**
- * Get this month's karma for a user
- */
 export async function getThisMonthKarma(userId: string) {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  // Use raw query to bypass PostgreSQL cached plan issue
   const result = await prisma.$queryRaw`
     SELECT SUM("karmaEarned") as "totalKarma" FROM "KarmaHistory"
-    WHERE "userId" = ${userId} 
-    AND "year" = ${year} 
+    WHERE "userId" = ${userId}
+    AND "year" = ${year}
     AND "month" = ${month}
   `;
   const total = (result as any[])[0]?.totalKarma;
@@ -141,9 +118,6 @@ export async function getThisMonthKarma(userId: string) {
   return Number(total) || 0;
 }
 
-/**
- * Get karma breakdown for current user
- */
 export async function getMyKarmaBreakdown() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -154,9 +128,8 @@ export async function getMyKarmaBreakdown() {
     getThisMonthKarma(userId),
   ]);
 
-  // Use raw query to bypass PostgreSQL cached plan issue
   const profiles = await prisma.$queryRaw`
-    SELECT "karmaPoints" FROM "UserCommunityProfile" 
+    SELECT "karmaPoints" FROM "UserCommunityProfile"
     WHERE "userId" = ${userId}
     LIMIT 1
   `;
@@ -170,9 +143,6 @@ export async function getMyKarmaBreakdown() {
   };
 }
 
-/**
- * Get karma breakdown for any user
- */
 export async function getUserKarmaBreakdown(userId: string) {
   const [today, week, month] = await Promise.all([
     getTodayKarma(userId),
@@ -180,16 +150,13 @@ export async function getUserKarmaBreakdown(userId: string) {
     getThisMonthKarma(userId),
   ]);
 
-  // Use raw query to bypass PostgreSQL cached plan issue
   const profiles = await prisma.$queryRaw`
-    SELECT "karmaPoints", "showKarma" FROM "UserCommunityProfile" 
+    SELECT "karmaPoints", "showKarma" FROM "UserCommunityProfile"
     WHERE "userId" = ${userId}
     LIMIT 1
   `;
   const profile = (profiles as any[])[0] || null;
 
-  // showKarma is now a string: "nobody", "followers", or "everyone"
-  // For public API, only show if set to "everyone"
   if (!profile || profile.showKarma === "nobody") {
     return null;
   }
@@ -202,15 +169,11 @@ export async function getUserKarmaBreakdown(userId: string) {
   };
 }
 
-/**
- * Get today's leaderboard - top users by karma earned today
- */
 export async function getDailyLeaderboard(limit: number = 20) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dateStr = today.toISOString().split('T')[0];
 
-  // Use raw SQL to bypass cached plan error and filter by showKarma = 'everyone'
   const entries = await prisma.$queryRaw`
     SELECT kh."karmaEarned", ucp."userId", ucp."username", ucp."displayName", ucp."avatar", ucp."customAvatar", ucp."karmaPoints", ucp."currentStreak"
     FROM "KarmaHistory" kh
@@ -232,9 +195,6 @@ export async function getDailyLeaderboard(limit: number = 20) {
   }));
 }
 
-/**
- * Get weekly leaderboard - top users by karma earned this week
- */
 export async function getWeeklyLeaderboard(limit: number = 20) {
   const now = new Date();
   const startOfWeek = new Date(now);
@@ -247,7 +207,6 @@ export async function getWeeklyLeaderboard(limit: number = 20) {
   const startStr = startOfWeek.toISOString().split('T')[0];
   const endStr = endOfWeek.toISOString().split('T')[0];
 
-  // Group by user and sum karma using raw SQL
   const entries = await prisma.$queryRaw`
     SELECT "userId", SUM("karmaEarned") as "totalKarma"
     FROM "KarmaHistory"
@@ -257,10 +216,9 @@ export async function getWeeklyLeaderboard(limit: number = 20) {
     LIMIT ${limit}
   `;
 
-  // Get user details using raw SQL - filter by showKarma = 'everyone'
   const userIds = (entries as any[]).map((e) => e.userId);
   if (userIds.length === 0) return [];
-  
+
   const users = await prisma.$queryRaw`
     SELECT "userId", "username", "displayName", "avatar", "customAvatar", "karmaPoints", "currentStreak"
     FROM "UserCommunityProfile"
@@ -287,15 +245,11 @@ export async function getWeeklyLeaderboard(limit: number = 20) {
     .filter(Boolean) as LeaderboardEntry[];
 }
 
-/**
- * Get monthly leaderboard - top users by karma earned this month
- */
 export async function getMonthlyLeaderboard(limit: number = 20) {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  // Group by user and sum karma using raw SQL
   const entries = await prisma.$queryRaw`
     SELECT "userId", SUM("karmaEarned") as "totalKarma"
     FROM "KarmaHistory"
@@ -305,10 +259,9 @@ export async function getMonthlyLeaderboard(limit: number = 20) {
     LIMIT ${limit}
   `;
 
-  // Get user details using raw SQL - filter by showKarma = 'everyone'
   const userIds = (entries as any[]).map((e) => e.userId);
   if (userIds.length === 0) return [];
-  
+
   const users = await prisma.$queryRaw`
     SELECT "userId", "username", "displayName", "avatar", "customAvatar", "karmaPoints", "currentStreak"
     FROM "UserCommunityProfile"
@@ -335,11 +288,8 @@ export async function getMonthlyLeaderboard(limit: number = 20) {
     .filter(Boolean) as LeaderboardEntry[];
 }
 
-/**
- * Get all-time leaderboard - top users by total karma
- */
 export async function getAllTimeLeaderboard(limit: number = 20) {
-  // Use raw SQL to bypass cached plan error and filter by showKarma = 'everyone'
+
   const users = await prisma.$queryRaw`
     SELECT "userId", "username", "displayName", "avatar", "customAvatar", "karmaPoints", "currentStreak"
     FROM "UserCommunityProfile"
@@ -360,7 +310,6 @@ export async function getAllTimeLeaderboard(limit: number = 20) {
   }));
 }
 
-// Type definition for leaderboard entries
 export type LeaderboardEntry = {
   rank: number;
   userId: string;
@@ -372,9 +321,6 @@ export type LeaderboardEntry = {
   currentStreak: number;
 };
 
-/**
- * Get leaderboard by timeframe
- */
 export async function getLeaderboard(
   timeframe: "today" | "week" | "month" | "all",
   limit: number = 20
@@ -393,14 +339,10 @@ export async function getLeaderboard(
   }
 }
 
-/**
- * Get current user's rank for a specific timeframe
- */
 export async function getMyRank(timeframe: "today" | "week" | "month" | "all") {
   const { userId } = auth();
   if (!userId) return null;
 
-  // Use raw SQL to bypass cached plan error
   const profiles = await prisma.$queryRaw`
     SELECT "showKarma" FROM "UserCommunityProfile"
     WHERE "userId" = ${userId}
@@ -408,10 +350,8 @@ export async function getMyRank(timeframe: "today" | "week" | "month" | "all") {
   `;
   const profile = (profiles as any[])[0];
 
-  // Only show rank if showKarma is not 'nobody'
   if (!profile || profile.showKarma === "nobody") return null;
 
-  // Get leaderboard and find user's rank
   const leaderboard = await getLeaderboard(timeframe, 100);
   const userEntry = leaderboard.find((e: LeaderboardEntry) => e.userId === userId);
 

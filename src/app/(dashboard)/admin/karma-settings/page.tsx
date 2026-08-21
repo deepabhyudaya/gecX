@@ -153,7 +153,7 @@ export default function KarmaSettingsPage() {
   const handleChange = (key: keyof KarmaSettingsData, value: string) => {
     const numValue = parseInt(value, 10);
     if (isNaN(numValue) || numValue < 0) return;
-    
+
     setSettings((prev) => {
       if (!prev) return prev;
       return { ...prev, [key]: numValue };
@@ -163,7 +163,7 @@ export default function KarmaSettingsPage() {
 
   const handleSave = async () => {
     if (!settings) return;
-    
+
     setIsSaving(true);
     try {
       await updateKarmaSettings(settings);
@@ -180,7 +180,7 @@ export default function KarmaSettingsPage() {
     if (!confirm("Are you sure you want to reset all karma settings to defaults?")) {
       return;
     }
-    
+
     setIsResetting(true);
     try {
       const result = await resetKarmaSettingsToDefaults();
@@ -198,7 +198,7 @@ export default function KarmaSettingsPage() {
     if (!confirm("Add 5,000,000 karma to ALL admins? This is for testing only.")) {
       return;
     }
-    
+
     setIsAddingKarma(true);
     try {
       const result = await addKarmaToAdminsForTesting();
@@ -216,11 +216,11 @@ export default function KarmaSettingsPage() {
       toast.error("Please enter a valid username and amount");
       return;
     }
-    
+
     if (!confirm(`Add ${amount.toLocaleString()} karma to @${customUsername}?`)) {
       return;
     }
-    
+
     setIsAddingCustomKarma(true);
     try {
       const result = await addCustomKarmaToUser(customUsername.trim(), amount);
@@ -289,7 +289,6 @@ export default function KarmaSettingsPage() {
       </div>
 
       <div className="space-y-4">
-        {/* Community Engagement Section */}
         <Card>
           <CardHeader>
             <CardTitle>Community Engagement</CardTitle>
@@ -324,7 +323,6 @@ export default function KarmaSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Academic Performance Section */}
         <Card>
           <CardHeader>
             <CardTitle>Academic Performance (Exam/Assignments)</CardTitle>
@@ -359,7 +357,6 @@ export default function KarmaSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Messaging Section */}
         <Card>
           <CardHeader>
             <CardTitle>Messaging</CardTitle>
@@ -394,7 +391,6 @@ export default function KarmaSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Testing Tools Section - Admin Only */}
         <Card className="border-yellow-500/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -406,7 +402,6 @@ export default function KarmaSettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Add Custom Karma */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Add Custom Karma to User</Label>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -444,10 +439,8 @@ export default function KarmaSettingsPage() {
               </p>
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-border" />
 
-            {/* Add to All Admins */}
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-sm font-medium">Add 5M Karma to All Admins</Label>
@@ -472,7 +465,6 @@ export default function KarmaSettingsPage() {
         </Card>
       </div>
 
-      {/* Bottom actions for mobile */}
       <div className="flex gap-2 mt-6 md:hidden">
         <Button
           variant="outline"

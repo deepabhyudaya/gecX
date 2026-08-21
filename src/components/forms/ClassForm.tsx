@@ -142,7 +142,6 @@ const ClassForm = ({
           )}
         </div>
       </div>
-      {/* College & Branch Metadata */}
       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         Branch Metadata
       </span>

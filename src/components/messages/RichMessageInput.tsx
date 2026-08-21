@@ -86,7 +86,6 @@ export default function RichMessageInput({
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
 
-  // Close picker on outside click
   useEffect(() => {
     if (!showMediaPicker) return;
     const handler = (e: MouseEvent) => {
@@ -98,7 +97,6 @@ export default function RichMessageInput({
     return () => document.removeEventListener("mousedown", handler);
   }, [showMediaPicker]);
 
-  // Close unicode emoji picker on outside click
   useEffect(() => {
     if (!showEmojiPicker) return;
     const handler = (e: MouseEvent) => {
@@ -155,30 +153,29 @@ export default function RichMessageInput({
   const handleTableConfirm = useCallback(async (rows: number, cols: number) => {
     const generateTableMarkdown = (r: number, c: number) => {
       let markdown = "";
-      // Header row
+
       markdown += "| " + Array.from({ length: c }, (_, i) => `Column ${i + 1}`).join(" | ") + " |\n";
-      // Separator row
+
       markdown += "| " + Array.from({ length: c }, () => "---").join(" | ") + " |\n";
-      // Data rows
+
       for (let i = 0; i < r - 1; i++) {
         markdown += "| " + Array.from({ length: c }, (_, j) => `Value ${i + 1}-${j + 1}`).join(" | ") + " |\n";
       }
       return markdown.trim();
     };
-    
+
     const tableMarkdown = generateTableMarkdown(rows, cols);
     const separator = markdown && !/\n$/.test(markdown) ? "\n\n" : "";
     await replaceWithMarkdown(`${markdown}${separator}${tableMarkdown}`);
-    // Move cursor to end so users can continue typing
+
     moveCaretToEnd();
   }, [markdown, replaceWithMarkdown, moveCaretToEnd]);
 
   useEffect(() => {
     if (!appendTextToken) return;
-    
+
     void appendInlineAtEnd(appendTextToken);
-    
-    // Notify parent to clear the token
+
     onTokenConsumed?.();
   }, [appendTextToken, onTokenConsumed, appendInlineAtEnd]);
 
@@ -249,14 +246,12 @@ export default function RichMessageInput({
 
   return (
     <div ref={wrapperRef} className="relative z-0">
-      {/* Slash menu */}
       {showSlashMenu && slashCommands.length > 0 && (
         <div className="absolute bottom-full left-0 right-0 mb-2 z-[9999]">
           <SlashCommandMenu query={markdown.replace(/^\//, "")} commands={slashCommands} />
         </div>
       )}
 
-      {/* Media Picker */}
       {showMediaPicker && (
         <div ref={pickerRef} className="absolute bottom-full right-0 mb-2 z-[9999]">
           <MediaPicker
@@ -280,7 +275,6 @@ export default function RichMessageInput({
           />
         </div>
       )}
-      {/* Unicode Emoji Picker */}
       {showEmojiPicker && (
         <div ref={emojiPickerRef} className="absolute bottom-full right-0 mb-2 z-[9999]">
           <EmojiPicker
@@ -308,7 +302,6 @@ export default function RichMessageInput({
           </button>
         ))}
         <div className="ml-auto flex items-center gap-0.5">
-          {/* Media Picker Button */}
           <button
             type="button"
             onClick={() => {
@@ -325,7 +318,6 @@ export default function RichMessageInput({
           >
             <Film className="size-3.5" />
           </button>
-          {/* Unicode Emoji Picker Button */}
           <button
             type="button"
             onClick={() => {
@@ -354,7 +346,7 @@ export default function RichMessageInput({
             setShowSlashMenu(e.target.value.trimStart().startsWith("/"));
           }}
           onKeyDown={(e) => {
-            // Close pickers with Escape
+
             if (e.key === "Escape") {
               if (showMediaPicker || showEmojiPicker) {
                 e.preventDefault();
@@ -366,7 +358,6 @@ export default function RichMessageInput({
               return;
             }
 
-            // Keyboard shortcuts to open pickers (only when none are open)
             const isMac = navigator.platform?.toLowerCase().includes("mac");
             const modKey = isMac ? e.metaKey : e.ctrlKey;
             if (!showMediaPicker && !showEmojiPicker && !showSlashMenu) {
@@ -406,20 +397,18 @@ export default function RichMessageInput({
         />
       </div>
 
-      {/* Link Dialog */}
       <LinkDialog
         isOpen={showLinkDialog}
         onClose={() => setShowLinkDialog(false)}
         onConfirm={handleLinkConfirm}
       />
-      
-      {/* Table Dialog */}
+
       <TableDialog
         isOpen={showTableDialog}
         onClose={() => setShowTableDialog(false)}
         onConfirm={handleTableConfirm}
       />
-      
+
       <div className="flex justify-end gap-1.5 px-1.5 pb-1.5">
         <button
           type="button"

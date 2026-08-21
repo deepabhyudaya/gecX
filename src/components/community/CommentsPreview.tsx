@@ -22,7 +22,6 @@ interface CommentsPreviewProps {
 export function CommentsPreview({ postId, commentCount, previewComments }: CommentsPreviewProps) {
   const [userEmojis, setUserEmojis] = useState<Array<{ name: string; imageUrl: string }>>([]);
 
-  // Fetch user's server emojis for rendering (cached)
   useEffect(() => {
     fetchUserEmojis()
       .then((emojis) => {
@@ -35,7 +34,6 @@ export function CommentsPreview({ postId, commentCount, previewComments }: Comme
 
   if (commentCount === 0) return null;
 
-  // Truncate comment content to max 80 chars
   const truncateContent = (content: string, maxLength: number = 80) => {
     if (content.length <= maxLength) return content;
     return content.slice(0, maxLength).trim() + "...";
@@ -43,13 +41,11 @@ export function CommentsPreview({ postId, commentCount, previewComments }: Comme
 
   return (
     <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
-      {/* Header */}
       <div className="flex items-center gap-2 mb-2 text-muted-foreground">
         <MessageCircle size={14} />
         <span className="text-xs font-medium">{commentCount} comments</span>
       </div>
 
-      {/* Preview Comments */}
       <div className="space-y-2">
         {previewComments.map((comment) => (
           <Link
@@ -66,7 +62,6 @@ export function CommentsPreview({ postId, commentCount, previewComments }: Comme
         ))}
       </div>
 
-      {/* View all link */}
       {commentCount > previewComments.length && (
         <Link
           href={`/community/post/${postId}`}

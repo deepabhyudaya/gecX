@@ -2,14 +2,12 @@ export default function MessagesLoading() {
   return (
     <div className="flex-1 p-4 flex h-full animate-pulse">
       <div className="flex w-full h-full rounded-lg overflow-hidden border border-border">
-        {/* Sidebar skeleton */}
         <div className="w-72 shrink-0 border-r border-border bg-muted/30 flex flex-col p-3 gap-2">
           <div className="h-8 bg-muted rounded-lg mb-2" />
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-14 bg-muted rounded-lg" />
           ))}
         </div>
-        {/* Chat area skeleton */}
         <div className="flex-1 flex flex-col bg-background">
           <div className="h-16 border-b border-border bg-muted/20 shrink-0" />
           <div className="flex-1 p-6 flex flex-col gap-4">

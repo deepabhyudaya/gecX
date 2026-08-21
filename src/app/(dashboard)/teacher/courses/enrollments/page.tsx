@@ -10,7 +10,6 @@ export default async function TeacherEnrollmentsPage() {
   const { userId } = auth();
   if (!userId) return redirect("/sign-in");
 
-  // All courses by this teacher with their enrolled students + progress
   const courses = await prisma.course.findMany({
     where: { teacherId: userId },
     include: {
@@ -28,7 +27,6 @@ export default async function TeacherEnrollmentsPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  // For each course, load completion counts per student
   const courseData = await Promise.all(
     courses.map(async (course) => {
       const totalLectures = course.sections.reduce((a, s) => a + s.lectures.length, 0);
@@ -55,7 +53,6 @@ export default async function TeacherEnrollmentsPage() {
   return (
     <div className="p-6 min-h-full bg-background">
       <div className="max-w-5xl mx-auto flex flex-col gap-6">
-        {/* Header */}
         <div className="bg-card border border-border p-6 rounded-[12px] shadow-sm flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-[26px] font-bold text-foreground tracking-tight">Course Enrollments</h1>
@@ -79,7 +76,6 @@ export default async function TeacherEnrollmentsPage() {
 
         {courseData.map(({ course, totalLectures, studentsWithProgress }) => (
           <div key={course.id} className="bg-card border border-border rounded-[12px] shadow-sm overflow-hidden">
-            {/* Course header */}
             <div className="flex items-center justify-between p-4 border-b border-border bg-muted/20">
               <div>
                 <h2 className="text-[16px] font-bold text-foreground">{course.title}</h2>
@@ -99,7 +95,6 @@ export default async function TeacherEnrollmentsPage() {
               </div>
             </div>
 
-            {/* Student table */}
             {studentsWithProgress.length === 0 ? (
               <div className="p-6 text-center text-[13px] text-muted-foreground">
                 No students enrolled yet.

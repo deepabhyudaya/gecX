@@ -181,7 +181,6 @@ export function PublicTicketAdminView({
       className={`w-full h-full rounded-lg ${shadowBorder} bg-background overflow-hidden flex flex-col md:flex-row`}
       onLayout={onLayout}
     >
-      {/* SIDEBAR PANEL */}
       <ResizablePanel
         defaultSize={33}
         minSize={20}
@@ -233,7 +232,6 @@ export function PublicTicketAdminView({
 
       <ResizableHandle withHandle className="hidden md:flex" />
 
-      {/* MAIN VIEW PANEL */}
       <ResizablePanel
         defaultSize={67}
         className={`flex-1 flex-col bg-background h-full relative ${localSelected ? 'flex' : 'hidden md:flex'}`}
@@ -244,7 +242,6 @@ export function PublicTicketAdminView({
           </div>
         ) : (
           <div className="flex flex-col h-full">
-            {/* HEADER */}
             <div className="px-4 py-3 md:px-6 md:py-4 border-b border-border flex justify-between items-center bg-background z-10 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <button
@@ -293,7 +290,6 @@ export function PublicTicketAdminView({
               </div>
             </div>
 
-            {/* MESSAGES */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-background flex flex-col no-scrollbar">
               {localSelected.messages?.map((msg) => {
                 const isMe = msg.isAdminReply;
@@ -325,7 +321,6 @@ export function PublicTicketAdminView({
                         )}
                         <p className="whitespace-pre-wrap">{msg.content}</p>
 
-                        {/* Hover Reaction Bar */}
                         <div className={`absolute top-[-16px] ${isMe ? "right-0" : "left-0"} flex items-center p-1 rounded-full bg-card shadow-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity z-10 gap-1`}>
                           {AVAILABLE_EMOJIS.map(emoji => (
                             <button
@@ -362,7 +357,6 @@ export function PublicTicketAdminView({
                         )}
                       </div>
 
-                      {/* Active Reactions */}
                       {Object.keys(reactionsByEmoji).length > 0 && (
                         <div className={`flex flex-wrap gap-1 mt-1 ${isMe ? "justify-end" : "justify-start"}`}>
                           {Object.entries(reactionsByEmoji).map(([emoji, reacts]: [string, any]) => {
@@ -394,7 +388,6 @@ export function PublicTicketAdminView({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* INPUT */}
             {localSelected.status !== "CLOSED" ? (
               <div className="p-4 bg-background border-t border-border shrink-0 relative">
                 {showInputEmoji && (

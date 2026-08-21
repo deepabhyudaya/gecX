@@ -7,11 +7,7 @@ import { createNotificationsForUsers } from "@/lib/notifications";
 import { assignWarRole, assignWarRoleToMany, createWarServerRole } from "@/lib/war-server";
 import { publishWarEvent } from "@/lib/war-events";
 
-// ==================== CONFIG ====================
-
 const MAX_ALLIES_PER_SIDE = 2;
-
-// ==================== HELPERS ====================
 
 async function getCallerStudent() {
   const { userId } = auth();
@@ -62,13 +58,11 @@ async function ensureAllyRoles(rivalry: { battlefieldServerId: string | null; se
   }
   const roles = await createAllyRolesForRivalry(rivalry.battlefieldServerId, rivalry);
   await prisma.studentRivalry.update({
-    where: { id: undefined as any /* patched by caller */ },
+    where: { id: undefined as any  },
     data: { serverRoleAllyAId: roles.allyARoleId, serverRoleAllyBId: roles.allyBRoleId },
   });
   return roles;
 }
-
-// ==================== INVITE ALLY ====================
 
 export async function inviteAlly(rivalryId: string, allyStudentId: string) {
   const student = await getCallerStudent();
@@ -86,7 +80,6 @@ export async function inviteAlly(rivalryId: string, allyStudentId: string) {
   const isB = rivalry.studentBId === student.id;
   if (!isA && !isB) throw new Error("Only the duelists can invite allies");
 
-  // Cannot invite yourself, opponent, or existing ally.
   if (allyStudentId === student.id) throw new Error("You cannot invite yourself");
   if (allyStudentId === rivalry.studentAId || allyStudentId === rivalry.studentBId) {
     throw new Error("You cannot invite your opponent as an ally");
@@ -96,13 +89,11 @@ export async function inviteAlly(rivalryId: string, allyStudentId: string) {
   );
   if (already) throw new Error("This student already has a pending or accepted invitation");
 
-  // Cap per side.
   const sideCount = rivalry.allies.filter(
     (a) => a.sideStudentId === student.id && a.status === "ACCEPTED"
   ).length;
   if (sideCount >= MAX_ALLIES_PER_SIDE) throw new Error(`Max ${MAX_ALLIES_PER_SIDE} allies per side`);
 
-  // Ensure Ally roles exist on the duel server.
   const serverId = rivalry.battlefieldServerId;
   let { allyARoleId, allyBRoleId } = {
     allyARoleId: rivalry.serverRoleAllyAId,
@@ -145,8 +136,6 @@ export async function inviteAlly(rivalryId: string, allyStudentId: string) {
   return invited;
 }
 
-// ==================== RESPOND TO INVITE ====================
-
 export async function respondToAllyInvite(allyId: string, accept: boolean) {
   const student = await getCallerStudent();
 
@@ -174,7 +163,6 @@ export async function respondToAllyInvite(allyId: string, accept: boolean) {
     return updated;
   }
 
-  // Accept: add to server if active, assign ally role.
   const rivalry = await prisma.studentRivalry.findUnique({
     where: { id: ally.studentRivalryId },
     include: { studentA: true, studentB: true },
@@ -213,8 +201,6 @@ export async function respondToAllyInvite(allyId: string, accept: boolean) {
   revalidatePath(`/student/wars/${ally.studentRivalryId}`);
   return updated;
 }
-
-// ==================== REVOKE / REMOVE ALLY ====================
 
 export async function revokeAllyInvite(allyId: string) {
   const student = await getCallerStudent();
@@ -256,8 +242,6 @@ export async function removeAlly(allyId: string, reason?: string) {
   revalidatePath(`/student/wars/${ally.studentRivalryId}`);
   return updated;
 }
-
-// ==================== LIST ALLIES ====================
 
 export async function getRivalryAllies(rivalryId: string) {
   const { userId } = auth();

@@ -75,7 +75,6 @@ export function CommentItem({ comment, onReply, onDelete, isQuestionAuthor, onMa
   const [isDeleting, setIsDeleting] = useState(false);
   const [userEmojis, setUserEmojis] = useState<Array<{ name: string; imageUrl: string }>>([]);
 
-  // Fetch user's server emojis for rendering (cached)
   useEffect(() => {
     fetchUserEmojis()
       .then((emojis) => {
@@ -160,7 +159,6 @@ export function CommentItem({ comment, onReply, onDelete, isQuestionAuthor, onMa
               <EmojiRenderer content={comment.content} emojiMap={emojiMap} />
             </p>
 
-            {/* Image Embeds */}
             {(() => {
               const imageUrls = extractImageUrls(comment.content);
               if (imageUrls.length === 0) return null;
@@ -173,7 +171,6 @@ export function CommentItem({ comment, onReply, onDelete, isQuestionAuthor, onMa
               );
             })()}
 
-            {/* Actions */}
             <div className="flex items-center gap-4 mt-2 flex-wrap">
               <button
                 onClick={handleLike}
@@ -194,7 +191,6 @@ export function CommentItem({ comment, onReply, onDelete, isQuestionAuthor, onMa
                 <span className="text-xs">Reply</span>
               </button>
 
-              {/* Helpful answer marking - only for question author, not for AI */}
               {isQuestionAuthor && !comment.isOwnComment && !isAi && (
                 <div className="flex items-center gap-1">
                   {comment.helpfulRank ? (
@@ -234,7 +230,6 @@ export function CommentItem({ comment, onReply, onDelete, isQuestionAuthor, onMa
             </div>
           </div>
 
-          {/* Menu */}
           {(comment.isOwnComment || comment.isAdmin) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -256,7 +251,6 @@ export function CommentItem({ comment, onReply, onDelete, isQuestionAuthor, onMa
         </div>
       </div>
 
-      {/* Delete Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

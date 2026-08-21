@@ -41,7 +41,6 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-3 flex items-center gap-4">
           <Link
@@ -54,7 +53,6 @@ export default async function PostPage({ params }: PostPageProps) {
         </div>
       </div>
 
-      {/* Question */}
       <PostCard
         post={{
           ...post,
@@ -91,7 +89,6 @@ export default async function PostPage({ params }: PostPageProps) {
         }}
       />
 
-      {/* Answer Creator */}
       <div className="px-4 border-b border-border">
         <div className="flex items-center justify-between py-3">
           <h2 className="text-sm font-semibold text-foreground">Your answer</h2>
@@ -104,7 +101,6 @@ export default async function PostPage({ params }: PostPageProps) {
         />
       </div>
 
-      {/* Answers */}
       <div className="px-4">
         <CommentList
           comments={comments}

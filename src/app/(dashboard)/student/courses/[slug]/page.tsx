@@ -6,7 +6,6 @@ import { ChevronRight, Play, BookOpen, CheckCircle2, Lock } from "lucide-react";
 import MarkCompleteButton from "@/components/MarkCompleteButton";
 import { EnrollButton } from "@/components/EnrollButton";
 
-// Extract YouTube video ID from various URL formats
 function getYouTubeId(url: string): string | null {
   if (!url) return null;
   const short = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
@@ -50,7 +49,6 @@ export default async function CoursePlayerPage({
   });
   const isEnrolled = !!enrollment;
 
-  // Fetch completed lecture IDs for this student in this course
   const completions = await prisma.courseProgress.findMany({
     where: {
       studentId: userId,
@@ -62,13 +60,11 @@ export default async function CoursePlayerPage({
     completions.filter((c) => c.completed).map((c) => c.lectureId)
   );
 
-  // All lectures flat list
   const allLectures = course.sections.flatMap((s) => s.lectures);
   const totalLectures = allLectures.length;
   const completedCount = allLectures.filter((l) => completedSet.has(l.id)).length;
   const progressPct = totalLectures > 0 ? Math.round((completedCount / totalLectures) * 100) : 0;
 
-  // Active lecture
   const activeLectureId = searchParams.lecture
     ? parseInt(searchParams.lecture)
     : allLectures[0]?.id;
@@ -97,7 +93,6 @@ export default async function CoursePlayerPage({
           </p>
         </div>
 
-        {/* Progress bar */}
         <div className="px-4 py-3 border-b border-border bg-muted/20">
           <div className="flex justify-between text-[11px] text-muted-foreground mb-1.5">
             <span>{completedCount} / {totalLectures} lectures completed</span>
@@ -111,7 +106,6 @@ export default async function CoursePlayerPage({
           </div>
         </div>
 
-        {/* Sections & Lectures */}
         <nav className="flex-1 overflow-y-auto">
           {course.sections.map((sec) => {
             const isActiveSection = sec.id === activeSection?.id;
@@ -162,7 +156,6 @@ export default async function CoursePlayerPage({
           })}
         </nav>
 
-        {/* Footer: overall completion badge */}
         {progressPct === 100 && (
           <div className="p-3 border-t border-border bg-green-500/10 text-center text-[12px] font-bold text-green-500">
             🎉 Course complete!
@@ -171,7 +164,6 @@ export default async function CoursePlayerPage({
       </aside>
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Video */}
         <div className="bg-black flex-shrink-0 relative overflow-hidden" style={{ aspectRatio: "16/9", maxHeight: "62vh" }}>
           {isEnrolled ? (
             videoId ? (
@@ -210,7 +202,6 @@ export default async function CoursePlayerPage({
           )}
         </div>
 
-        {/* Lecture info & actions */}
         <div className="flex-1 overflow-y-auto bg-background p-5">
           {activeSection && (
             <p className="text-[12px] text-muted-foreground mb-1">
@@ -221,9 +212,7 @@ export default async function CoursePlayerPage({
             {activeLecture?.title ?? "Select a lecture"}
           </h1>
 
-          {/* Actions row */}
           <div className="flex flex-wrap items-center gap-3 mt-4">
-            {/* Prev */}
             {prevLecture ? (
               <Link href={`/student/courses/${courseSlug}?lecture=${prevLecture.id}`}>
                 <button className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] border border-border text-foreground text-[13px] font-semibold hover:bg-muted transition-all">
@@ -236,7 +225,6 @@ export default async function CoursePlayerPage({
               </button>
             )}
 
-            {/* Mark complete */}
             {isEnrolled && activeLecture && (
               <MarkCompleteButton
                 lectureId={activeLecture.id}
@@ -245,7 +233,6 @@ export default async function CoursePlayerPage({
               />
             )}
 
-            {/* Next */}
             {nextLecture ? (
               <Link href={`/student/courses/${courseSlug}?lecture=${nextLecture.id}`}>
                 <button className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] bg-primary text-primary-foreground text-[13px] font-semibold hover:opacity-90 transition-all">

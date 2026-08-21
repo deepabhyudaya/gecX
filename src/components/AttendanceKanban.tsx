@@ -117,7 +117,6 @@ function KanbanColumn({
         : "border-border bg-muted/30"
         }`}
     >
-      {/* Column header */}
       <div className="flex items-center justify-between mb-1 shrink-0">
         <div className="flex items-center gap-2">
           {icon}
@@ -133,7 +132,6 @@ function KanbanColumn({
         </span>
       </div>
 
-      {/* Cards */}
       <div className="flex flex-col gap-2 min-h-[120px]">
         {students.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-[12px] text-muted-foreground/50 border-2 border-dashed border-border rounded-xl py-8">
@@ -178,7 +176,6 @@ export default function AttendanceKanban({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  // Load students when lesson changes
   const handleLessonChange = useCallback(async (lessonId: number) => {
     const lesson = lessons.find((l) => l.id === lessonId) ?? null;
     setSelectedLesson(lesson);
@@ -194,22 +191,22 @@ export default function AttendanceKanban({
       const existingMap = new Map(existing.map((e) => [e.studentId, e.present]));
 
       if (existingMap.size > 0) {
-        // Pre-populate from existing records
+
         const p: Student[] = [];
         const a: Student[] = [];
         students.forEach((s) => {
           const isPresent = existingMap.get(s.id);
           if (isPresent === true) p.push(s);
           else if (isPresent === false) a.push(s);
-          else p.push(s); // default new students to present
+          else p.push(s);
         });
         setPresent(p);
         setAbsent(a);
       } else {
-        // Default all to present
+
         setPresent(students);
         setAbsent([]);
-        // Auto-save initial attendance to DB so students don't need to be dragged first
+
         const entries = students.map((s) => ({ studentId: s.id, present: true }));
         await bulkMarkAttendance(lessonId, selectedDate, entries);
       }
@@ -220,7 +217,6 @@ export default function AttendanceKanban({
     }
   }, [lessons, selectedDate]);
 
-  // Re-load when date changes (if lesson already selected)
   const handleDateChange = async (date: string) => {
     setSelectedDate(date);
     if (!selectedLesson) return;
@@ -239,7 +235,7 @@ export default function AttendanceKanban({
         setPresent(p); setAbsent(a);
       } else {
         setPresent(students); setAbsent([]);
-        // Auto-save initial attendance to DB when no records exist for this date
+
         const entries = students.map((s) => ({ studentId: s.id, present: true }));
         await bulkMarkAttendance(selectedLesson.id, date, entries);
       }
@@ -247,7 +243,6 @@ export default function AttendanceKanban({
     finally { setLoading(false); }
   };
 
-  // Select all / reset helpers with autosave
   const markAllPresent = () => {
     setPresent([...present, ...absent]);
     setAbsent([]);
@@ -265,7 +260,6 @@ export default function AttendanceKanban({
     handleSave();
   };
 
-  // DnD handlers
   const onDragStart = ({ active }: DragStartEvent) => {
     const col = present.find((s) => s.id === active.id)
       ? "present"
@@ -304,11 +298,9 @@ export default function AttendanceKanban({
       setAbsent(newAbsent);
     }
 
-    // Autosave after drag with updated values
     handleSave(newPresent, newAbsent);
   };
 
-  // Save attendance
   const handleSave = (presentOverride?: Student[], absentOverride?: Student[]) => {
     if (!selectedLesson) return;
     const currentPresent = presentOverride ?? present;
@@ -339,7 +331,6 @@ export default function AttendanceKanban({
       <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4">
         <h2 className="text-[16px] font-bold text-foreground">Attendance Records</h2>
         <div className="flex flex-wrap gap-4">
-          {/* Lesson picker */}
           <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
             <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1">
               <BookOpen size={11} /> Lesson
@@ -358,7 +349,6 @@ export default function AttendanceKanban({
             </select>
           </div>
 
-          {/* Date picker */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1">
               <Calendar size={11} /> Date
@@ -372,7 +362,6 @@ export default function AttendanceKanban({
           </div>
         </div>
 
-        {/* Quick actions */}
         {selectedLesson && total > 0 && (
           <div className="flex flex-wrap gap-2 pt-1">
             <button
@@ -433,7 +422,6 @@ export default function AttendanceKanban({
             />
           </div>
 
-          {/* Drag overlay (ghost card while dragging) */}
           <DragOverlay>
             {draggingStudent ? (
               <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-card border border-primary shadow-xl opacity-95 cursor-grabbing">

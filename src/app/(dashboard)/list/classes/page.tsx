@@ -22,7 +22,6 @@ const ClassListPage = async ({
   const { sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-
   const columns = [
     {
       header: "Branch Name",
@@ -81,8 +80,6 @@ const ClassListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
   const query: Prisma.ClassWhereInput = {};
 
   if (queryParams) {
@@ -130,7 +127,6 @@ const ClassListPage = async ({
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
       <PinnedItemsWrapper entityType="classes" baseUrl="/list/classes" role={role} />
       <div className="bg-card text-card-foreground p-4 rounded-xl border border-border">
-        {/* TOP */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="hidden md:block text-lg font-semibold">All Branches</h1>
           <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
@@ -140,9 +136,7 @@ const ClassListPage = async ({
             </div>
           </div>
         </div>
-        {/* LIST */}
         <Table columns={columns} renderRow={renderRow} data={data} />
-        {/* PAGINATION */}
         <Pagination page={p} count={count} />
       </div>
     </div>

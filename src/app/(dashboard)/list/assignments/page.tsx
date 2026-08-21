@@ -28,8 +28,7 @@ const AssignmentListPage = async ({
   const { userId, sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const currentUserId = userId;
-  
-  
+
   const columns = [
     {
       header: "Subject Name",
@@ -58,7 +57,7 @@ const AssignmentListPage = async ({
         ]
       : []),
   ];
-  
+
   const renderRow = (item: AssignmentList) => (
     <tr
       key={item.id}
@@ -89,8 +88,6 @@ const AssignmentListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
   const query: Prisma.AssignmentWhereInput = {};
 
   query.lesson = {};
@@ -116,8 +113,6 @@ const AssignmentListPage = async ({
       }
     }
   }
-
-  // ROLE CONDITIONS
 
   switch (role) {
     case "admin":
@@ -183,7 +178,6 @@ const AssignmentListPage = async ({
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
       <PinnedItemsWrapper entityType="assignments" baseUrl="/list/assignments" role={role} />
       <div className="bg-card text-card-foreground p-4 rounded-xl border border-border">
-        {/* TOP */}
         <div className="flex items-center justify-between mb-4">
         <h1 className="hidden md:block text-lg font-semibold">
           All Assignments
@@ -197,12 +191,10 @@ const AssignmentListPage = async ({
           </div>
         </div>
       </div>
-      {/* LIST (Wrapped in Kanban View) */}
       <AssignmentsKanbanWrapper
         data={data}
         tableComponent={<Table columns={columns} renderRow={renderRow} data={data} />}
       />
-      {/* PAGINATION */}
       <Pagination page={p} count={count} />
       </div>
     </div>

@@ -42,11 +42,11 @@ export default function TableDialog({
 
   const generateTableMarkdown = (r: number, c: number) => {
     let markdown = "";
-    // Header row
+
     markdown += "| " + Array.from({ length: c }, (_, i) => `Column ${i + 1}`).join(" | ") + " |\n";
-    // Separator row
+
     markdown += "| " + Array.from({ length: c }, () => "---").join(" | ") + " |\n";
-    // Data rows
+
     for (let i = 0; i < r - 1; i++) {
       markdown += "| " + Array.from({ length: c }, (_, j) => `Value ${i + 1}-${j + 1}`).join(" | ") + " |\n";
     }
@@ -91,8 +91,7 @@ export default function TableDialog({
                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-foreground/20"
               />
             </div>
-            
-            {/* Preview */}
+
             <div className="p-3 bg-muted rounded-md">
               <p className="text-sm text-muted-foreground mb-2">Preview:</p>
               <pre className="text-xs overflow-x-auto whitespace-pre-wrap">

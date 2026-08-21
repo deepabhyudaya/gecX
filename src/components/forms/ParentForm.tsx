@@ -91,7 +91,6 @@ const ParentForm = ({
       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         Personal Information
       </span>
-      {/* Profile Photo */}
       <CldUploadWidget
         uploadPreset="college"
         onSuccess={(result, { widget }) => {

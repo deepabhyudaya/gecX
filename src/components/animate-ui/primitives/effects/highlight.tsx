@@ -43,7 +43,7 @@ type HighlightContextType<T extends string> = {
 };
 
 const HighlightContext = React.createContext<
-  // eslint-disable-next-line
+
   HighlightContextType<any> | undefined
 >(undefined);
 

@@ -31,7 +31,6 @@ export default async function StudentWarDetailPage({ params }: { params: { id: s
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
-      {/* War Room Header */}
       <div className="relative bg-gradient-to-r from-blue-950 via-gray-950 to-red-950 border border-border rounded-2xl overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('/noise.png')] bg-repeat" />
         <div className="relative p-6">
@@ -73,19 +72,17 @@ export default async function StudentWarDetailPage({ params }: { params: { id: s
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Left column */}
         <div className="xl:col-span-2 space-y-6">
           {activeBout && (
-            <ActiveBoutTracker 
-              activeBout={activeBout} 
-              studentA={rivalry.studentA} 
-              studentB={rivalry.studentB} 
+            <ActiveBoutTracker
+              activeBout={activeBout}
+              studentA={rivalry.studentA}
+              studentB={rivalry.studentB}
             />
           )}
 
           <StudentWarScoreboard rivalryId={rivalry.id} />
 
-          {/* Bout History */}
           {rivalry.bouts.length > 0 && (
             <div className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
@@ -124,14 +121,11 @@ export default async function StudentWarDetailPage({ params }: { params: { id: s
           )}
         </div>
 
-        {/* Right column */}
         <div className="space-y-6">
-          {/* My RP */}
           {isParticipant && (
             <ConvertStudentRPButton rivalryId={rivalry.id} availableRP={myScore} />
           )}
 
-          {/* Lore Archive */}
           {rivalry.loreEntries.length > 0 && (
             <div id="lore" className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-bold text-sm mb-4">📜 Lore Archive</h3>
@@ -149,7 +143,6 @@ export default async function StudentWarDetailPage({ params }: { params: { id: s
             </div>
           )}
 
-          {/* Strikes log */}
           {rivalry.strikes.length > 0 && (
             <div className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-bold text-sm mb-4 text-yellow-400">⚠️ Strike Log</h3>

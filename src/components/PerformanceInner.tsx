@@ -3,7 +3,7 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 type Props = {
-  score: number; // e.g. 0 to 100
+  score: number;
   label?: string;
   subtitle?: string;
 };
@@ -13,7 +13,7 @@ export default function Performance({
   label = "Performance",
   subtitle = "Average Score",
 }: Props) {
-  // Monochrome color palette for the chart
+
   const data = [
     { name: "Score", value: score, fill: "hsl(var(--foreground))" },
     { name: "Remaining", value: 100 - score, fill: "hsl(var(--muted))" },
@@ -34,7 +34,7 @@ export default function Performance({
               endAngle={0}
               data={data}
               cx="50%"
-              cy="70%" // Shift down since it's a half pie
+              cy="70%"
               innerRadius="70%"
               outerRadius="100%"
               stroke="none"

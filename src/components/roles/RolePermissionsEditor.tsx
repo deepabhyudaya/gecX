@@ -173,12 +173,10 @@ export default function RolePermissionsEditor({
     onSubmit?.(permissions);
   };
 
-  // Check if this is the admin role
   const isAdminRole = (permissions & ROLE_PERMISSIONS.ADMINISTRATOR) === ROLE_PERMISSIONS.ADMINISTRATOR;
 
   return (
     <div className="space-y-6">
-      {/* Admin Warning */}
       {isAdminRole && (
         <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 text-sm">
           <div className="flex items-center gap-2 font-medium">
@@ -192,7 +190,6 @@ export default function RolePermissionsEditor({
         </div>
       )}
 
-      {/* Permission Groups Tabs */}
       <div className="flex flex-wrap gap-2 border-b pb-2">
         {PERMISSION_GROUPS.map((group) => (
           <button
@@ -211,7 +208,6 @@ export default function RolePermissionsEditor({
         ))}
       </div>
 
-      {/* Permissions List */}
       <div className="space-y-4">
         {PERMISSION_GROUPS.filter((g) => g.name === activeGroup).map((group) => (
           <div key={group.name} className="space-y-3">
@@ -219,7 +215,7 @@ export default function RolePermissionsEditor({
               {group.icon}
               {group.name} Permissions
             </h4>
-            
+
             <div className="space-y-3">
               {group.permissions.map((permission) => (
                 <div
@@ -250,7 +246,6 @@ export default function RolePermissionsEditor({
         ))}
       </div>
 
-      {/* Summary */}
       <div className="p-3 rounded-lg bg-muted text-sm">
         <p className="font-medium mb-1">Permission Summary</p>
         <p className="text-muted-foreground">
@@ -263,7 +258,6 @@ export default function RolePermissionsEditor({
         </p>
       </div>
 
-      {/* Actions */}
       {!hideActions && (
         <div className="flex gap-2 mt-4">
           <Button

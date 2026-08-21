@@ -10,7 +10,6 @@ import { recordUserActivity } from "./streak-tracking.actions";
 
 const POSTS_PER_PAGE = 20;
 
-// Helper to get or create community profile
 async function getOrCreateCommunityProfile(userId: string) {
   const { sessionClaims } = auth();
   const clerkUser = await currentUser();
@@ -38,7 +37,6 @@ async function getOrCreateCommunityProfile(userId: string) {
   return profile;
 }
 
-// Create a new post (question in academic Q&A)
 export async function createPost(content: string, subjectId?: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -49,7 +47,6 @@ export async function createPost(content: string, subjectId?: string) {
 
   const profile = await getOrCreateCommunityProfile(userId);
 
-  // Validate subject if provided
   if (subjectId) {
     const subject = await prisma.academicSubject.findUnique({
       where: { id: subjectId, isActive: true },
@@ -68,13 +65,11 @@ export async function createPost(content: string, subjectId?: string) {
     },
   });
 
-  // Update post count
   await prisma.userCommunityProfile.update({
     where: { userId },
     data: { postCount: { increment: 1 } },
   });
 
-  // Award karma for creating a post (use configurable settings)
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.postCreated, "post_created");
   await recordUserActivity(userId, "post");
@@ -83,12 +78,10 @@ export async function createPost(content: string, subjectId?: string) {
   return post;
 }
 
-// Delete a post
 export async function deletePost(postId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Validate postId is provided and is a valid UUID format
   if (!postId || typeof postId !== "string" || postId.trim() === "") {
     throw new Error("Invalid post ID");
   }
@@ -99,7 +92,6 @@ export async function deletePost(postId: string) {
 
   if (!post) throw new Error("Post not found");
 
-  // Check if user is author or admin
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
 
@@ -107,13 +99,11 @@ export async function deletePost(postId: string) {
     throw new Error("Unauthorized to delete this post");
   }
 
-  // Use Prisma's built-in update instead of raw SQL for safety
   await prisma.communityPost.update({
     where: { id: postId },
     data: { isDeleted: true },
   });
 
-  // Decrement post count only for the specific author
   await prisma.userCommunityProfile.update({
     where: { userId: post.authorId },
     data: { postCount: { decrement: 1 } },
@@ -123,7 +113,6 @@ export async function deletePost(postId: string) {
   revalidatePath(`/${post.authorId}`);
 }
 
-// Repost a post
 export async function repostPost(postId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -151,13 +140,11 @@ export async function repostPost(postId: string) {
     },
   });
 
-  // Update repost count
   await prisma.communityPost.update({
     where: { id: postId },
     data: { repostCount: { increment: 1 } },
   });
 
-  // Update post count for reposter
   await prisma.userCommunityProfile.update({
     where: { userId },
     data: { postCount: { increment: 1 } },
@@ -165,7 +152,6 @@ export async function repostPost(postId: string) {
 
   await recordUserActivity(userId, "post");
 
-  // Award karma to original post author when their post is reposted
   if (originalPost.authorId !== userId) {
     const settings = await getKarmaSettings();
     await recordKarmaEarned(originalPost.authorId, settings.repostReceived, "repost_received");
@@ -175,7 +161,6 @@ export async function repostPost(postId: string) {
   return post;
 }
 
-// Like a post
 export async function likePost(postId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -187,7 +172,7 @@ export async function likePost(postId: string) {
   });
 
   if (existingLike) {
-    // Unlike
+
     await prisma.communityPostLike.delete({
       where: { id: existingLike.id },
     });
@@ -199,7 +184,7 @@ export async function likePost(postId: string) {
 
     return { liked: false };
   } else {
-    // Like
+
     await prisma.communityPostLike.create({
       data: { postId, userId },
     });
@@ -209,7 +194,6 @@ export async function likePost(postId: string) {
       data: { likeCount: { increment: 1 } },
     });
 
-    // Award karma to post author when someone likes their post
     const post = await prisma.communityPost.findUnique({
       where: { id: postId },
       select: { authorId: true },
@@ -223,7 +207,6 @@ export async function likePost(postId: string) {
   }
 }
 
-// Get feed posts (chronological) — optional subjectId filter for academic Q&A
 export async function getFeed(cursor?: string, subjectId?: string) {
   const { userId } = auth();
 
@@ -273,7 +256,7 @@ export async function getFeed(cursor?: string, subjectId?: string) {
         where: { userId },
         select: { id: true },
       } : false,
-      // Include first 2 comments for preview
+
       comments: {
         where: { isDeleted: false, parentId: null },
         orderBy: { createdAt: "desc" },
@@ -302,7 +285,6 @@ export async function getFeed(cursor?: string, subjectId?: string) {
 
   const nextCursor = hasMore && posts.length > 0 ? posts[posts.length - 1].id : null;
 
-  // Get unique author IDs to fetch karma, equipped colors, and streaks in batch
   const authorIds = Array.from(new Set(posts.map(p => p.authorId)));
   const [karmaProfiles, equippedColorsData, streakRows] = await Promise.all([
     prisma.userCommunityProfile.findMany({
@@ -333,7 +315,7 @@ export async function getFeed(cursor?: string, subjectId?: string) {
       ...post,
       hasLiked: post.likes && post.likes.length > 0,
       likes: undefined,
-      // Add karmaPoints, equippedColor and streak to author
+
       author: {
         ...post.author,
         userId: post.authorId,
@@ -342,7 +324,7 @@ export async function getFeed(cursor?: string, subjectId?: string) {
         equippedColor: equippedColorMap.get(post.authorId) || null,
         equippedNameplate: nameplateMap.get(post.authorId) || null,
       },
-      // Add karmaPoints, equippedColor and streak to originalPost author if exists
+
       originalPost: post.originalPost ? {
         ...post.originalPost,
         author: post.originalPost.author ? {
@@ -354,14 +336,14 @@ export async function getFeed(cursor?: string, subjectId?: string) {
           equippedNameplate: nameplateMap.get(post.originalPost.authorId) || null,
         } : undefined,
       } : null,
-      // Use actual comment count from _count
+
       commentCount: post._count.comments,
-      // Format preview comments
+
       previewComments: post.comments.map(comment => ({
         id: comment.id,
         content: comment.content,
         authorName: comment.authorName || "Unknown",
-        authorUsername: comment.authorId, // Use authorId as username fallback
+        authorUsername: comment.authorId,
       })),
       comments: undefined,
       _count: undefined,
@@ -371,7 +353,6 @@ export async function getFeed(cursor?: string, subjectId?: string) {
   };
 }
 
-// Get single post with comments
 export async function getPost(postId: string) {
   const { userId } = auth();
 
@@ -413,7 +394,6 @@ export async function getPost(postId: string) {
 
   if (!post) return null;
 
-  // Fetch equipped colors and streaks
   const authorIds = Array.from(new Set([post.authorId, post.originalPost?.authorId].filter(Boolean) as string[]));
   const [equippedColorsData, streakRows] = await Promise.all([
     prisma.userEquippedColors.findMany({
@@ -455,7 +435,6 @@ export async function getPost(postId: string) {
   };
 }
 
-// Get posts by user
 export async function getUserPosts(username: string, cursor?: string) {
   const profile = await prisma.userCommunityProfile.findFirst({
     where: {
@@ -470,7 +449,6 @@ export async function getUserPosts(username: string, cursor?: string) {
 
   const { userId } = auth();
 
-  // Check if private and not followed
   if (profile.isPrivate && userId !== profile.userId) {
     const isFollowing = await prisma.communityFollow.findUnique({
       where: {
@@ -522,7 +500,6 @@ export async function getUserPosts(username: string, cursor?: string) {
 
   const nextCursor = hasMore && posts.length > 0 ? posts[posts.length - 1].id : null;
 
-  // Collect all unique user IDs we need colors for (profile user + original post authors)
   const originalAuthorIds = posts
     .filter(p => p.originalPost?.authorId)
     .map(p => p.originalPost!.authorId as string);
@@ -535,7 +512,6 @@ export async function getUserPosts(username: string, cursor?: string) {
   const colorMap = new Map(equippedColorsData.map((e: { userId: string; usernameColorItem: { colorValue: string } | null }) => [e.userId, e.usernameColorItem?.colorValue || null]));
   const nameplateMap = new Map(equippedColorsData.map((e: { userId: string; nameplateItem: { colorValue: string } | null }) => [e.userId, e.nameplateItem?.colorValue || null]));
 
-  // Author info for the profile owner
   const authorInfo = {
     userId: profile.userId,
     username: profile.username,

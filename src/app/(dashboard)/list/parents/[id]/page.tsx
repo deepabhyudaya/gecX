@@ -45,7 +45,6 @@ const SingleParentPage = async ({
     return notFound();
   }
 
-  // Validate Access
   let hasAccess = false;
   if (role === "admin" || userId === parent.id) {
     hasAccess = true;
@@ -66,9 +65,7 @@ const SingleParentPage = async ({
       layoutKey="parent-profile-layout"
       leftContent={
         <div className="flex flex-col gap-4">
-          {/* TOP */}
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* USER INFO CARD */}
             <CometCard className="flex-1" rotateDepth={8} translateDepth={10}>
               <div className="bg-card border border-border rounded-2xl flex gap-5 p-6 h-full">
                 <div className="shrink-0">
@@ -115,7 +112,6 @@ const SingleParentPage = async ({
               </div>
             </CometCard>
 
-            {/* STAT CARDS */}
             <div className="flex-1 grid grid-cols-2 gap-3">
               <CometCard rotateDepth={10} translateDepth={8}>
                 <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 h-full">
@@ -131,7 +127,6 @@ const SingleParentPage = async ({
             </div>
           </div>
 
-          {/* CHILDREN LIST */}
           <div className="bg-card border border-border rounded-xl p-4 min-h-[400px]">
             <h2 className="font-semibold mb-4">Children</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

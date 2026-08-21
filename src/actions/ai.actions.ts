@@ -34,7 +34,6 @@ export async function generateAiAnswer(postId: string) {
   });
   if (!post) throw new Error("Question not found");
 
-  // Prevent duplicate AI answers
   const existingAiAnswer = await prisma.communityComment.findFirst({
     where: { postId, authorId: AI_AUTHOR_ID, isDeleted: false },
   });
@@ -98,15 +97,13 @@ export async function generateAssignmentHint(question: string, context?: string 
   return { success: true, hint: text };
 }
 
-// --- Future AI integrations (stubs; implement when time allows) ---
-
 export async function generateTeacherQuestion(topic: string, questionType: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
   if (!isGeminiEnabled()) {
     return { success: false, error: "AI assistant is not enabled." };
   }
-  // Intentionally left as a safe stub for the hackathon demo; wires in later.
+
   return { success: false, error: "AI question generator is being calibrated." };
 }
 

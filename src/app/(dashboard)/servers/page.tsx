@@ -21,7 +21,6 @@ export default async function ServersPage({ searchParams }: ServersPageProps) {
   const selectedServerId = searchParams.serverId;
   const selectedChannelId = searchParams.channelId;
 
-  // Auto-select first server if none selected
   if (!selectedServerId && servers.length > 0) {
     redirect(`/servers?serverId=${servers[0].id}`);
   }

@@ -1,4 +1,4 @@
-// Shop catalog — plain data module (no "use server"), safe to import anywhere
+
 
 import { ORB_VARIANTS } from "./orb-avatars";
 
@@ -11,17 +11,15 @@ export type DiceBearCategory =
   | "pixel"
   | "orbs";
 
-// Each item is a specific style + seed combo = a unique purchasable avatar look
 export interface CatalogItem {
-  id: string;           // unique: `${style}--${seed}`
-  style: string;        // DiceBear style slug (kebab-case)
-  seed: string;         // specific seed that defines this look
-  name: string;         // display name
+  id: string;
+  style: string;
+  seed: string;
+  name: string;
   category: DiceBearCategory;
   cost: number;
 }
 
-// Helper to quickly build multiple variants of one style
 function variants(
   style: string,
   category: DiceBearCategory,
@@ -40,9 +38,6 @@ function variants(
 
 export const DICEBEAR_CATALOG: CatalogItem[] = [
 
-  // ──────────────────────────────────────────────────────────────
-  // PIXEL ART  (12 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("pixel-art", "pixel", 80, [
     ["warrior",      "Pixel Warrior"],
     ["mage",         "Pixel Mage"],
@@ -58,9 +53,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["berserker",    "Pixel Berserker"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // PIXEL ART NEUTRAL  (8 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("pixel-art-neutral", "pixel", 70, [
     ["ghost",    "Pixel Ghost"],
     ["golem",    "Pixel Golem"],
@@ -72,9 +64,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["elemental","Pixel Elemental"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // ADVENTURER  (8 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("adventurer", "characters", 75, [
     ["ocean",   "Ocean Adventurer"],
     ["forest",  "Forest Adventurer"],
@@ -86,9 +75,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["dusk",    "Dusk Adventurer"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // ADVENTURER NEUTRAL  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("adventurer-neutral", "characters", 65, [
     ["neutral-a", "Adventurer Neutral A"],
     ["neutral-b", "Adventurer Neutral B"],
@@ -98,9 +84,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["neutral-f", "Adventurer Neutral F"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // AVATAAARS  (8 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("avataaars", "characters", 75, [
     ["felix",   "Avataar Felix"],
     ["alex",    "Avataar Alex"],
@@ -112,9 +95,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["taylor",  "Avataar Taylor"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // AVATAAARS NEUTRAL  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("avataaars-neutral", "characters", 65, [
     ["neutral-1", "Avataar Neutral 1"],
     ["neutral-2", "Avataar Neutral 2"],
@@ -124,9 +104,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["neutral-6", "Avataar Neutral 6"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // BIG EARS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("big-ears", "characters", 70, [
     ["sunny",  "Sunny Big Ears"],
     ["cloud",  "Cloud Big Ears"],
@@ -136,9 +113,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["rain",   "Rain Big Ears"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // BIG EARS NEUTRAL  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("big-ears-neutral", "characters", 60, [
     ["be-neutral-a", "Big Ears Neutral A"],
     ["be-neutral-b", "Big Ears Neutral B"],
@@ -148,9 +122,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["be-neutral-f", "Big Ears Neutral F"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // LORELEI  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("lorelei", "characters", 75, [
     ["aurora",   "Lorelei Aurora"],
     ["crystal",  "Lorelei Crystal"],
@@ -160,9 +131,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["topaz",    "Lorelei Topaz"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // LORELEI NEUTRAL  (4 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("lorelei-neutral", "characters", 60, [
     ["ln-alpha", "Lorelei Neutral α"],
     ["ln-beta",  "Lorelei Neutral β"],
@@ -170,9 +138,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["ln-delta", "Lorelei Neutral δ"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // MICAH  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("micah", "characters", 75, [
     ["atlas",   "Micah Atlas"],
     ["cedar",   "Micah Cedar"],
@@ -182,9 +147,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["indigo",  "Micah Indigo"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // MINIAVS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("miniavs", "characters", 60, [
     ["ace",   "Miniav Ace"],
     ["base",  "Miniav Base"],
@@ -194,9 +156,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["flux",  "Miniav Flux"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // OPEN PEEPS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("open-peeps", "characters", 70, [
     ["aria",  "Peep Aria"],
     ["blake", "Peep Blake"],
@@ -206,9 +165,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["fox",   "Peep Fox"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // PERSONAS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("personas", "characters", 75, [
     ["alpha",   "Persona Alpha"],
     ["bravo",   "Persona Bravo"],
@@ -218,9 +174,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["foxtrot", "Persona Foxtrot"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // TOON HEAD  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("toon-head", "characters", 80, [
     ["bounce", "Toon Bounce"],
     ["coil",   "Toon Coil"],
@@ -230,9 +183,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["gale",   "Toon Gale"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // BIG SMILE  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("big-smile", "fun", 60, [
     ["happy",  "Happy Smile"],
     ["cheer",  "Cheer Smile"],
@@ -242,9 +192,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["radiant","Radiant Smile"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // DYLAN  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("dylan", "fun", 60, [
     ["nova",  "Dylan Nova"],
     ["sol",   "Dylan Sol"],
@@ -254,9 +201,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["blaze", "Dylan Blaze"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // FUN EMOJI  (8 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("fun-emoji", "fun", 55, [
     ["star",    "Star Emoji"],
     ["heart",   "Heart Emoji"],
@@ -268,9 +212,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["thunder", "Thunder Emoji"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // CROODLES  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("croodles", "fun", 55, [
     ["swirl", "Croodle Swirl"],
     ["loop",  "Croodle Loop"],
@@ -280,9 +221,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["spiral","Croodle Spiral"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // CROODLES NEUTRAL  (4 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("croodles-neutral", "fun", 45, [
     ["echo",  "Croodle Echo"],
     ["fade",  "Croodle Fade"],
@@ -290,9 +228,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["mist",  "Croodle Mist"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // BOTTTS  (8 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("bottts", "robots", 70, [
     ["r2d2",     "Bot R2-D2"],
     ["c3po",     "Bot C-3PO"],
@@ -304,9 +239,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["bender",   "Bot Bender"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // BOTTTS NEUTRAL  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("bottts-neutral", "robots", 60, [
     ["proto",   "Proto Bot"],
     ["nexus",   "Nexus Bot"],
@@ -316,9 +248,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["matrix",  "Matrix Bot"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // NOTIONISTS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("notionists", "artistic", 100, [
     ["sketch",  "Notion Sketch"],
     ["draft",   "Notion Draft"],
@@ -328,9 +257,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["ink",     "Notion Ink"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // NOTIONISTS NEUTRAL  (4 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("notionists-neutral", "artistic", 90, [
     ["blank", "Notion Blank"],
     ["void",  "Notion Void"],
@@ -338,9 +264,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["zero",  "Notion Zero"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // GLASS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("glass", "abstract", 50, [
     ["prism",   "Glass Prism"],
     ["lens",    "Glass Lens"],
@@ -350,9 +273,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["shatter", "Glass Shatter"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // RINGS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("rings", "abstract", 50, [
     ["saturn", "Saturn Rings"],
     ["orbit",  "Orbit Rings"],
@@ -362,9 +282,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["comet",  "Comet Rings"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // SHAPES  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("shapes", "abstract", 45, [
     ["cube",     "Shape Cube"],
     ["diamond",  "Shape Diamond"],
@@ -374,9 +291,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["circle",   "Shape Circle"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // THUMBS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("thumbs", "abstract", 45, [
     ["blue",    "Thumb Blue"],
     ["red",     "Thumb Red"],
@@ -386,9 +300,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["emerald", "Thumb Emerald"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // ICONS  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("icons", "abstract", 35, [
     ["alpha",   "Icon Alpha"],
     ["beta",    "Icon Beta"],
@@ -398,9 +309,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["zeta",    "Icon Zeta"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // IDENTICON  (6 variants)
-  // ──────────────────────────────────────────────────────────────
   ...variants("identicon", "abstract", 30, [
     ["id-a", "Identicon A"],
     ["id-b", "Identicon B"],
@@ -410,9 +318,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["id-f", "Identicon F"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // INITIALS  (4 variants — text-based, novelty)
-  // ──────────────────────────────────────────────────────────────
   ...variants("initials", "abstract", 25, [
     ["ab", "Initials AB"],
     ["cd", "Initials CD"],
@@ -420,9 +325,6 @@ export const DICEBEAR_CATALOG: CatalogItem[] = [
     ["zz", "Initials ZZ"],
   ]),
 
-  // ──────────────────────────────────────────────────────────────
-  // ORBS  (32 celestial variants)
-  // ──────────────────────────────────────────────────────────────
   ...ORB_VARIANTS.map((orb) => ({
     id: `orb--${orb.seed}`,
     style: "orb",

@@ -11,7 +11,6 @@ import React, { useState, useCallback, memo } from "react";
 import { isImageUrl } from "@/lib/image-detection";
 import ImageEmbed from "../ImageEmbed";
 
-// Copy button component for code blocks
 function CopyButton({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -32,11 +31,11 @@ function CopyButton({ code }: { code: string }) {
   );
 }
 
-function MarkdownMessageComponent({ 
+function MarkdownMessageComponent({
   content,
   emojiMap = {},
   stickerUrls = []
-}: { 
+}: {
   content: string;
   emojiMap?: Record<string, string>;
   stickerUrls?: string[];
@@ -44,15 +43,13 @@ function MarkdownMessageComponent({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  // Replace :emoji_name: with markdown image syntax if it exists in map
   const processedContent = React.useMemo(() => {
     if (!content || Object.keys(emojiMap).length === 0) return content;
-    
+
     return content.replace(/:([a-z0-9_]{1,64}):/g, (match, name) => {
       const url = emojiMap[name];
       if (url) {
-        // Use a special prefix in alt text so we can style it as inline emoji later if needed,
-        // or just let normal image parsing handle it
+
         return `![emoji_${name}](${url})`;
       }
       return match;
@@ -120,7 +117,6 @@ function MarkdownMessageComponent({
         );
       }
 
-      // Inline code or code block without language
       return inline ? (
         <code className="rounded bg-foreground/10 px-1 py-0.5 text-[13px] text-inherit" {...props}>
           {children}
@@ -139,15 +135,14 @@ function MarkdownMessageComponent({
         <input type={type} disabled={disabled} />
       ),
     a: ({ href, children }: any) => {
-      // Check if this is a bare image URL (link text equals href and is an image)
+
       const textContent = String(children);
       const isBareImageUrl = href && isImageUrl(href) && textContent === href;
-      
+
       if (isBareImageUrl) {
         return <ImageEmbed src={href} className="my-2" />;
       }
-      
-      // Regular link (or labeled link to an image)
+
       return (
         <a href={href} className="underline underline-offset-2 text-blue-500 hover:text-blue-600 opacity-90 hover:opacity-100">
           {children}
@@ -155,8 +150,8 @@ function MarkdownMessageComponent({
       );
     },
     span: ({ children, style }: any) => (
-      <span 
-        style={style} 
+      <span
+        style={style}
         className="text-inherit"
       >
         {children}
@@ -174,7 +169,7 @@ function MarkdownMessageComponent({
           img: ({ src, alt, ...props }: any) => {
             if (alt && alt.startsWith("emoji_")) {
               return (
-                // eslint-disable-next-line @next/next/no-img-element
+
                 <img
                   src={src}
                   alt={alt.replace("emoji_", ":") + ":"}
@@ -185,14 +180,14 @@ function MarkdownMessageComponent({
                 />
               );
             }
-            // Check if this is a sticker URL
+
             const isSticker = stickerUrls.some(stickerUrl => src?.includes(stickerUrl) || stickerUrl.includes(src));
             return (
-              <ImageEmbed 
-                src={src} 
-                className="my-2" 
+              <ImageEmbed
+                src={src}
+                className="my-2"
                 size={isSticker ? 'sticker' : 'default'}
-                {...props} 
+                {...props}
               />
             );
           }

@@ -102,9 +102,6 @@ const CourseListPage = async ({
 
   const query: Prisma.CourseWhereInput = {};
 
-  // Teachers and admins can see all courses in this list view
-  // (Filter removed to match "All Courses" label)
-
   if (queryParams.search) {
     query.title = { contains: queryParams.search, mode: "insensitive" };
   }

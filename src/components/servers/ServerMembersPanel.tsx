@@ -153,7 +153,6 @@ export default function ServerMembersPanel({
     }
   };
 
-  // Group members by role
   const grouped = localMembers.reduce(
     (acc, member) => {
       acc[member.role].push(member);
@@ -185,7 +184,6 @@ export default function ServerMembersPanel({
                     member.userId === currentUserId && "bg-accent/50"
                   )}
                 >
-                  {/* Avatar placeholder */}
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                     <span className="text-xs font-bold text-muted-foreground">
                       {member.displayName.substring(0, 2).toUpperCase()}
@@ -193,13 +191,13 @@ export default function ServerMembersPanel({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p 
+                    <p
                       className="text-sm font-medium truncate"
                       style={{ color: member.equippedColor || 'inherit' }}
                     >
                       {member.displayName}
                     </p>
-                    <p 
+                    <p
                       className="text-xs text-muted-foreground truncate"
                       style={{ color: !member.equippedColor ? (getKarmaTierColor(member.karmaPoints || 0) || undefined) : undefined }}
                     >
@@ -207,7 +205,6 @@ export default function ServerMembersPanel({
                     </p>
                   </div>
 
-                  {/* Custom role badges */}
                   {member.roles && member.roles.length > 0 && (
                     <div className="flex gap-1 shrink-0">
                       {member.roles.map((mr) => (
@@ -229,21 +226,18 @@ export default function ServerMembersPanel({
                     </div>
                   )}
 
-                  {/* Role icon */}
                   <div className="shrink-0" title={roleLabels[member.role]}>
                     <span style={{ color: member.equippedColor || undefined }}>
                       {roleIcons[member.role]}
                     </span>
                   </div>
 
-                  {/* Muted indicator */}
                   {member.isMuted && (
                     <div className="shrink-0" title="Muted">
                       <VolumeX className="w-4 h-4 text-red-500" />
                     </div>
                   )}
 
-                  {/* Actions dropdown */}
                   {member.userId !== currentUserId && (isAdmin || isMod || canManageRoles || canKick || canBan || canMute) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -252,7 +246,6 @@ export default function ServerMembersPanel({
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        {/* Admin can assign moderator role */}
                         {(isAdmin || canManageRoles) && member.role === "MEMBER" && (
                           <DropdownMenuItem
                             onClick={() => handleRoleChange(member.userId, "MODERATOR")}
@@ -270,7 +263,6 @@ export default function ServerMembersPanel({
                           </DropdownMenuItem>
                         )}
 
-                        {/* Transfer ownership (Admin only) */}
                         {isAdmin && member.role !== "ADMIN" && (
                           <DropdownMenuItem
                             onClick={() => handleTransferOwnership(member.userId)}
@@ -281,7 +273,6 @@ export default function ServerMembersPanel({
                           </DropdownMenuItem>
                         )}
 
-                        {/* Mute/Unmute */}
                         {(isAdmin || isMod || canMute) && member.role !== "ADMIN" && (
                           <DropdownMenuItem
                             onClick={() => handleMuteToggle(member.userId, member.isMuted)}
@@ -291,7 +282,6 @@ export default function ServerMembersPanel({
                           </DropdownMenuItem>
                         )}
 
-                        {/* Kick */}
                         {(isAdmin || (isMod && member.role === "MEMBER") || canKick) && (
                           <DropdownMenuItem
                             onClick={() => handleKick(member.userId)}
@@ -302,7 +292,6 @@ export default function ServerMembersPanel({
                           </DropdownMenuItem>
                         )}
 
-                        {/* Ban */}
                         {(isAdmin || (isMod && member.role === "MEMBER") || canBan) && (
                           <DropdownMenuItem
                             onClick={() => handleBan(member.userId)}

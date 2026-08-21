@@ -19,7 +19,7 @@ export default function ExamsKanbanWrapper({ data, tableComponent }: Props) {
   const [view, setView] = useState<"table" | "kanban">("kanban");
 
   const kanbanItems: KanbanItem[] = data.map((exam) => {
-    // Basic status logic based on date, can be overridden by localStorage
+
     const now = new Date();
     const start = new Date(exam.startTime);
     const end = new Date(exam.endTime);

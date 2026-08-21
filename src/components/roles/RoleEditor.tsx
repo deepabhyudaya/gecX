@@ -32,24 +32,24 @@ interface RoleEditorProps {
 }
 
 const PRESET_COLORS = [
-  "#EF4444", // Red
-  "#F97316", // Orange
-  "#F59E0B", // Amber
-  "#84CC16", // Lime
-  "#22C55E", // Green
-  "#10B981", // Emerald
-  "#14B8A6", // Teal
-  "#06B6D4", // Cyan
-  "#0EA5E9", // Sky
-  "#3B82F6", // Blue
-  "#6366F1", // Indigo
-  "#8B5CF6", // Violet
-  "#A855F7", // Purple
-  "#D946EF", // Fuchsia
-  "#EC4899", // Pink
-  "#F43F5E", // Rose
-  "#6B7280", // Gray
-  "#FFD700", // Gold
+  "#EF4444",
+  "#F97316",
+  "#F59E0B",
+  "#84CC16",
+  "#22C55E",
+  "#10B981",
+  "#14B8A6",
+  "#06B6D4",
+  "#0EA5E9",
+  "#3B82F6",
+  "#6366F1",
+  "#8B5CF6",
+  "#A855F7",
+  "#D946EF",
+  "#EC4899",
+  "#F43F5E",
+  "#6B7280",
+  "#FFD700",
 ];
 
 export default function RoleEditor({
@@ -81,7 +81,6 @@ export default function RoleEditor({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Role Name */}
       <div className="space-y-2">
         <Label htmlFor="roleName">Role Name</Label>
         <Input
@@ -94,7 +93,6 @@ export default function RoleEditor({
         />
       </div>
 
-      {/* Role Color */}
       <div className="space-y-2">
         <Label>Role Color</Label>
         <div className="flex items-center gap-3">
@@ -112,7 +110,7 @@ export default function RoleEditor({
             maxLength={7}
           />
         </div>
-        
+
         {showColorPicker && (
           <div className="p-3 rounded-lg border bg-card">
             <div className="grid grid-cols-9 gap-2">
@@ -136,7 +134,6 @@ export default function RoleEditor({
         )}
       </div>
 
-      {/* Role Icon */}
       <div className="space-y-2">
         <Label htmlFor="roleIcon">Role Icon URL (Optional)</Label>
         <Input
@@ -164,7 +161,6 @@ export default function RoleEditor({
         )}
       </div>
 
-      {/* Toggles */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
@@ -195,7 +191,6 @@ export default function RoleEditor({
         </div>
       </div>
 
-      {/* Permissions Accordion */}
       <div className="space-y-2 border rounded-lg overflow-hidden">
         <button
           type="button"
@@ -208,7 +203,7 @@ export default function RoleEditor({
           </div>
           {showPermissions ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </button>
-        
+
         {showPermissions && (
           <div className="p-4 border-t bg-card">
             <RolePermissionsEditor
@@ -220,7 +215,6 @@ export default function RoleEditor({
         )}
       </div>
 
-      {/* Preview */}
       <div className="p-3 rounded-lg border bg-muted/50">
         <p className="text-xs text-muted-foreground mb-2">Preview:</p>
         <div className="flex items-center gap-2">
@@ -240,7 +234,6 @@ export default function RoleEditor({
         </div>
       </div>
 
-      {/* Submit */}
       <Button
         type="submit"
         className="w-full"

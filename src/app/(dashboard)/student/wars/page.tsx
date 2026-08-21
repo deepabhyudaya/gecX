@@ -50,7 +50,6 @@ export default async function StudentWarsPage() {
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
-      {/* Banner */}
       <div className="relative shrink-0 bg-gradient-to-r from-blue-950 via-card to-red-950 border border-border rounded-2xl p-6 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-red-500/5" />
         <div className="relative">
@@ -91,7 +90,6 @@ export default async function StudentWarsPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Active & Pending Wars Feed */}
         <div className="space-y-6">
           {rivalries.length === 0 && (
             <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground">
@@ -181,7 +179,6 @@ export default async function StudentWarsPage() {
           })}
         </div>
 
-        {/* Propose War Form (Always Visible) */}
         <div className="space-y-6">
           <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
             <div>

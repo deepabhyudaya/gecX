@@ -18,13 +18,13 @@ interface StreakBorderAvatarProps {
   karmaPoints?: number;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
-  /** If true, renders a simple img tag instead of Next.js Image (for GIFs/external URLs) */
+
   useRawImg?: boolean;
-  /** Optional click handler */
+
   onClick?: () => void;
-  /** Whether to show tooltip on hover */
+
   showTooltip?: boolean;
-  /** Optional fallback text (first letter) */
+
   fallback?: string;
 }
 

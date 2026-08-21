@@ -62,14 +62,13 @@ const AssignmentForm = ({
     if (!val) return "";
     const d = new Date(val);
     if (isNaN(d.getTime())) return "";
-    
-    // Format to YYYY-MM-DDTHH:mm in local time
+
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const hours = String(d.getHours()).padStart(2, "0");
     const minutes = String(d.getMinutes()).padStart(2, "0");
-    
+
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
@@ -83,7 +82,6 @@ const AssignmentForm = ({
         <InputField label="Id" name="id" defaultValue={data?.id} register={register} error={errors?.id} hidden />
       )}
 
-      {/* Title */}
       <div className="flex flex-wrap gap-4">
         <InputField
           label="Assignment title"
@@ -94,7 +92,6 @@ const AssignmentForm = ({
         />
       </div>
 
-      {/* Dates */}
       <div className="flex flex-wrap gap-4">
         <div className="flex flex-col gap-1 w-full md:w-[45%]">
           <label className={lbl}>Start date</label>
@@ -120,7 +117,6 @@ const AssignmentForm = ({
         </div>
       </div>
 
-      {/* Lesson */}
       <div className="flex flex-col gap-1 w-full md:w-1/2">
         <label className={lbl}>Lesson</label>
         <select className={sel} {...register("lessonId")} defaultValue={data?.lessonId ?? ""}>

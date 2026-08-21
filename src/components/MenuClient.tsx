@@ -74,7 +74,6 @@ export function MenuClient({ role, sections, counts }: MenuClientProps) {
 
   return (
     <div className="mt-2 text-sm flex flex-col h-full">
-      {/* Toggle Filter Buttons */}
       <div className="px-2 mb-2">
         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
           {sectionTitles.map((title) => (
@@ -93,7 +92,6 @@ export function MenuClient({ role, sections, counts }: MenuClientProps) {
         </div>
       </div>
 
-      {/* Search Bar */}
       <div className="px-3 mb-2">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -114,7 +112,6 @@ export function MenuClient({ role, sections, counts }: MenuClientProps) {
         </div>
       </div>
 
-      {/* Menu Items */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-2">
         {filteredSections.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground text-xs">
@@ -128,7 +125,6 @@ export function MenuClient({ role, sections, counts }: MenuClientProps) {
 
             return (
               <div className="mb-1" key={section.title}>
-                {/* Section Header */}
                 <button
                   onClick={() => toggleSection(section.title)}
                   className="w-full flex items-center gap-2 px-2 py-2 rounded-md text-muted-foreground hover:bg-card transition-colors group"
@@ -142,7 +138,6 @@ export function MenuClient({ role, sections, counts }: MenuClientProps) {
                   </span>
                 </button>
 
-                {/* Section Items */}
                 {!isCollapsed && (
                   <div className="flex flex-col gap-0.5 ml-6 lg:ml-7">
                     {section.items.map((item) => {

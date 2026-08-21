@@ -7,7 +7,6 @@ import { ablyPublish } from "@/lib/ably-server";
 
 const REELS_PER_PAGE = 10;
 
-// Helper to get or create community profile
 async function getOrCreateCommunityProfile(userId: string) {
   const { sessionClaims } = auth();
   const clerkUser = await currentUser();
@@ -35,9 +34,6 @@ async function getOrCreateCommunityProfile(userId: string) {
   return profile;
 }
 
-/**
- * Create a new short video (Reel) under the BlackLines feature set.
- */
 export async function createReel(
   content: string,
   videoUrl: string,
@@ -66,7 +62,6 @@ export async function createReel(
     },
   });
 
-  // Increment user community profile postCount
   await prisma.userCommunityProfile.update({
     where: { userId },
     data: {
@@ -81,9 +76,6 @@ export async function createReel(
   return reel;
 }
 
-/**
- * Get chronological feed of BlackLines reels with cursor-based pagination.
- */
 export async function getReelsFeed(cursor?: string) {
   const { userId } = auth();
 
@@ -147,11 +139,8 @@ export async function getReelsFeed(cursor?: string) {
   };
 }
 
-/**
- * Increment the view count for a specific reel and broadcast it via Ably.
- */
 export async function incrementReelViews(reelId: string) {
-  // Increment view count in database
+
   const updated = await prisma.communityPost.update({
     where: { id: reelId },
     data: {
@@ -164,11 +153,10 @@ export async function incrementReelViews(reelId: string) {
     },
   });
 
-  // Publish reel view event to Ably channel `reel:${reelId}`
   try {
     const channelName = `reel:${reelId}`;
     await ablyPublish(channelName, {
-      type: "message:new", // Reuse standard Ably event structure, or use custom event type cast
+      type: "message:new",
       message: {
         type: "reel:view",
         reelId,

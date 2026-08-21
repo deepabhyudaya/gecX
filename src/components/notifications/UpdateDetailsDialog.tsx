@@ -37,7 +37,6 @@ interface UpdateDetailsDialogProps {
   entityName: string;
 }
 
-/** Fired after dismissal so SidebarInner re-polls counts immediately */
 export const NOTIFICATION_DISMISSED_EVENT = "notification-counts-changed";
 
 export function UpdateDetailsDialog({
@@ -58,7 +57,7 @@ export function UpdateDetailsDialog({
 
     getNotificationsByTypeAndEntity(types, entityId || "").then((data) => {
       if (!cancelled) {
-        // Guard: ensure we always set an array even if the action returns null/undefined
+
         setNotifications(Array.isArray(data) ? (data as unknown as NotificationData[]) : []);
         setLoading(false);
       }
@@ -73,18 +72,17 @@ export function UpdateDetailsDialog({
   }, [open, types, entityId]);
 
   const handleClose = async () => {
-    // Close dialog immediately for smooth animation
+
     onOpenChange(false);
     setNotifications([]);
 
-    // Mark all notifications as viewed in the background
     if (types.length > 0) {
       if (entityId) {
         await dismissNotificationsByTypeAndEntity(types, entityId);
       } else {
         await dismissNotificationsByType(types);
       }
-      // Tell SidebarInner to re-poll immediately so the badge clears
+
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent(NOTIFICATION_DISMISSED_EVENT));
       }

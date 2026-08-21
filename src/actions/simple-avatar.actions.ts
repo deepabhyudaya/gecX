@@ -3,7 +3,6 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
-// Simple avatar URL generation without database dependencies
 export function generateSimpleAvatarUrl(style: string, seed: string, size: number = 128): string {
   const dicebearStyle = style
     .replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
@@ -12,7 +11,6 @@ export function generateSimpleAvatarUrl(style: string, seed: string, size: numbe
   return `https://api.dicebear.com/7.x/${dicebearStyle}/svg?seed=${encodeURIComponent(seed)}&size=${size}`;
 }
 
-// Get user gecX balance without avatar dependencies
 export async function getUserGecXBalance(userId: string) {
   if (!userId) throw new Error("Unauthorized");
 
@@ -27,14 +25,12 @@ export async function getUserGecXBalance(userId: string) {
   };
 }
 
-// Get basic shop data without avatar ownership
 export async function getBasicShopData() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
   const balance = await getUserGecXBalance(userId);
-  
-  // Default avatar styles with prices
+
   const defaultAvatars = [
     { style: "adventurer", name: "Adventurer", cost: 50, category: "basic" },
     { style: "avataaars", name: "Avataaars", cost: 50, category: "basic" },
@@ -55,7 +51,7 @@ export async function getBasicShopData() {
     ...avatar,
     id: avatar.style,
     previewUrl: generateSimpleAvatarUrl(avatar.style, userId, 64),
-    owned: false, // Simplified - not tracking ownership yet
+    owned: false,
     equippedAcademic: false,
     equippedCommunity: false,
   }));

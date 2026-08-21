@@ -1,10 +1,6 @@
 import { cache } from "react";
 import prisma from "@/lib/prisma";
 
-// Plain (non-server-action) module so React.cache() can be applied.
-// Dedupes equipped-color reads across the same React render pass — the root
-// layout and any descendant server components requesting the same userId
-// share a single DB roundtrip.
 async function _getEquippedColors(userId: string) {
   const impersonation = await prisma.userImpersonation.findUnique({
     where: { userId },
@@ -35,8 +31,6 @@ async function _getEquippedColors(userId: string) {
     };
   }
 
-  // Clean up expired impersonation if any (fire-and-forget OK; we still
-  // return the non-impersonated values below)
   if (impersonation && impersonation.expiresAt < new Date()) {
     await prisma.userImpersonation.delete({ where: { userId } }).catch(() => {});
   }

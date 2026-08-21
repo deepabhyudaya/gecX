@@ -78,7 +78,6 @@ export async function startConversation(targetUserId: string) {
     );
   }
 
-  // Sort IDs to ensure uniqueness in @@unique([user1Id, user2Id])
   const [user1Id, user2Id] = [currentUserId, targetUserId].sort();
 
   const conversation = await prisma.conversation.upsert({
@@ -120,7 +119,6 @@ export async function getConversations() {
     orderBy: { createdAt: "desc" },
   });
 
-  // Batch all role lookups — 4 parallel queries regardless of conversation count
   const otherIds = conversations.map((conv) =>
     conv.user1Id === userId ? conv.user2Id : conv.user1Id
   );
@@ -142,7 +140,7 @@ export async function getConversations() {
       where: { id: { in: otherIds } },
       select: { id: true, username: true },
     }),
-    // Single groupBy replaces N count() calls
+
     prisma.directMessage.groupBy({
       by: ["conversationId"],
       where: {
@@ -152,26 +150,25 @@ export async function getConversations() {
       },
       _count: { id: true },
     }),
-    // Get karma points and avatars for all users
+
     prisma.userCommunityProfile.findMany({
       where: { userId: { in: otherIds } },
       select: { userId: true, karmaPoints: true, avatar: true, customAvatar: true },
     }),
-    // Get streaks via raw query to bypass cached plan issue
+
     otherIds.length > 0
       ? prisma.$queryRaw`
           SELECT "userId", "currentStreak" FROM "UserCommunityProfile"
           WHERE "userId" IN (${Prisma.join(otherIds)})
         `
       : Promise.resolve([]),
-    // Get equipped nameplates & colors
+
     prisma.userEquippedColors.findMany({
       where: { userId: { in: otherIds } },
       include: { nameplateItem: true, usernameColorItem: true },
     }),
   ]);
 
-  // Build lookup maps
   const userMap = new Map<string, { username: string; name: string; surname: string; role: string }>();
   for (const s of students) userMap.set(s.id, { ...s, role: "student" });
   for (const t of teachers) userMap.set(t.id, { ...t, role: "teacher" });
@@ -212,7 +209,6 @@ export async function getConversations() {
   return enrichedConversations;
 }
 
-
 export async function getConversationMessages(conversationId: number, limit: number = 30, before?: Date) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -241,7 +237,7 @@ export async function getConversationMessages(conversationId: number, limit: num
       },
     },
     orderBy: { createdAt: "desc" },
-    take: limit, // Limit to prevent loading too many messages at once
+    take: limit,
   });
 
   return messages.reverse();
@@ -274,12 +270,10 @@ export async function sendDirectMessage(conversationId: number, content: string,
     include: { reactions: true },
   });
 
-  // Award karma for sending a direct message
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.messageSent, "dm_sent");
   await recordUserActivity(userId, "message");
 
-  // Broadcast to other client via Ably
   await ablyPublish(getDMChannelName(conversationId), {
     type: "message:new",
     message: msg,
@@ -313,7 +307,6 @@ export async function sendDirectCommandMessage(
     },
   });
 
-  // Award karma for sending a direct message
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.messageSent, "dm_command_sent");
   await recordUserActivity(userId, "message");
@@ -367,7 +360,6 @@ export async function sendDirectPoll(
     },
   });
 
-  // Award karma for sending a direct message (poll)
   const settings = await getKarmaSettings();
   await recordKarmaEarned(userId, settings.messageSent, "dm_poll_sent");
   await recordUserActivity(userId, "message");
@@ -390,7 +382,6 @@ export async function deleteDirectMessage(messageId: number) {
 
   await prisma.directMessage.delete({ where: { id: messageId } });
 
-  // Broadcast deletion via Ably
   await ablyPublish(getDMChannelName(msg.conversationId), {
     type: "message:delete",
     messageId,
@@ -506,7 +497,6 @@ export async function toggleDMReaction(messageId: number, emoji: string) {
       },
     });
 
-    // Award karma to message sender when someone reacts to their DM
     const message = await prisma.directMessage.findUnique({
       where: { id: messageId },
       select: { senderId: true, conversationId: true },
@@ -518,7 +508,6 @@ export async function toggleDMReaction(messageId: number, emoji: string) {
     eventType = "reaction:add";
   }
 
-  // Get conversationId for Ably broadcast
   const msg = await prisma.directMessage.findUnique({
     where: { id: messageId },
     select: { conversationId: true },
@@ -557,8 +546,7 @@ export async function deleteConversation(id: number) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Ensure the user is part of the conversation
-  const conv = await prisma.conversation.findUnique({ 
+  const conv = await prisma.conversation.findUnique({
     where: { id },
     select: { user1Id: true, user2Id: true }
   });
@@ -608,14 +596,13 @@ export async function rerollAccessCode() {
     const user = await currentUser();
     const realUsername = user?.username || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || "admin";
 
-    // Admins might not have a DB record if they were created before this feature
     await prisma.admin.upsert({
       where: { id: userId },
       update: { accessCode: newCode, username: realUsername },
-      create: { 
-        id: userId, 
-        username: realUsername, 
-        accessCode: newCode 
+      create: {
+        id: userId,
+        username: realUsername,
+        accessCode: newCode
       },
     });
   } else if (role === "student") {

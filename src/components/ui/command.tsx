@@ -27,9 +27,7 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
   return (
     <DialogPrimitive.Root {...props}>
       <DialogPrimitive.Portal>
-        {/* Backdrop */}
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        {/* Panel */}
         <DialogPrimitive.Content
           className={cn(
             "fixed left-[50%] top-[20%] z-50 w-full max-w-lg translate-x-[-50%]",

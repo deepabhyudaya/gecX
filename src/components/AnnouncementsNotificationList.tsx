@@ -7,7 +7,6 @@ function formatDate(date: Date): string {
   const now = new Date();
   const d = new Date(date);
 
-  // Compare by calendar day in local time
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const diffDays = Math.round((target.getTime() - today.getTime()) / 86_400_000);

@@ -49,7 +49,6 @@ const deleteActionMap = {
   announcement: deleteAnnouncement,
 };
 
-// Lazy-loaded forms
 const TeacherForm      = dynamic(() => import("./forms/TeacherForm"),      { loading: () => <Skeleton /> });
 const StudentForm      = dynamic(() => import("./forms/StudentForm"),      { loading: () => <Skeleton /> });
 const SubjectForm      = dynamic(() => import("./forms/SubjectForm"),      { loading: () => <Skeleton /> });

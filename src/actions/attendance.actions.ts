@@ -10,13 +10,9 @@ export type BulkAttendanceEntry = {
   present: boolean;
 };
 
-/**
- * Bulk-upsert attendance for a lesson on a given date.
- * Delete-then-insert so re-submitting the same day is idempotent.
- */
 export async function bulkMarkAttendance(
   lessonId: number,
-  date: string, // ISO date string yyyy-mm-dd
+  date: string,
   entries: BulkAttendanceEntry[]
 ): Promise<{ success: boolean; error?: string }> {
   const { userId, sessionClaims } = auth();
@@ -31,7 +27,6 @@ export async function bulkMarkAttendance(
     attendanceDate.setUTCHours(0, 0, 0, 0);
     const nextDay = new Date(attendanceDate.getTime() + 24 * 60 * 60 * 1000);
 
-    // Delete today's existing records for this lesson then re-insert
     await prisma.$transaction([
       prisma.attendance.deleteMany({
         where: {
@@ -49,7 +44,6 @@ export async function bulkMarkAttendance(
       }),
     ]);
 
-    // Award gecX for attendance (async, don't block attendance saving)
     for (const entry of entries) {
       if (entry.present) {
         try {
@@ -70,9 +64,6 @@ export async function bulkMarkAttendance(
   }
 }
 
-/**
- * Fetch all lessons (with class + subject) for the lesson selector.
- */
 export async function getLessons() {
   const { userId, sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
@@ -90,9 +81,6 @@ export async function getLessons() {
   });
 }
 
-/**
- * Fetch students in a class for the kanban board.
- */
 export async function getStudentsByClass(classId: number) {
   return prisma.student.findMany({
     where: { classId },
@@ -101,9 +89,6 @@ export async function getStudentsByClass(classId: number) {
   });
 }
 
-/**
- * Get existing attendance for a lesson on a date (to pre-populate the board).
- */
 export async function getAttendanceForLesson(lessonId: number, date: string) {
   const d = new Date(date);
   d.setUTCHours(0, 0, 0, 0);
@@ -117,7 +102,6 @@ export async function getAttendanceForLesson(lessonId: number, date: string) {
     select: { studentId: true, present: true },
   });
 }
-
 
 export type BulkTeacherAttendanceEntry = {
   teacherId: string;
@@ -184,7 +168,6 @@ export async function getTeacherAttendanceForDate(date: string) {
   });
 }
 
-
 export type ChartDataItem = {
   name: string;
   shortName: string;
@@ -204,7 +187,7 @@ export async function getAttendanceChartData(
   );
 
   if (range === "7days") {
-    // Get Monday of current week
+
     const utcDay = startOfToday.getUTCDay();
     const daysSinceMonday = utcDay === 0 ? 6 : utcDay - 1;
     const weekMonday = new Date(startOfToday);
@@ -261,7 +244,7 @@ export async function getAttendanceChartData(
       dateLabel: s.dateLabel,
     }));
   } else if (range === "30days") {
-    // Last 30 days - chronological order with no x-axis labels
+
     const startDate = new Date(startOfToday);
     startDate.setUTCDate(startOfToday.getUTCDate() - 29);
     const endDate = new Date(startOfToday);
@@ -274,7 +257,6 @@ export async function getAttendanceChartData(
 
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    // Create slots for each day in chronological order
     const slots: Array<{
       name: string;
       shortName: string;
@@ -299,8 +281,8 @@ export async function getAttendanceChartData(
       const isLeaveDay = dow === 0 || dow === 6;
 
       slots.push({
-        name: `${dayNames[dow]} ${m}/${dd}`, // Day name + date for tooltip
-        shortName: "", // Empty for no x-axis label
+        name: `${dayNames[dow]} ${m}/${dd}`,
+        shortName: "",
         present: 0,
         absent: 0,
         leave: isLeaveDay,
@@ -309,7 +291,6 @@ export async function getAttendanceChartData(
       });
     }
 
-    // Aggregate attendance into slots
     resData.forEach((item) => {
       const d = new Date(item.date);
       const diffTime = d.getTime() - startDate.getTime();
@@ -330,7 +311,7 @@ export async function getAttendanceChartData(
       dateLabel: s.dateLabel,
     }));
   } else {
-    // 1 year - monthly aggregates
+
     const startOfYear = new Date(
       Date.UTC(startOfToday.getUTCFullYear(), 0, 1)
     );

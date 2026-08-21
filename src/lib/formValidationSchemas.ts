@@ -3,7 +3,7 @@ import { z } from "zod";
 export const subjectSchema = z.object({
   id: z.coerce.number().optional(),
   name: z.string().min(1, { message: "Subject name is required!" }),
-  teachers: z.array(z.string()), //teacher ids
+  teachers: z.array(z.string()),
 });
 
 export type SubjectSchema = z.infer<typeof subjectSchema>;
@@ -14,7 +14,7 @@ export const classSchema = z.object({
   capacity: z.coerce.number().min(1, { message: "Capacity is required!" }),
   gradeId: z.coerce.number().min(1, { message: "Year is required!" }),
   supervisorId: z.coerce.string().optional(),
-  // ===== College migration: branch metadata =====
+
   branchCode: z.string().max(20).optional().or(z.literal("")),
   department: z.string().max(100).optional().or(z.literal("")),
   totalSemesters: z.coerce.number().min(1).max(12).optional(),
@@ -48,8 +48,8 @@ export const teacherSchema = z.object({
   bloodType: z.string().min(1, { message: "Blood Type is required!" }),
   birthday: z.coerce.date({ message: "Birthday is required!" }),
   sex: z.enum(["MALE", "FEMALE"], { message: "Sex is required!" }),
-  subjects: z.array(z.string()).optional(), // subject ids
-  // ===== College migration: faculty academic identity =====
+  subjects: z.array(z.string()).optional(),
+
   employeeId: z.string().max(50).optional().or(z.literal("")),
   designation: z.string().max(100).optional().or(z.literal("")),
   department: z.string().max(100).optional().or(z.literal("")),
@@ -88,7 +88,7 @@ export const studentSchema = z.object({
   gradeId: z.coerce.number().min(1, { message: "Year is required!" }),
   classId: z.coerce.number().min(1, { message: "Branch is required!" }),
   parentId: z.string().min(1, { message: "Parent Id is required!" }),
-  // ===== College migration: student academic identity =====
+
   rollNumber: z.string().max(50).optional().or(z.literal("")),
   registrationNumber: z.string().max(100).optional().or(z.literal("")),
   admissionYear: z.coerce.number().min(1900).max(2100).optional().or(z.nan()),
@@ -219,7 +219,6 @@ export const gradeSchema = z.object({
 
 export type GradeSchema = z.infer<typeof gradeSchema>;
 
-// ==================== COLLEGE ====================
 export const collegeSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, { message: "College name is required!" }).max(200),
@@ -244,7 +243,6 @@ export const collegeSchema = z.object({
 
 export type CollegeSchema = z.infer<typeof collegeSchema>;
 
-// ==================== DYNAMIC FORMS ====================
 export const formSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, { message: "Form title is required!" }),

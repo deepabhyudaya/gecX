@@ -19,27 +19,22 @@ const AdminPage = ({
       layoutKey="admin-dashboard-layout"
       leftContent={
         <div className="flex flex-col gap-8">
-          {/* USER CARDS */}
           <div className="flex gap-4 justify-between flex-wrap">
             <UserCard type="admin" />
             <UserCard type="teacher" />
             <UserCard type="student" />
             <UserCard type="parent" />
           </div>
-          {/* AI INSIGHTS STUB */}
           <AiStubCard
             title="AI Campus Insights"
             description="Ask Gemini to summarize attendance trends, flag at-risk students, and surface key campus metrics."
             feature="attendance-summary"
           />
 
-          {/* MIDDLE CHARTS */}
           <div className="flex gap-4 flex-col lg:flex-row">
-            {/* COUNT CHART */}
             <div className="w-full lg:w-1/3 h-[450px]">
               <CountChartContainer />
             </div>
-            {/* ATTENDANCE CHART */}
             <div className="w-full lg:w-2/3 h-[450px]">
               <AttendanceChartContainer />
             </div>

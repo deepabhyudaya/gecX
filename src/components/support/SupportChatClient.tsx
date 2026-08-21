@@ -15,10 +15,10 @@ import { ChatMessageHeader } from "@/components/messages/ChatMessageHeader";
 import {
   ResizableHandle,
   ResizablePanel,
-  ResizablePanelGroup,  
+  ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
-type Ticket = any; // simplified for now
+type Ticket = any;
 type TicketMessage = any;
 
 const TICKET_CATEGORIES = [
@@ -76,7 +76,6 @@ export default function SupportChatClient({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [localMessages]);
 
-  // Update local messages when selected ticket changes
   useEffect(() => {
     setLocalMessages(selectedTicketData?.messages ?? []);
   }, [selectedTicketData?.id]);
@@ -128,27 +127,26 @@ export default function SupportChatClient({
       reactions: [],
     };
 
-    // Add optimistic message immediately
     setLocalMessages((prev) => [...prev, optimistic]);
     setReplyToMessage(null);
 
     try {
       const saved = await sendMessage(selectedTicketData.id, content, capturedReply?.id);
-      // Replace optimistic entry with real DB row
+
       setLocalMessages((prev) =>
         prev.map((m) =>
           m.id === tempId ? { ...saved, reactions: [], replyTo } : m
         )
       );
     } catch (error) {
-      // Remove failed optimistic message
+
       setLocalMessages((prev) => prev.filter((m) => m.id !== tempId));
       console.error("Failed to send message:", error);
     }
   };
 
   const handleReaction = async (messageId: number, emoji: string) => {
-    // Optimistic toggle
+
     setLocalMessages((prev) =>
       prev.map((msg) => {
         if (msg.id !== messageId) return msg;
@@ -173,7 +171,7 @@ export default function SupportChatClient({
       }
       router.refresh();
     } catch (e: any) {
-      // Revert optimistic update
+
       setLocalMessages((prev) =>
         prev.map((msg) => {
           if (msg.id !== messageId) return msg;
@@ -205,7 +203,6 @@ export default function SupportChatClient({
     await closeTicket(selectedTicketData.id);
   };
 
-  // Vercel UI style constants
   const shadowBorder = "shadow-[rgba(0,0,0,0.08)_0px_0px_0px_1px] dark:shadow-[rgba(255,255,255,0.1)_0px_0px_0px_1px]";
   const shadowCard = "shadow-[rgba(0,0,0,0.08)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_2px_2px,#fafafa_0px_0px_0px_1px] dark:shadow-[rgba(255,255,255,0.1)_0px_0px_0px_1px,rgba(0,0,0,0.2)_0px_2px_2px]";
 
@@ -222,7 +219,6 @@ export default function SupportChatClient({
       className={`w-full h-full rounded-lg ${shadowBorder} bg-background overflow-hidden flex flex-col md:flex-row`}
       onLayout={onLayout}
     >
-      {/* SIDEBAR PANEL */}
       <ResizablePanel
         defaultSize={defaultLayout?.[0] ?? 33}
         minSize={20}
@@ -283,7 +279,6 @@ export default function SupportChatClient({
 
       <ResizableHandle withHandle className="hidden md:flex" />
 
-      {/* MAIN VIEW PANEL */}
       <ResizablePanel
         defaultSize={defaultLayout?.[1] ?? 67}
         className={`flex-1 flex-col bg-background h-full relative ${(selectedTicketData || isCreating) ? 'flex' : 'hidden md:flex'}`}
@@ -349,10 +344,8 @@ export default function SupportChatClient({
           </div>
         ) : selectedTicketData ? (
           <div className="flex flex-col h-full">
-            {/* CHAT HEADER */}
             <div className="px-4 py-3 md:px-6 md:py-4 border-b border-border flex justify-between items-center bg-background z-10 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
-                {/* Back button for mobile */}
                 <button
                   onClick={() => router.push('/support')}
                   className="md:hidden p-1.5 -ml-2 rounded-md hover:bg-accent text-muted-foreground"
@@ -378,7 +371,6 @@ export default function SupportChatClient({
               )}
             </div>
 
-            {/* CHAT MESSAGES */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-background flex flex-col no-scrollbar">
               {localMessages.map((msg: TicketMessage) => {
                 const isMe = msg.senderId === currentUserId;
@@ -453,7 +445,6 @@ export default function SupportChatClient({
                         )}
                         <p className="whitespace-pre-wrap">{msg.content}</p>
 
-                        {/* Active Reactions */}
                         {Object.keys(reactionsByEmoji).length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">
                             {Object.entries(reactionsByEmoji).map(([emoji, reacts]: [string, any]) => {
@@ -483,7 +474,6 @@ export default function SupportChatClient({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* CHAT INPUT */}
             {selectedTicketData.status !== "CLOSED" ? (
               <div className="p-2 bg-background border-t border-border shrink-0 relative">
                 {replyToMessage && (

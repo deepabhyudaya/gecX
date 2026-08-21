@@ -6,8 +6,6 @@ import { revalidatePath } from "next/cache";
 import { checkServerPermission } from "./role.actions";
 import { ROLE_PERMISSIONS } from "../lib/role-permissions";
 
-// ==================== REACTION ROLES CRUD ====================
-
 export async function createReactionRole(
   serverId: string,
   data: {
@@ -21,18 +19,15 @@ export async function createReactionRole(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check permission
   const hasPermission = await checkServerPermission(serverId, ROLE_PERMISSIONS.CREATE_REACTION_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to create reaction roles");
 
-  // Verify role exists in this server
   const role = await prisma.serverRole.findUnique({
     where: { id: data.roleId, serverId }
   });
 
   if (!role) throw new Error("Role not found in this server");
 
-  // Check if emoji is already used for this message
   const existing = await prisma.reactionRole.findFirst({
     where: {
       serverId,
@@ -70,7 +65,6 @@ export async function deleteReactionRole(reactionRoleId: string) {
 
   if (!reactionRole) throw new Error("Reaction role not found");
 
-  // Check permission
   const hasPermission = await checkServerPermission(
     reactionRole.serverId,
     ROLE_PERMISSIONS.CREATE_REACTION_ROLES | ROLE_PERMISSIONS.MANAGE_ROLES
@@ -88,7 +82,6 @@ export async function getReactionRoles(serverId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Verify user is a member
   const member = await prisma.serverMember.findUnique({
     where: { serverId_userId: { serverId, userId } }
   });
@@ -113,8 +106,6 @@ export async function getReactionRolesForMessage(messageId: string) {
   return reactionRoles;
 }
 
-// ==================== REACTION HANDLING ====================
-
 export async function handleReactionAdd(
   serverId: string,
   channelId: string,
@@ -123,7 +114,7 @@ export async function handleReactionAdd(
   userId: string
 ) {
   try {
-    // Find reaction role for this emoji on this message
+
     const reactionRole = await prisma.reactionRole.findFirst({
       where: {
         serverId,
@@ -135,18 +126,16 @@ export async function handleReactionAdd(
 
     if (!reactionRole) return { success: false, reason: "No reaction role found" };
 
-    // Check max uses limit
     if (reactionRole.maxUses && reactionRole.useCount >= reactionRole.maxUses) {
       return { success: false, reason: "Role has reached max uses" };
     }
-    // Get member
+
     const member = await prisma.serverMember.findUnique({
       where: { serverId_userId: { serverId, userId } }
     });
 
     if (!member) return { success: false, reason: "Not a server member" };
 
-    // Check if already has role
     const existing = await prisma.serverMemberRole.findUnique({
       where: {
         memberId_roleId: {
@@ -158,13 +147,12 @@ export async function handleReactionAdd(
 
     if (existing) return { success: false, reason: "Already has this role" };
 
-    // Assign role
     await prisma.$transaction([
       prisma.serverMemberRole.create({
         data: {
           memberId: member.id,
           roleId: reactionRole.roleId,
-          assignedBy: "system" // Auto-assigned via reaction
+          assignedBy: "system"
         }
       }),
       prisma.reactionRole.update({
@@ -188,7 +176,7 @@ export async function handleReactionRemove(
   userId: string
 ) {
   try {
-    // Find reaction role
+
     const reactionRole = await prisma.reactionRole.findFirst({
       where: {
         serverId,
@@ -199,14 +187,12 @@ export async function handleReactionRemove(
 
     if (!reactionRole) return { success: false };
 
-    // Get member
     const member = await prisma.serverMember.findUnique({
       where: { serverId_userId: { serverId, userId } }
     });
 
     if (!member) return { success: false };
 
-    // Remove role if they have it
     await prisma.$transaction([
       prisma.serverMemberRole.deleteMany({
         where: {
@@ -228,8 +214,6 @@ export async function handleReactionRemove(
   }
 }
 
-// ==================== BATCH OPERATIONS ====================
-
 export async function createReactionRolesBatch(
   serverId: string,
   channelId: string,
@@ -239,11 +223,9 @@ export async function createReactionRolesBatch(
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Check permission
   const hasPermission = await checkServerPermission(serverId, ROLE_PERMISSIONS.CREATE_REACTION_ROLES);
   if (!hasPermission) throw new Error("You don't have permission to create reaction roles");
 
-  // Verify all roles belong to this server
   const roleIds = roles.map(r => r.roleId);
   const foundRoles = await prisma.serverRole.findMany({
     where: { id: { in: roleIds }, serverId }
@@ -253,9 +235,8 @@ export async function createReactionRolesBatch(
     throw new Error("One or more roles not found in this server");
   }
 
-  // Create all reaction roles and add the reactions to the message
   const transactionItems: any[] = [];
-  
+
   for (const r of roles) {
     transactionItems.push(
       prisma.reactionRole.create({
@@ -272,7 +253,6 @@ export async function createReactionRolesBatch(
       })
     );
 
-    // Automatically add the emoji reaction to the message so users can see/click it
     transactionItems.push(
       prisma.serverMessageReaction.upsert({
         where: {
@@ -294,7 +274,6 @@ export async function createReactionRolesBatch(
 
   const results = await prisma.$transaction(transactionItems);
 
-  // Filter out the reaction role objects from the results to return
   const created = results.filter((res: any) => res.roleId !== undefined);
 
   return created;

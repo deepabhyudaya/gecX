@@ -19,13 +19,13 @@ export type SearchItem = {
   id: string | number;
   label: string;
   sublabel?: string;
-  /** Navigate to this URL on select. If omitted, sets ?search=label */
+
   href?: string;
 };
 
 type Props = {
   items?: SearchItem[];
-  /** Label shown in the command group heading, e.g. "Teachers" */
+
   entityLabel?: string;
   allowPinning?: boolean;
   role?: string;
@@ -40,16 +40,14 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
   const [query, setQuery] = React.useState("");
 
   const { isPinned, togglePin } = usePinnedItems(entityLabel.toLowerCase());
-  
+
   const canPin = allowPinning && role === "admin";
 
-  // Sync typed query with active filter when dialog opens
   const handleOpen = () => {
     setQuery(currentSearch);
     setOpen(true);
   };
 
-  // Ctrl/Cmd+F shortcut
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "f" && (e.metaKey || e.ctrlKey)) {
@@ -59,7 +57,7 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [currentSearch]);
 
   const applySearch = React.useCallback(
@@ -90,7 +88,6 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
     applySearch("");
   };
 
-  // Filter items client-side by the typed query
   const filtered = React.useMemo(() => {
     if (!query) return items;
     const q = query.toLowerCase();
@@ -103,7 +100,6 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
 
   return (
     <>
-      {/* Trigger pill */}
       <button
         id="table-search-trigger"
         onClick={handleOpen}
@@ -138,7 +134,6 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
         )}
       </button>
 
-      {/* Command dialog */}
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
           placeholder={`Search ${entityLabel.toLowerCase()}…`}
@@ -170,7 +165,6 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
             )}
           </CommandEmpty>
 
-          {/* Live items from DB */}
           {filtered.length > 0 && (
             <CommandGroup heading={entityLabel}>
               {filtered.map((item) => (
@@ -186,7 +180,6 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
                   }}
                   className="cursor-pointer flex items-center gap-3 py-2.5"
                 >
-                  {/* Avatar placeholder circle */}
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold uppercase text-muted-foreground">
                     {item.label.charAt(0)}
                   </span>
@@ -200,8 +193,7 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
                       </span>
                     )}
                   </span>
-                  
-                  {/* Pin action */}
+
                   {canPin && (
                     <button
                       onClick={(e) => {
@@ -231,7 +223,6 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
             </CommandGroup>
           )}
 
-          {/* Separator + "filter table" shortcut when items exist but user typed something */}
           {filtered.length > 0 && query && (
             <>
               <CommandSeparator />
@@ -250,7 +241,6 @@ const TableSearchInner = ({ items = [], entityLabel = "Results", allowPinning = 
             </>
           )}
 
-          {/* Clear active filter */}
           {!query && currentSearch && (
             <CommandGroup heading="Active filter">
               <CommandItem

@@ -69,7 +69,7 @@ export default function CreateServerModal({ open, onOpenChange }: CreateServerMo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    
+
     setLoading(true);
     try {
       const res = await createServer(name.trim(), description.trim(), selectedTemplate);
@@ -84,7 +84,7 @@ export default function CreateServerModal({ open, onOpenChange }: CreateServerMo
 
   const handleClose = () => {
     onOpenChange(false);
-    // Reset state after animation
+
     setTimeout(() => {
       setStep("template");
       setSelectedTemplate("CUSTOM");

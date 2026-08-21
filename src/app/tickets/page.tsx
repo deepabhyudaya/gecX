@@ -9,7 +9,6 @@ import { useTheme } from "next-themes";
 import RichMessageInput from "@/components/messages/RichMessageInput";
 import MarkdownMessage from "@/components/messages/MarkdownMessage";
 
-
 const TICKET_TYPES = [
   { value: "new_account", label: "Request New Account", icon: UserPlus, description: "Ask admin to create an account for you" },
   { value: "password_reset", label: "Forgot Password / Reset", icon: KeyRound, description: "Can't sign in to your account" },
@@ -47,7 +46,6 @@ export default function PublicTicketsPage() {
   const { theme } = useTheme();
   const [tab, setTab] = useState<"submit" | "check">("submit");
 
-  // Submit form state
   const [type, setType] = useState("other");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -59,7 +57,6 @@ export default function PublicTicketsPage() {
   const [result, setResult] = useState<{ code: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Check form state
   const [lookupCode, setLookupCode] = useState("");
   const [checking, setChecking] = useState(false);
   const [ticket, setTicket] = useState<Ticket>(null);
@@ -152,7 +149,6 @@ export default function PublicTicketsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Support Tickets</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -160,7 +156,6 @@ export default function PublicTicketsPage() {
         </p>
       </div>
 
-      {/* Tab switcher */}
       <div className="flex gap-1 bg-muted p-1 rounded-lg w-fit">
         <button
           onClick={() => setTab("submit")}
@@ -207,7 +202,6 @@ export default function PublicTicketsPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-2xl">
-              {/* Ticket type selector */}
               <div>
                 <label className="text-sm font-medium mb-3 block">Ticket Type</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -231,7 +225,6 @@ export default function PublicTicketsPage() {
                 </div>
               </div>
 
-              {/* New account specific fields */}
               {type === "new_account" && (
                 <div className="bg-muted/50 border border-border rounded-xl p-4 flex flex-col gap-4">
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">New Account Details</p>
@@ -258,7 +251,6 @@ export default function PublicTicketsPage() {
                 </div>
               )}
 
-              {/* Subject */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium">Subject <span className="text-red-500">*</span></label>
                 <input
@@ -271,7 +263,6 @@ export default function PublicTicketsPage() {
                 />
               </div>
 
-              {/* Description */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium">Description <span className="text-red-500">*</span></label>
                 <textarea
@@ -284,7 +275,6 @@ export default function PublicTicketsPage() {
                 />
               </div>
 
-              {/* Optional fields */}
               <div className="border border-border rounded-xl p-4 flex flex-col gap-4">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Optional Link Your Account</p>
                 <div className="flex flex-col gap-1.5">
@@ -351,7 +341,6 @@ export default function PublicTicketsPage() {
 
           {ticket && (
             <div className="flex flex-col gap-6 w-full">
-              {/* Ticket header */}
               <div className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
@@ -366,7 +355,6 @@ export default function PublicTicketsPage() {
                 </div>
               </div>
 
-              {/* Message thread */}
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                   <div className="h-px flex-1 bg-border" />
@@ -411,7 +399,6 @@ export default function PublicTicketsPage() {
                           )}
                           <MarkdownMessage content={msg.content} />
 
-                          {/* Quick reactions bar */}
                           <div className={`absolute top-0 opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1 p-1 bg-card border border-border rounded-lg shadow-xl -mt-8 ${isAdmin ? "left-0" : "right-0"}`}>
                             {AVAILABLE_EMOJIS.map(emoji => (
                               <button
@@ -451,7 +438,6 @@ export default function PublicTicketsPage() {
                           )}
                         </div>
 
-                        {/* Reactions display */}
                         {Object.keys(reactionsByEmoji).length > 0 && (
                           <div className={`flex flex-wrap gap-1 mt-1 ${isAdmin ? "justify-start" : "justify-end"}`}>
                             {Object.entries(reactionsByEmoji).map(([emoji, reacts]) => {
@@ -479,7 +465,6 @@ export default function PublicTicketsPage() {
                 </div>
               </div>
 
-              {/* Guest Reply Box */}
               {ticket.status === "OPEN" ? (
                 <div className="mt-4 pt-6 border-t border-border relative">
                   {showInputEmoji && (
@@ -542,4 +527,3 @@ export default function PublicTicketsPage() {
     </div>
   );
 }
-    

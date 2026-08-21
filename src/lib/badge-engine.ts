@@ -16,13 +16,12 @@ function getTierAndColor(count: number, thresholds: number[]) {
   return tier ? { tier, color: TIER_COLORS[tier], count } : null;
 }
 
-// Dummy helper for streak, in reality calculate based on attendance logic
 async function getCurrentStreak(userId: string): Promise<number> {
   const attendances = await prisma.attendance.findMany({
     where: { studentId: userId, present: true },
     orderBy: { date: 'desc' }
   });
-  // Simplified streak for illustration
+
   return attendances.length;
 }
 
@@ -46,7 +45,7 @@ export async function calculateLeaderboardBadge(userId: string, period: 'ALL_TIM
 }
 
 export async function calculateCoursesBadge(userId: string) {
-  // Simplified completed courses count for logic illustration
+
   const count = await prisma.courseEnrollment.count({
     where: { studentId: userId }
   });
@@ -54,7 +53,7 @@ export async function calculateCoursesBadge(userId: string) {
 }
 
 export async function calculateVerifiedBadge(userId: string) {
-  // Assuming a generic count over community posts where author is userId
+
   const count = await prisma.communityPost.count({
     where: { authorId: userId }
   });
@@ -89,7 +88,7 @@ export async function getBadgesForUser(userId: string, forceRecalculate = false)
 
   const finalBadges = calculations.map(calc => {
     const existing = badgeMap.get(calc.category);
-    
+
     if (existing?.adminSet) {
       return {
         category: calc.category,

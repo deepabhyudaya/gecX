@@ -81,8 +81,6 @@ export function DMRequestButton({
     }
   };
 
-
-
   const handleMessage = async () => {
     setIsLoading(true);
     try {
@@ -95,7 +93,6 @@ export function DMRequestButton({
     }
   };
 
-  // Get button label and action
   const getButtonConfig = () => {
     if (isPublic || hasAccess) {
       return { label: "Message", icon: MessageCircle, action: handleMessage };
@@ -109,7 +106,6 @@ export function DMRequestButton({
   const config = getButtonConfig();
   const Icon = config.icon;
 
-  // Custom bg styling
   if (hasCustomBg) {
     const btnStyle: React.CSSProperties = hasAccess || isPending
       ? bgIsLight
@@ -160,7 +156,6 @@ export function DMRequestButton({
     );
   }
 
-  // Default shadcn styling
   return (
     <>
       <Button

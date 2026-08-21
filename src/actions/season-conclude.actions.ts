@@ -14,8 +14,6 @@ async function requireAdmin() {
   if (role !== "admin") throw new Error("Admin only");
 }
 
-// ==================== FINALIZE SEASON ====================
-
 export async function finalizeSeason(seasonId: string) {
   await requireAdmin();
 
@@ -29,13 +27,10 @@ export async function finalizeSeason(seasonId: string) {
   if (!season) throw new Error("Season not found");
   if (season.status === "CONCLUDED") throw new Error("Season already concluded");
 
-  // 1. Recalculate all ranks.
   await recalculateSeasonRanks(seasonId);
 
-  // 2. Recalculate conquerors.
   await recalculateConquerors(seasonId);
 
-  // 3. Compute win rates.
   const studentRows = await prisma.studentSeasonPoints.findMany({ where: { seasonId } });
   for (const row of studentRows) {
     const total = row.warsWon + row.warsLost;
@@ -46,7 +41,6 @@ export async function finalizeSeason(seasonId: string) {
     });
   }
 
-  // 4. Distribute GecX rewards.
   const gecxRewards: Record<string, number> =
     (season.pointConfig?.gecxRewardsByRank as Record<string, number>) ?? {};
   let rewardsDistributed = 0;
@@ -84,7 +78,6 @@ export async function finalizeSeason(seasonId: string) {
     }
   }
 
-  // 5. Auto-award honor badges.
   let badgesAwarded = 0;
   try {
     const result = await autoAwardHonorBadgesForSeason(seasonId);
@@ -93,7 +86,6 @@ export async function finalizeSeason(seasonId: string) {
     console.error("[finalizeSeason] honor badge auto-award failed:", err);
   }
 
-  // 6. Mark season concluded.
   const { userId } = auth();
   const updated = await prisma.season.update({
     where: { id: seasonId },

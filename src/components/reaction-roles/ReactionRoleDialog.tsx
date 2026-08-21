@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {  
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -142,7 +142,6 @@ export default function ReactionRoleDialog({
       }
     }
 
-    // Check for duplicate emojis
     const emojis = entries.map((e) => e.emoji);
     if (new Set(emojis).size !== emojis.length) {
       setError("Each emoji can only be used once");
@@ -154,14 +153,13 @@ export default function ReactionRoleDialog({
 
   const handleSubmit = async () => {
     setError(null);
-    
+
     if (!validateEntries()) return;
 
     setIsSubmitting(true);
     try {
       let targetMessageId = messageId;
-      
-      // If no messageId is provided, we need to create a new message first
+
       if (!targetMessageId) {
         const newMsg = await sendServerMessage(channelId, messageContent.trim());
         targetMessageId = newMsg.id;
@@ -342,13 +340,12 @@ export default function ReactionRoleDialog({
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                {/* Emoji Input */}
                 <div className="space-y-1.5 relative">
                   <Label className="text-xs">Emoji</Label>
-                  <Button 
+                  <Button
                     type="button"
-                    variant="outline" 
-                    className="w-full justify-start text-left font-normal" 
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
                     disabled={isLoading}
                     onClick={() => setActivePickerId(activePickerId === entry.id ? null : entry.id)}
                   >
@@ -363,7 +360,7 @@ export default function ReactionRoleDialog({
                       </span>
                     )}
                   </Button>
-                  
+
                   {activePickerId === entry.id && (
                     <div ref={emojiPickerRef} className="absolute z-[100] left-0 top-full mt-1 bg-background border rounded-md shadow-xl w-80 p-0 overflow-hidden">
                       <div className="flex border-b border-border">
@@ -390,7 +387,7 @@ export default function ReactionRoleDialog({
                           </button>
                         )}
                       </div>
-                      
+
                       {pickerTab === 'unicode' && (
                         <EmojiPicker
                           onEmojiClick={(data) => {
@@ -402,7 +399,7 @@ export default function ReactionRoleDialog({
                           theme={theme === 'dark' ? "dark" : "light"}
                         />
                       )}
-                      
+
                       {pickerTab === 'custom' && (
                         <div className="p-3 h-[300px] overflow-y-auto">
                           <div className="grid grid-cols-6 gap-1">
@@ -417,7 +414,6 @@ export default function ReactionRoleDialog({
                                 className="aspect-square rounded hover:bg-accent p-1 transition-colors flex items-center justify-center"
                                 title={emoji.name}
                               >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={emoji.imageUrl}
                                   alt={emoji.name}
@@ -432,7 +428,6 @@ export default function ReactionRoleDialog({
                   )}
                 </div>
 
-                {/* Role Select */}
                 <div className="space-y-1.5">
                   <Label className="text-xs">Role</Label>
                   <Select
@@ -462,7 +457,6 @@ export default function ReactionRoleDialog({
                 </div>
               </div>
 
-              {/* Max Uses */}
               <div className="space-y-1.5">
                 <Label className="text-xs">Max Uses (Optional)</Label>
                 <Input
@@ -483,7 +477,6 @@ export default function ReactionRoleDialog({
             </div>
           ))}
 
-          {/* Add More Button */}
           <Button
             type="button"
             variant="outline"
@@ -495,7 +488,6 @@ export default function ReactionRoleDialog({
             Add Another Reaction
           </Button>
 
-          {/* Preview */}
           {entries.some((e) => e.emoji && e.roleId) && (
             <div className="p-3 rounded-lg bg-muted">
               <p className="text-xs font-medium mb-2">Preview:</p>
@@ -523,14 +515,12 @@ export default function ReactionRoleDialog({
             </div>
           )}
 
-          {/* Info */}
           <div className="text-xs text-muted-foreground space-y-1">
             <p>• Users react to get the role, unreact to remove it</p>
             <p>• Use custom server emojis with :emoji_name: format (e.g., :blue_fire:)</p>
             <p>• Changes take effect immediately</p>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2 pt-2">
             <Button variant="outline" className="flex-1" onClick={onClose}>
               Cancel

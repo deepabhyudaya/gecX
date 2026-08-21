@@ -5,9 +5,9 @@ import { NotificationList, type NotificationItem } from "@/components/animate-ui
 import { NotificationCommandDialog } from "@/components/NotificationCommandDialog";
 
 interface Props {
-  /** Preview items shown in the stacked card UI (up to 5) */
+
   preview: NotificationItem[];
-  /** All items for the searchable command dialog */
+
   all: NotificationItem[];
 }
 

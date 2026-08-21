@@ -10,9 +10,7 @@ import { GraduationCap, Eye, EyeOff } from "lucide-react";
 const FullPageLoader = () => (
   <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background/90 backdrop-blur-md text-foreground p-6">
     <div className="relative flex flex-col items-center gap-4">
-      {/* Outer spinning gradient ring */}
       <div className="h-12 w-12 rounded-full border-2 border-t-foreground border-r-foreground/30 border-b-foreground/10 border-l-foreground/10 animate-spin" />
-      {/* Central icon */}
       <div className="absolute top-3.5 flex items-center justify-center">
         <GraduationCap className="h-5 w-5 text-foreground/70" />
       </div>
@@ -27,14 +25,9 @@ const LoginPage = () => {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  // Tracks when we've triggered navigation — keeps the loader shown
-  // until the new route is fully mounted (prevents login-page flash).
+
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // Restore the user's custom theme from localStorage.
-  // We set CSS vars DIRECTLY on <html> inline style — this beats the
-  // next-themes class rules with highest specificity and doesn't fight
-  // the ThemeProvider's forcedTheme logic.
   useEffect(() => {
     try {
       const stored = localStorage.getItem("gecx_equipped_theme");
@@ -44,7 +37,7 @@ const LoginPage = () => {
         mode: "light" | "dark";
       };
       const htmlEl = document.documentElement;
-      // Apply every custom CSS property as an inline style — highest specificity
+
       Object.entries(vars).forEach(([key, value]) => {
         if (key === "backgroundImage") {
           document.body.style.backgroundImage = value;
@@ -53,11 +46,11 @@ const LoginPage = () => {
         }
       });
       htmlEl.style.colorScheme = mode;
-      // Toggle the next-themes class too so utilities like dark: work
+
       htmlEl.classList.remove("light", "dark");
       htmlEl.classList.add(mode);
     } catch {
-      // ignore corrupt storage
+
     }
   }, []);
 
@@ -66,7 +59,7 @@ const LoginPage = () => {
       const role = (user?.publicMetadata.role as string)?.toLowerCase();
       if (role) {
         setIsRedirecting(true);
-        // Sync admin to Prisma DB before redirecting (fixes admin count showing 0)
+
         if (role === "admin") {
           fetch("/api/sync-admin", { method: "POST" })
             .then(() => router.push(`/${role}`))
@@ -112,7 +105,6 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-background/90 backdrop-blur-md text-foreground">
       <div className="hidden md:flex md:w-1/2 lg:w-3/5 flex-col justify-between p-12 relative overflow-hidden">
-        {/* Subtle grid background */}
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
@@ -121,9 +113,7 @@ const LoginPage = () => {
             backgroundSize: "40px 40px",
           }}
         />
-        {/* Glow blob */}
 
-        {/* Logo */}
         <div className="relative z-10">
           <div className="flex items-center gap-3">
 
@@ -131,10 +121,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Tagline */}
 
-
-        {/* Footer */}
         <div className="relative z-10 text-muted-foreground/50 text-xs">
           © {new Date().getFullYear()} gecX. All rights reserved.
         </div>
@@ -142,7 +129,6 @@ const LoginPage = () => {
 
       <div className="flex flex-1 items-center justify-center p-6 md:p-12 lg:p-16">
         <div className="w-full max-w-sm space-y-8">
-          {/* Mobile logo */}
           <div className="md:hidden flex items-center gap-3 mb-2">
             <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center">
               <GraduationCap className="h-5 w-5 text-primary-foreground" />

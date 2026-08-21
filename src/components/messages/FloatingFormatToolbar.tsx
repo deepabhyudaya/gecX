@@ -50,7 +50,6 @@ export default function FloatingFormatToolbar({
         pointerEvents: "auto",
       }}
     >
-      {/* Text Formatting Buttons */}
       <button
         type="button"
         onClick={onBold}
@@ -59,7 +58,7 @@ export default function FloatingFormatToolbar({
       >
         <Bold className="size-4" />
       </button>
-      
+
       <button
         type="button"
         onClick={onItalic}
@@ -68,7 +67,7 @@ export default function FloatingFormatToolbar({
       >
         <Italic className="size-4" />
       </button>
-      
+
       <button
         type="button"
         onClick={onUnderline}
@@ -77,7 +76,7 @@ export default function FloatingFormatToolbar({
       >
         <Underline className="size-4" />
       </button>
-      
+
       <button
         type="button"
         onClick={onStrikethrough}
@@ -89,7 +88,6 @@ export default function FloatingFormatToolbar({
 
       <div className="w-px h-4 bg-border mx-1" />
 
-      {/* Additional Options */}
       <button
         type="button"
         onClick={onLink}
@@ -98,7 +96,7 @@ export default function FloatingFormatToolbar({
       >
         <Link className="size-4" />
       </button>
-      
+
       <button
         type="button"
         onClick={onClearFormatting}
@@ -110,7 +108,6 @@ export default function FloatingFormatToolbar({
 
       <div className="w-px h-4 bg-border mx-1" />
 
-      {/* Close Button */}
       <button
         type="button"
         onClick={onClose}

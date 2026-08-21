@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     if (!adminId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { username, category, tier, color } = await req.json();
-    
+
     const student = await prisma.student.findUnique({ where: { username } });
     if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 });
 

@@ -34,7 +34,6 @@ export function CommentCreator({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
 
-  // Fetch user's global emojis (cached)
   useEffect(() => {
     fetchUserEmojis()
       .then((emojis) => {
@@ -93,7 +92,6 @@ export function CommentCreator({
 
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2">
-            {/* Emoji/GIF Picker Button */}
             <Button
               variant="ghost"
               size="sm"
@@ -122,12 +120,10 @@ export function CommentCreator({
           </Button>
         </div>
 
-        {/* Media Picker Popover - Fixed positioning to avoid layout issues */}
         {showMediaPicker && (
           <>
-            {/* Backdrop to close picker when clicking outside */}
-            <div 
-              className="fixed inset-0 z-40" 
+            <div
+              className="fixed inset-0 z-40"
               onClick={() => setShowMediaPicker(false)}
             />
             <div className="absolute z-50 bottom-full left-0 mb-2 max-w-full">
@@ -161,7 +157,6 @@ export function CommentCreator({
     const newContent = content.slice(0, start) + text + " " + content.slice(end);
     setContent(newContent.slice(0, maxChars));
 
-    // Focus and set cursor position after inserted text
     setTimeout(() => {
       textarea.focus();
       const newPosition = start + text.length + 1;

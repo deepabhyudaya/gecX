@@ -10,7 +10,7 @@ const files = [
   'src/components/sidebar-inner.tsx',
   'src/components/TableSearch.tsx'
 ];
- 
+
 for (const file of files) {
   const p = path.join(__dirname, '..', file);
   if (fs.existsSync(p)) {

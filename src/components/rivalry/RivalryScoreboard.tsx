@@ -18,7 +18,6 @@ export default async function RivalryScoreboard({ rivalryId, compact = false }: 
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-900/30 via-card to-red-900/30 px-5 py-3 border-b border-border flex items-center justify-between">
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Live Scoreboard</span>
         {data.status === "CONCLUDED" && data.winnerClassId && (
@@ -30,9 +29,7 @@ export default async function RivalryScoreboard({ rivalryId, compact = false }: 
       </div>
 
       <div className="p-5 space-y-5">
-        {/* Team names + scores */}
         <div className="grid grid-cols-2 gap-4">
-          {/* Class A */}
           <div className={`rounded-xl p-4 border ${data.winnerClassId === data.classA.id ? "border-yellow-500 bg-yellow-500/10" : "border-blue-500/30 bg-blue-500/5"}`}>
             <div className="text-xs text-muted-foreground mb-1">{data.classA.size} students</div>
             <div className="font-bold text-base text-blue-400 truncate">{data.classA.name}</div>
@@ -41,7 +38,6 @@ export default async function RivalryScoreboard({ rivalryId, compact = false }: 
             {!compact && <div className="text-xs text-muted-foreground mt-1">Raw: {Math.round(data.classA.rawScore)}</div>}
           </div>
 
-          {/* Class B */}
           <div className={`rounded-xl p-4 border text-right ${data.winnerClassId === data.classB.id ? "border-yellow-500 bg-yellow-500/10" : "border-red-500/30 bg-red-500/5"}`}>
             <div className="text-xs text-muted-foreground mb-1">{data.classB.size} students</div>
             <div className="font-bold text-base text-red-400 truncate">{data.classB.name}</div>
@@ -51,7 +47,6 @@ export default async function RivalryScoreboard({ rivalryId, compact = false }: 
           </div>
         </div>
 
-        {/* VS bar */}
         <div>
           <div className="text-center text-xs text-muted-foreground mb-2">⚔️ VS ⚔️</div>
           <div className="flex h-3 rounded-full overflow-hidden">
@@ -70,7 +65,6 @@ export default async function RivalryScoreboard({ rivalryId, compact = false }: 
           </div>
         </div>
 
-        {/* Bout history */}
         {!compact && data.bouts.length > 0 && (
           <div>
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">

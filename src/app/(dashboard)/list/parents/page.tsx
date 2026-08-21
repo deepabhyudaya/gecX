@@ -28,7 +28,6 @@ const role = (sessionClaims?.metadata as { role?: string })?.role;
 const parentTypes = ["PARENT_CREATED", "PARENT_UPDATED", "PARENT_DELETED"];
 const unreadParentBadges = await getUnreadEntityBadgesByTypes(parentTypes);
 
-
 const columns = [
   {
     header: "Info",
@@ -109,8 +108,6 @@ const renderRow = (item: ParentList) => (
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
   const query: Prisma.ParentWhereInput = {};
 
   if (queryParams) {
@@ -157,7 +154,6 @@ const renderRow = (item: ParentList) => (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
       <PinnedItemsWrapper entityType="parents" baseUrl="/list/parents" role={role} />
       <div className="bg-card text-card-foreground p-4 rounded-xl border border-border">
-        {/* TOP */}
         <div className="flex items-center justify-between mb-4">
         <h1 className="hidden md:block text-lg font-semibold">All Parents</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
@@ -167,9 +163,7 @@ const renderRow = (item: ParentList) => (
           </div>
         </div>
       </div>
-      {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={data} />
-      {/* PAGINATION */}
       <Pagination page={p} count={count} />
       </div>
     </div>

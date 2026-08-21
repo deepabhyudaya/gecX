@@ -31,11 +31,11 @@ function getYouTubeId(url: string): string | null {
 
 function resolveVideoUrl(url: string): string {
   if (!url) return "";
-  // Dropbox
+
   if (url.includes("dropbox.com")) {
     return url.replace("?dl=0", "?raw=1").replace("&dl=0", "&raw=1");
   }
-  // Google Drive conversion for raw streaming
+
   const gDriveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (gDriveMatch) {
     return `https://drive.google.com/uc?export=download&id=${gDriveMatch[1]}`;
@@ -54,7 +54,6 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
   const [userEmojis, setUserEmojis] = useState<EmojiItem[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Fetch user's global emojis
   useEffect(() => {
     if (open) {
       fetchUserEmojis()
@@ -65,11 +64,9 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
     }
   }, [open]);
 
-  // Auto-detect orientation and thumbnails when URL changes
   useEffect(() => {
     if (!videoUrl) return;
 
-    // Detect YouTube Shorts
     if (videoUrl.includes("/shorts/")) {
       setOrientation("PORTRAIT");
     }
@@ -181,7 +178,6 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
         </DialogHeader>
 
         <div className="space-y-4 p-5 overflow-visible flex-1">
-          {/* Video URL Link */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Video URL</label>
             <input
@@ -197,7 +193,6 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
             </span>
           </div>
 
-          {/* Orientation toggle */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Orientation Layout</label>
             <div className="flex gap-2">
@@ -222,7 +217,6 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
             </div>
           </div>
 
-          {/* Caption with Emojis & GIFs */}
           <div className="flex flex-col gap-1.5 relative">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Caption</label>
             <div className="border border-border rounded-lg bg-muted p-2 flex flex-col">
@@ -234,12 +228,12 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
                 className="w-full min-h-[90px] bg-transparent border-none resize-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground"
                 disabled={isSubmitting}
               />
-              
+
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
                 <span className="text-[10px] text-muted-foreground">
                   {caption.length} / 2000
                 </span>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -252,7 +246,6 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
               </div>
             </div>
 
-            {/* Media Picker Popover */}
             {showMediaPicker && (
               <>
                 <div
@@ -278,7 +271,6 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
             )}
           </div>
 
-          {/* Optional Thumbnail URL */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Thumbnail URL (Optional)</label>
             <input
@@ -292,7 +284,6 @@ export function ReelCreator({ userImage, onReelCreated, variant = "floating" }: 
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="flex justify-end gap-2 border-t border-border p-4 bg-muted/20 shrink-0">
           <Button variant="outline" onClick={resetForm} disabled={isSubmitting} className="text-xs h-9 px-3">
             Cancel

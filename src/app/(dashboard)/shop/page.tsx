@@ -28,7 +28,6 @@ const ShopPage = async () => {
     return (
       <div className="flex-1 flex flex-col overflow-hidden h-full">
         <Tabs defaultValue="avatars" className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab bar */}
           <div className="shrink-0 border-b border-border bg-background px-4 pt-4">
             <TabsList className="mb-0">
               <TabsTrigger value="avatars" className="flex items-center gap-2">

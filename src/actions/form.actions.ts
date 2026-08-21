@@ -5,8 +5,6 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { FormStatus, FormType, QuestionType } from "@prisma/client";
 
-// ==================== CRUD OPERATIONS ====================
-
 export async function createForm(data: {
   title: string;
   description?: string | null;
@@ -25,7 +23,6 @@ export async function createForm(data: {
     throw new Error("Forbidden: Only teachers and admins can create forms");
   }
 
-  // If exam or assignment mode, verify ownership/access
   if (data.type === "EXAM" && data.examId) {
     const exam = await prisma.exam.findUnique({
       where: { id: data.examId },
@@ -151,8 +148,6 @@ export async function publishForm(id: string, status: "DRAFT" | "PUBLISHED") {
   return { success: true };
 }
 
-// ==================== BUILDER QUESTIONS REORDERING & SYNC ====================
-
 export async function saveFormQuestions(
   formId: string,
   questions: Array<{
@@ -182,27 +177,23 @@ export async function saveFormQuestions(
     throw new Error("Forbidden");
   }
 
-  // We perform an upsert and delete mismatch operations in a transaction
   await prisma.$transaction(async (tx) => {
-    // 1. Get all existing questions for this form
+
     const existingQuestions = await tx.formQuestion.findMany({
       where: { formId },
       select: { id: true },
     });
     const existingIds = existingQuestions.map((q) => q.id);
 
-    // 2. Extract IDs from the input list to identify deleted questions
     const incomingIds = questions.map((q) => q.id).filter(Boolean) as string[];
     const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
 
-    // 3. Delete questions that are no longer in the list
     if (idsToDelete.length > 0) {
       await tx.formQuestion.deleteMany({
         where: { id: { in: idsToDelete } },
       });
     }
 
-    // 4. Save/Update each question and its options
     for (const q of questions) {
       const qId = q.id || undefined;
 
@@ -227,7 +218,6 @@ export async function saveFormQuestions(
         },
       });
 
-      // Handle options if applicable (choice/dropdown questions)
       if (q.options) {
         const existingOptions = await tx.questionOption.findMany({
           where: { questionId: savedQuestion.id },
@@ -262,7 +252,7 @@ export async function saveFormQuestions(
           });
         }
       } else {
-        // Delete all options if the question type changed to non-options
+
         await tx.questionOption.deleteMany({
           where: { questionId: savedQuestion.id },
         });
@@ -273,8 +263,6 @@ export async function saveFormQuestions(
   revalidatePath(`/list/forms/builder/${formId}`);
   return { success: true };
 }
-
-// ==================== STUDENT / RESPONDENT SUBMISSION ====================
 
 export async function submitFormResponse(data: {
   formId: string;
@@ -299,7 +287,6 @@ export async function submitFormResponse(data: {
   if (!form) throw new Error("Form not found");
   if (form.status !== "PUBLISHED") throw new Error("Form is not published");
 
-  // Check unique attempt constraints
   if (form.type !== "GENERAL" || !form.allowMultiple) {
     const existing = await prisma.formResponse.findFirst({
       where: { formId: data.formId, submittedById: userId },
@@ -309,7 +296,6 @@ export async function submitFormResponse(data: {
     }
   }
 
-  // Verify class enrollment if EXAM or ASSIGNMENT
   let studentId: string | null = null;
   if (form.type === "EXAM" || form.type === "ASSIGNMENT") {
     const student = await prisma.student.findUnique({ where: { id: userId } });
@@ -318,7 +304,6 @@ export async function submitFormResponse(data: {
     }
     studentId = userId;
 
-    // Optional: due-date validation
     if (form.dueDate && new Date() > new Date(form.dueDate)) {
       throw new Error("Submission deadline has passed");
     }
@@ -328,14 +313,12 @@ export async function submitFormResponse(data: {
   let earnedPoints = 0;
   let hasManualGrading = false;
 
-  // Process and validate answers
   const answersToCreate = data.answers.map((ans) => {
     const question = form.questions.find((q) => q.id === ans.questionId);
     if (!question) throw new Error("Invalid question ID in submission");
 
     const points = question.points || 0;
 
-    // Check if auto-gradable
     if (question.type === "SINGLE_CHOICE" || question.type === "DROPDOWN") {
       totalPoints += points;
       const selectedId = ans.selectedOptionIds?.[0];
@@ -347,16 +330,16 @@ export async function submitFormResponse(data: {
       totalPoints += points;
       const selectedIds = ans.selectedOptionIds || [];
       const correctOptionIds = question.options.filter((o) => o.isCorrect).map((o) => o.id);
-      
-      const isExactlyCorrect = 
-        selectedIds.length === correctOptionIds.length && 
+
+      const isExactlyCorrect =
+        selectedIds.length === correctOptionIds.length &&
         selectedIds.every((id) => correctOptionIds.includes(id));
-        
+
       if (isExactlyCorrect) {
         earnedPoints += points;
       }
     } else if (question.type === "SHORT_TEXT" || question.type === "LONG_TEXT") {
-      // Freeform questions require manual grading if they have point allocations
+
       if (points > 0) {
         hasManualGrading = true;
       }
@@ -372,13 +355,12 @@ export async function submitFormResponse(data: {
   const finalScore = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : null;
   const isGraded = !hasManualGrading;
 
-  // Create Response and link to Result inside transaction
   const response = await prisma.$transaction(async (tx) => {
     let resultId: number | null = null;
 
     if (form.type === "EXAM" || form.type === "ASSIGNMENT") {
-      // Sync with standard Result database schema
-      const scoreToSave = finalScore !== null ? finalScore : 0; // default to 0 until graded
+
+      const scoreToSave = finalScore !== null ? finalScore : 0;
 
       const result = await tx.result.create({
         data: {
@@ -413,11 +395,9 @@ export async function submitFormResponse(data: {
   return { success: true, responseId: response.id, autoGraded: isGraded, score: finalScore };
 }
 
-// ==================== MANUAL GRADING / EVALUATION ====================
-
 export async function gradeFormResponse(
   responseId: string,
-  manualScores: Record<string, number> // Map of questionId -> score earned
+  manualScores: Record<string, number>
 ) {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -446,7 +426,6 @@ export async function gradeFormResponse(
   let totalPoints = 0;
   let earnedPoints = 0;
 
-  // Re-calculate all points
   for (const question of response.form.questions) {
     const points = question.points || 0;
 
@@ -463,26 +442,26 @@ export async function gradeFormResponse(
       const studentAnswer = response.answers.find((a) => a.questionId === question.id);
       const selectedIds = studentAnswer?.selectedOptionIds || [];
       const correctOptionIds = question.options.filter((o) => o.isCorrect).map((o) => o.id);
-      
-      const isExactlyCorrect = 
-        selectedIds.length === correctOptionIds.length && 
+
+      const isExactlyCorrect =
+        selectedIds.length === correctOptionIds.length &&
         selectedIds.every((id) => correctOptionIds.includes(id));
-        
+
       if (isExactlyCorrect) {
         earnedPoints += points;
       }
     } else if (question.type === "SHORT_TEXT" || question.type === "LONG_TEXT") {
       totalPoints += points;
-      // Add manual score assigned by teacher
+
       const manualScore = manualScores[question.id] || 0;
-      earnedPoints += Math.min(manualScore, points); // ensure manual score does not exceed points allocation
+      earnedPoints += Math.min(manualScore, points);
     }
   }
 
   const finalScorePercentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
 
   await prisma.$transaction(async (tx) => {
-    // 1. Update form response
+
     await tx.formResponse.update({
       where: { id: responseId },
       data: {
@@ -491,7 +470,6 @@ export async function gradeFormResponse(
       },
     });
 
-    // 2. If it has a synced Result record, update standard score too
     if (response.resultId) {
       await tx.result.update({
         where: { id: response.resultId },

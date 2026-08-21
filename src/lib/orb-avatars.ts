@@ -1,6 +1,4 @@
-// Deterministic, palette-driven SVG orb generator for the avatar shop.
-// Each seed produces a premium, abstract circular composition of layered,
-// smooth bezier ribbons with soft gradients and no hard outlines.
+
 
 export interface OrbVariant {
   seed: string;
@@ -54,7 +52,6 @@ export function getOrbConfig(seed: string): OrbVariant {
   const lookup = ORB_MAP.get(seed.toLowerCase());
   if (lookup) return lookup;
 
-  // Fallback for randomized/custom seeds: derive a palette from the seed hash.
   const hue = hashString(seed) % 360;
   const sat = 35 + (hashString(seed + "s") % 55);
   const light = 25 + (hashString(seed + "l") % 50);
@@ -199,7 +196,6 @@ function buildOrbSvg(seed: string, size = 128): string {
     const isBase = i === 0;
     const isCounter = i === 1;
 
-    // Larger, softer shapes at the back; smaller accents at the front.
     const radiusFactor = isBase
       ? 0.55 + rand() * 0.08
       : 0.36 + rand() * 0.22;
@@ -215,7 +211,6 @@ function buildOrbSvg(seed: string, size = 128): string {
     const stretchAngle = rand() * Math.PI * 2;
     const stretchFactor = isBase ? 0.9 + rand() * 0.5 : 1.1 + rand() * 0.9;
 
-    // Offset shapes toward one side for visual weight; one shape balances.
     let angleOffset = emphasisAngle;
     if (isCounter) {
       angleOffset = emphasisAngle + Math.PI + (rand() - 0.5) * 0.8;
@@ -230,7 +225,6 @@ function buildOrbSvg(seed: string, size = 128): string {
       y: Math.sin(angleOffset) * distance,
     };
 
-    // Pick a color role for this layer.
     let colorIndex = 0;
     if (isBase) colorIndex = 0;
     else if (i === 1) colorIndex = 1;
@@ -242,7 +236,6 @@ function buildOrbSvg(seed: string, size = 128): string {
     const darker = adjustL(baseColor, -16);
     const lighter = adjustL(baseColor, 18);
 
-    // Gradient direction follows the shape's own orientation.
     const gradientAngle = stretchAngle + (rand() - 0.5) * 0.6;
     const x1 = 0.5 - 0.5 * Math.cos(gradientAngle);
     const y1 = 0.5 - 0.5 * Math.sin(gradientAngle);
@@ -268,19 +261,16 @@ function buildOrbSvg(seed: string, size = 128): string {
       let r = baseRadius * (1 + wave);
       if (r < baseRadius * 0.2) r = baseRadius * 0.2;
 
-      // Local point on the blob.
       const la = a + rotation;
       let vx = Math.cos(la) * r;
       let vy = Math.sin(la) * r;
 
-      // Stretch along an axis to create ribbons/folded sheets.
       const parallel = vx * axis.x + vy * axis.y;
       const perpX = vx - parallel * axis.x;
       const perpY = vy - parallel * axis.y;
       vx = parallel * stretchFactor * axis.x + perpX;
       vy = parallel * stretchFactor * axis.y + perpY;
 
-      // Clamp to outer circle so clipping doesn't create flat edges.
       const dist = Math.sqrt(vx * vx + vy * vy);
       if (dist > R) {
         const scale = R / dist;

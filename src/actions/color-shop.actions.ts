@@ -5,15 +5,14 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getEquippedColorsCached } from "@/lib/equipped-colors";
 
-import { 
-  USERNAME_COLORS as DEFAULT_USERNAME_COLORS, 
+import {
+  USERNAME_COLORS as DEFAULT_USERNAME_COLORS,
   PROFILE_BG_COLORS as DEFAULT_PROFILE_BG_COLORS,
   APP_THEMES as DEFAULT_APP_THEMES,
   NAMEPLATES as DEFAULT_NAMEPLATES,
   CUSTOM_MEDIA_ITEMS as DEFAULT_CUSTOM_MEDIA
 } from "@/lib/color-catalog";
 
-// Additive seeding — only inserts items whose name doesn't exist yet
 async function initializeDefaultColors() {
   const existing = await prisma.usernameColorShopItem.findMany({ select: { name: true, type: true } });
   const existingNames = new Set(existing.map((e) => e.name));
@@ -45,7 +44,7 @@ async function initializeDefaultColors() {
     });
 
   if (newMedia.length > 0) {
-    // Custom Avatar and Profile Banner items
+
     await prisma.usernameColorShopItem.createMany({
       data: [
         ...newMedia.filter(i => i.name === "Custom Avatar").map((i) => ({ ...i, type: "customAvatar" })),
@@ -54,7 +53,6 @@ async function initializeDefaultColors() {
     });
   }
 
-  // Force seed custom media items if missing (check by type instead of name)
   const existingTypes = new Set(existing.map((e: any) => e.type));
   if (!existingTypes.has("customAvatar") && !existingNames.has("Custom Avatar")) {
     await prisma.usernameColorShopItem.create({
@@ -83,7 +81,6 @@ async function initializeDefaultColors() {
     });
   }
 
-  // Seed impersonation items if missing
   if (!existingTypes.has("impersonate") && !existingNames.has("Impersonate 1 Day")) {
     await prisma.usernameColorShopItem.createMany({
       data: [
@@ -94,7 +91,6 @@ async function initializeDefaultColors() {
     });
   }
 
-  // Update existing themes to apply new variables (like sidebar)
   const allThemes = await prisma.usernameColorShopItem.findMany({ where: { type: "theme" } });
   for (const theme of DEFAULT_APP_THEMES) {
     const existing = allThemes.find(t => t.name === theme.name);
@@ -107,7 +103,6 @@ async function initializeDefaultColors() {
   }
 }
 
-// Initialize shop items (admin only, run once)
 export async function initializeColorShopItems() {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -116,7 +111,7 @@ export async function initializeColorShopItems() {
   if (role !== "admin") throw new Error("Admin only");
 
   const existingCount = await prisma.usernameColorShopItem.count();
-  // Always run initializeDefaultColors to allow additive seeding and patching
+
   await initializeDefaultColors();
 
   return {
@@ -126,21 +121,18 @@ export async function initializeColorShopItems() {
   };
 }
 
-// Get all color shop items with user ownership status
 export async function getColorShopData() {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
 
   const userType = ((sessionClaims?.metadata as { role?: string })?.role || "student").toLowerCase();
 
-  // Auto-seed if DB has fewer items than our catalog (including 3 impersonation items)
   const CATALOG_TOTAL = DEFAULT_USERNAME_COLORS.length + DEFAULT_PROFILE_BG_COLORS.length + DEFAULT_APP_THEMES.length + DEFAULT_NAMEPLATES.length + DEFAULT_CUSTOM_MEDIA.length + 3;
   const existingCount = await prisma.usernameColorShopItem.count();
   if (existingCount < CATALOG_TOTAL) {
     await initializeDefaultColors();
   }
 
-  // Force-seed impersonation items if any are missing (independent of total count)
   const impersonateCheck = await prisma.usernameColorShopItem.findFirst({ where: { type: "impersonate" } });
   if (!impersonateCheck) {
     await prisma.usernameColorShopItem.createMany({
@@ -198,12 +190,10 @@ export async function getColorShopData() {
     allItems.push(profileBannerItem);
   }
 
-  // Check if active impersonation is expired and clean up
   if (activeImpersonation && activeImpersonation.expiresAt < new Date()) {
     await prisma.userImpersonation.delete({ where: { userId } });
   }
 
-  // Group username colors by category
   const groupedUsernameColors = usernameColors.reduce((acc: Record<string, typeof usernameColors>, item) => {
     if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push({
@@ -231,7 +221,7 @@ export async function getColorShopData() {
       owned: ownedIds.has(item.id),
       equipped: equipped?.nameplateId === item.id,
     })),
-    // Custom media items for shop display
+
     customMediaItems: [
       ...(customAvatarItem ? [{
         ...customAvatarItem,
@@ -246,7 +236,7 @@ export async function getColorShopData() {
     ],
     impersonateItems: impersonateItems.map((item) => ({
       ...item,
-      owned: false, // consumable - always show as buyable
+      owned: false,
       equipped: false,
     })),
     equippedUsernameColorId: equipped?.usernameColorId || null,
@@ -254,7 +244,7 @@ export async function getColorShopData() {
     equippedThemeId: equipped?.themeId || null,
     equippedNameplateId: equipped?.nameplateId || null,
     balance,
-    // Custom media ownership and URLs
+
     ownsCustomAvatar: customAvatarItem ? ownedIds.has(customAvatarItem.id) : false,
     ownsProfileBanner: profileBannerItem ? ownedIds.has(profileBannerItem.id) : false,
     customAvatarUrl: profile?.customAvatar || null,
@@ -267,33 +257,28 @@ export async function getColorShopData() {
   };
 }
 
-// Purchase a color item
 export async function purchaseColor(colorItemId: string) {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
 
   const userType = ((sessionClaims?.metadata as { role?: string })?.role || "student").toLowerCase();
 
-  // Check if already owned
   const existing = await prisma.userOwnedColor.findUnique({
     where: { userId_colorItemId: { userId, colorItemId } },
   });
   if (existing) throw new Error("You already own this color");
 
-  // Get item details
   const item = await prisma.usernameColorShopItem.findUnique({
     where: { id: colorItemId },
   });
   if (!item) throw new Error("Color item not found");
   if (!item.isActive) throw new Error("This item is not available");
 
-  // Check balance
   const balance = await getOrCreateGecXBalance(userId, userType);
   if (balance.balance < item.cost) {
     throw new Error(`Insufficient GecX balance. Need ${item.cost}, have ${balance.balance}`);
   }
 
-  // Deduct balance
   await prisma.userGecXBalance.update({
     where: { userId },
     data: {
@@ -302,7 +287,6 @@ export async function purchaseColor(colorItemId: string) {
     },
   });
 
-  // Create ownership record
   await prisma.userOwnedColor.create({
     data: {
       userId,
@@ -311,7 +295,6 @@ export async function purchaseColor(colorItemId: string) {
     },
   });
 
-  // Create transaction record
   await prisma.gecXTransaction.create({
     data: {
       userId,
@@ -327,12 +310,10 @@ export async function purchaseColor(colorItemId: string) {
   return { success: true, item };
 }
 
-// Equip a username color by item ID (null = unequip/revert to karma)
 export async function equipUsernameColor(colorItemId: string | null) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // If colorItemId provided, verify user owns it
   if (colorItemId) {
     const owned = await prisma.userOwnedColor.findUnique({
       where: {
@@ -349,7 +330,6 @@ export async function equipUsernameColor(colorItemId: string | null) {
     }
   }
 
-  // Upsert equipped colors record
   const existing = await prisma.userEquippedColors.findUnique({
     where: { userId },
   });
@@ -373,12 +353,10 @@ export async function equipUsernameColor(colorItemId: string | null) {
   return { success: true, colorItemId };
 }
 
-// Equip a profile background color by item ID (null = unequip/revert to karma)
 export async function equipProfileBgColor(colorItemId: string | null) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // If colorItemId provided, verify user owns it
   if (colorItemId) {
     const owned = await prisma.userOwnedColor.findUnique({
       where: {
@@ -395,7 +373,6 @@ export async function equipProfileBgColor(colorItemId: string | null) {
     }
   }
 
-  // Upsert equipped colors record
   const existing = await prisma.userEquippedColors.findUnique({
     where: { userId },
   });
@@ -419,33 +396,24 @@ export async function equipProfileBgColor(colorItemId: string | null) {
   return { success: true, colorItemId };
 }
 
-// Unequip username color (revert to karma)
 export async function unequipUsernameColor() {
   return equipUsernameColor(null);
 }
 
-// Unequip profile background color (revert to karma)
 export async function unequipProfileBgColor() {
   return equipProfileBgColor(null);
 }
 
-// Get equipped colors for a user (for displaying on profiles)
-// If user has an active impersonation, returns the target user's colors instead
-// NOTE: Implementation lives in @/lib/equipped-colors so it can be wrapped in
-// React.cache() (a "use server" file cannot export non-async functions).
-// This thin wrapper preserves the public server-action surface.
 export async function getEquippedColors(userId: string) {
   return getEquippedColorsCached(userId);
 }
 
-// Get current user's equipped colors
 export async function getMyEquippedColors() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
   return getEquippedColors(userId);
 }
 
-// Equip an app theme by item ID (null = unequip)
 export async function equipAppTheme(colorItemId: string | null) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -464,12 +432,11 @@ export async function equipAppTheme(colorItemId: string | null) {
     await prisma.userEquippedColors.create({ data: { userId, themeId: colorItemId } });
   }
 
-  // Also revert any active event theme so the new custom theme becomes visible
   const activeEventTheme = await prisma.eventTheme.findFirst({
     where: { isActive: true },
     select: { id: true },
   });
-  
+
   if (activeEventTheme) {
     await prisma.userEventThemeState.updateMany({
       where: { userId, eventThemeId: activeEventTheme.id, revertedAt: null },
@@ -481,7 +448,6 @@ export async function equipAppTheme(colorItemId: string | null) {
   return { success: true, colorItemId };
 }
 
-// Equip a nameplate by item ID (null = unequip)
 export async function equipNameplate(colorItemId: string | null) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -505,19 +471,14 @@ export async function equipNameplate(colorItemId: string | null) {
   return { success: true, colorItemId };
 }
 
-// Unequip app theme
 export async function unequipAppTheme() {
   return equipAppTheme(null);
 }
 
-// Unequip nameplate
 export async function unequipNameplate() {
   return equipNameplate(null);
 }
 
-// ─── IMPERSONATION ACTIONS ───────────────────────────────────────────────────
-
-// Purchase an impersonation item (consumable — can buy again and again)
 export async function purchaseImpersonation(colorItemId: string) {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -536,7 +497,6 @@ export async function purchaseImpersonation(colorItemId: string) {
     throw new Error(`Insufficient GecX balance. Need ${item.cost}, have ${balance.balance}`);
   }
 
-  // Deduct balance
   await prisma.userGecXBalance.update({
     where: { userId },
     data: {
@@ -545,7 +505,6 @@ export async function purchaseImpersonation(colorItemId: string) {
     },
   });
 
-  // Create transaction record
   await prisma.gecXTransaction.create({
     data: {
       userId,
@@ -561,12 +520,10 @@ export async function purchaseImpersonation(colorItemId: string) {
   return { success: true, item };
 }
 
-// Activate impersonation on a target user (uses the purchased item)
 export async function activateImpersonation(targetUsername: string, durationDays: number) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
 
-  // Look up target user by username
   const profiles = await prisma.$queryRaw`
     SELECT * FROM "UserCommunityProfile"
     WHERE LOWER(username) = LOWER(${targetUsername})
@@ -579,11 +536,9 @@ export async function activateImpersonation(targetUsername: string, durationDays
 
   if (userId === targetUserId) throw new Error("You can't impersonate yourself");
 
-  // Calculate expiry
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + durationDays);
 
-  // Upsert impersonation record
   await prisma.userImpersonation.upsert({
     where: { userId },
     create: {
@@ -605,7 +560,6 @@ export async function activateImpersonation(targetUsername: string, durationDays
   return { success: true, expiresAt, targetUsername: targetProfile.username };
 }
 
-// Cancel active impersonation
 export async function cancelImpersonation() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -622,7 +576,6 @@ export async function cancelImpersonation() {
   return { success: true };
 }
 
-// Get active impersonation for current user
 export async function getActiveImpersonation() {
   const { userId } = auth();
   if (!userId) return null;
@@ -637,7 +590,6 @@ export async function getActiveImpersonation() {
     return null;
   }
 
-  // Look up target username
   const profiles = await prisma.$queryRaw`
     SELECT username FROM "UserCommunityProfile"
     WHERE "userId" = ${record.targetUserId}
@@ -653,7 +605,6 @@ export async function getActiveImpersonation() {
   };
 }
 
-// Helper: Get or create GecX balance (upsert prevents P2002 race)
 async function getOrCreateGecXBalance(userId: string, userType: string) {
   return prisma.userGecXBalance.upsert({
     where: { userId },

@@ -4,8 +4,6 @@ type RouteAccessMap = {
   [key: string]: string[];
 };
 
-// Note: Route access control is now handled in middleware.ts programmatically
-// This map is kept for reference and backward compatibility
 export const routeAccessMap: RouteAccessMap = {
   "/admin(.*)": ["admin"],
   "/student(.*)": ["student"],

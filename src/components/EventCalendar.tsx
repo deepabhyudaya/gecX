@@ -19,23 +19,23 @@ function isSameDay(a: Date, b: Date) {
 }
 
 function startOfWeekISO(date: Date) {
-  // ISO week: Monday = 0
+
   const d = new Date(date);
-  const day = d.getDay(); // 0 = Sun
+  const day = d.getDay();
   const diff = (day === 0 ? -6 : 1 - day);
   d.setDate(d.getDate() + diff);
   return d;
 }
 
 function buildGrid(year: number, month: number) {
-  // first day of month
+
   const firstDay = new Date(year, month, 1);
-  // start of the ISO week that contains the first day
+
   const gridStart = startOfWeekISO(firstDay);
 
   const cells: Date[] = [];
   const cur = new Date(gridStart);
-  // 6 rows × 7 cols = 42 cells
+
   for (let i = 0; i < 42; i++) {
     cells.push(new Date(cur));
     cur.setDate(cur.getDate() + 1);
@@ -72,12 +72,11 @@ const EventCalendar = ({ events = [] }: Props) => {
 
   useEffect(() => {
     router.push(`?date=${today.toLocaleDateString("en-CA")}`, { scroll: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const cells = buildGrid(viewYear, viewMonth);
 
-  // build a Set of "YYYY-MM-DD" strings for event days for O(1) lookup
   const eventDays = new Set<string>();
   for (const e of events) {
     const start = new Date(e.startTime);
@@ -150,7 +149,6 @@ const EventCalendar = ({ events = [] }: Props) => {
               ].join(" ")}
             >
               {date.getDate()}
-              {/* Event indicator dot   only for current-month days with events, not on selected */}
               {hasEvent && isCurrentMonth && !isSelected && (
                 <span
                   className="absolute bottom-1 h-1 w-1 rounded-full"

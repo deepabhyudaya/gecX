@@ -44,7 +44,6 @@ export default async function WarsAdminPage({
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
-      {/* Header */}
       <div className="bg-card border border-border rounded-2xl p-6">
         <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
           <div>
@@ -80,7 +79,6 @@ export default async function WarsAdminPage({
           </div>
         </div>
 
-        {/* Status filter tabs */}
         <div className="flex gap-2 flex-wrap">
           {[undefined, "PENDING_ADMIN", "PENDING_CR", "ACTIVE", "CONCLUDED", "REJECTED", "EXPIRED"].map((s) => (
             <Link
@@ -98,14 +96,12 @@ export default async function WarsAdminPage({
         </div>
       </div>
 
-      {/* AI duel question generator stub */}
       <AiStubCard
         title="AI Duel Question Generator"
         description="Generate practice questions for Knowledge Duel and Speed Round bouts."
         feature="duel-questions"
       />
 
-      {/* Rivalry list */}
       <div className="space-y-3">
         {rivalries.length === 0 && (
           <div className="bg-card border border-border rounded-2xl p-12 text-center text-muted-foreground">

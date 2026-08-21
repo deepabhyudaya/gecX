@@ -10,8 +10,6 @@ async function requireAdmin() {
   if (role !== "admin") throw new Error("Admin only");
 }
 
-// ==================== CREATE / UPDATE RANKS ====================
-
 export async function createSeasonRank(
   seasonId: string,
   input: {
@@ -93,8 +91,6 @@ export async function deleteSeasonRank(rankId: string) {
   revalidatePath(`/admin/seasons/${rank.seasonId}`);
   return { success: true };
 }
-
-// ==================== BATCH SETUP (default rank ladder) ====================
 
 export async function setupDefaultSeasonRanks(seasonId: string) {
   await requireAdmin();

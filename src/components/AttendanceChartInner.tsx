@@ -90,23 +90,20 @@ const CustomTick = ({
   todayName: string;
   data?: DataItem[];
 }) => {
-  const parts = (payload?.value ?? "").split(" "); // ["Mon", "4/19"]
+  const parts = (payload?.value ?? "").split(" ");
   const isToday = payload?.value === todayName;
   const baseColor = isDark ? "#a3a3a3" : "#525252";
   const todayColor = isDark ? "#e5e5e5" : "#171717";
 
-  // Check if this is a 30-day view (has empty shortName) or 7-day view
   const dataItem = data?.find((d) => d.name === payload?.value);
   const displayLabel = dataItem?.shortName || parts[0];
 
-  // Hide x-axis labels for 30-day view (empty shortName)
   if (dataItem?.shortName === "") {
     return null;
   }
 
   return (
     <g transform={`translate(${x},${y})`}>
-      {/* Day name */}
       <text
         x={0}
         y={0}
@@ -118,7 +115,6 @@ const CustomTick = ({
       >
         {displayLabel}
       </text>
-      {/* Date number - only show for 7-day view */}
       {parts[1] && !dataItem?.shortName && (
         <text
           x={0}
@@ -132,7 +128,6 @@ const CustomTick = ({
           {parts[1]}
         </text>
       )}
-      {/* "Today" dot */}
       {isToday && (
         <circle cx={0} cy={36} r={2.5} fill="#6366f1" />
       )}
@@ -152,11 +147,9 @@ const AttendanceChart = ({ data }: { data?: DataItem[] }) => {
 
   const safeData = data || [];
 
-  // Find today's full name label (e.g. "Sun 4/19")
   const todayItem = safeData.find((d) => d.isToday);
   const todayName = todayItem?.name ?? "";
 
-  // Calculate dynamic bar size and tick interval based on data length
   const dataLength = safeData.length;
   let barSize = 16;
   let tickInterval = 0;
@@ -228,7 +221,6 @@ const AttendanceChart = ({ data }: { data?: DataItem[] }) => {
           )}
         />
 
-        {/* Present bar green */}
         <Bar
           dataKey="present"
           name="Present"
@@ -237,7 +229,6 @@ const AttendanceChart = ({ data }: { data?: DataItem[] }) => {
           fill={isDark ? "#86efac" : "#22c55e"}
         />
 
-        {/* Absent bar orange */}
         <Bar
           dataKey="absent"
           name="Absent"
@@ -246,7 +237,6 @@ const AttendanceChart = ({ data }: { data?: DataItem[] }) => {
           fill={isDark ? "#fb923c" : "#f97316"}
         />
 
-        {/* Leave bar red (for Sat/Sun) */}
         <Bar
           dataKey="leave"
           name="Leave"

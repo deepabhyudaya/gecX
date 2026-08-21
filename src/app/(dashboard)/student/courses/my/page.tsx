@@ -17,7 +17,6 @@ export default async function MyCoursesPage() {
   const { userId } = auth();
   if (!userId) return redirect("/sign-in");
 
-  // Get only the courses this student is enrolled in
   const enrollments = await prisma.courseEnrollment.findMany({
     where: { studentId: userId },
     include: {
@@ -36,7 +35,6 @@ export default async function MyCoursesPage() {
   return (
     <div className="p-6 min-h-full bg-background">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
-        {/* Header */}
         <div className="bg-card border border-border p-6 rounded-[12px] shadow-sm flex items-center justify-between">
           <div>
             <h1 className="text-[28px] font-bold text-foreground tracking-tight">My Courses</h1>
@@ -63,7 +61,6 @@ export default async function MyCoursesPage() {
           </div>
         )}
 
-        {/* Enrolled course cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {enrollments.map(({ course, enrolledAt }) => {
             const totalLectures = course.sections.reduce((a, s) => a + s.lectures.length, 0);

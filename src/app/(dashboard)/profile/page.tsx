@@ -97,7 +97,7 @@ const ProfilePage = async () => {
       { icon: User, label: "Children", value: parent._count.students },
     ];
   } else if (role === "admin") {
-    // admins only have id + username in db
+
     const admin = await prisma.admin.findUnique({ where: { id: userId! } });
     profileData = {
       name: clerkUser?.firstName ?? "Admin",
@@ -115,7 +115,6 @@ const ProfilePage = async () => {
       ? `${profileData.name} ${profileData.surname || ""}`.trim()
       : clerkUser?.fullName ?? "Unknown";
 
-  // Get equipped academic avatar
   const equippedAvatar = await getUserAvatarUrl(userId || "", "academic");
   const avatar = equippedAvatar || profileData?.img || clerkUser?.imageUrl || "/noAvatar.png";
 
@@ -159,10 +158,8 @@ const ProfilePage = async () => {
   return (
     <div className="flex-1 p-4 md:p-6 flex flex-col gap-6 xl:flex-row">
       <div className="w-full xl:w-2/3 flex flex-col gap-4">
-        {/* Hero card */}
         <CometCard rotateDepth={6} translateDepth={8}>
           <div className="bg-card border border-border rounded-2xl p-6 flex flex-col sm:flex-row gap-6">
-            {/* Avatar */}
             <div className="flex flex-col items-center gap-3 shrink-0">
               <div className="relative">
                 <Image
@@ -179,7 +176,6 @@ const ProfilePage = async () => {
               </span>
             </div>
 
-            {/* Identity */}
             <div className="flex flex-col gap-4 min-w-0 flex-1">
               <div>
                 <h1 className="text-2xl font-bold leading-tight">{fullName}</h1>
@@ -188,7 +184,6 @@ const ProfilePage = async () => {
                 </p>
               </div>
 
-              {/* Info rows */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {infoRows.map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex items-center gap-2 text-sm">
@@ -208,7 +203,6 @@ const ProfilePage = async () => {
           </div>
         </CometCard>
 
-        {/* Stat chips */}
         {statCards.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {statCards.map(({ icon: Icon, label, value }) => (
@@ -229,7 +223,6 @@ const ProfilePage = async () => {
           </div>
         )}
 
-        {/* Schedule (teachers & students) */}
         {calendarType && calendarId && (
           <div className="bg-card border border-border rounded-xl p-4 h-[760px]">
             <h2 className="font-semibold mb-3">My Schedule</h2>

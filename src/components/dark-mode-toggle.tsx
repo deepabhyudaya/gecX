@@ -14,7 +14,7 @@ export function DarkModeToggle({ className }: { className?: string }) {
   }, [])
 
   if (!mounted) {
-    return <div className={cn("w-9 h-9", className)} /> // Placeholder
+    return <div className={cn("w-9 h-9", className)} />
   }
 
   return (

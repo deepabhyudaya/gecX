@@ -100,7 +100,6 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
       const result = await purchaseServerSlotPack(selectedServerId, selectedPlan);
       setBalance((b) => b - plan.cost);
 
-      // Update local server data
       setServers((prev) =>
         prev.map((s) =>
           s.id === selectedServerId
@@ -152,7 +151,6 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         <div className="max-w-5xl mx-auto space-y-8 pb-24">
-          {/* Header */}
           <div className="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -162,7 +160,6 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
                 Purchase additional emoji and sticker slots for your servers. Base slots: 10 emojis + 5 stickers free per server.
               </p>
             </div>
-            {/* Balance Display */}
             <div className="bg-amber-500/10 border border-amber-500/15 rounded-lg px-4 py-2 flex items-center gap-2 shrink-0 self-start">
               <Coins className="w-5 h-5 text-amber-500" />
               <span className="font-bold tabular-nums">
@@ -171,7 +168,6 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
             </div>
           </div>
 
-          {/* Server Selector */}
           <div className="bg-card border border-border rounded-xl p-4">
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
               Select Server to Purchase For
@@ -183,7 +179,7 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
               >
                 <div className="flex items-center gap-3">
                   {selectedServer?.iconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+
                     <img
                       src={selectedServer.iconUrl}
                       alt=""
@@ -218,7 +214,7 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
                       }`}
                     >
                       {server.iconUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
+
                         <img src={server.iconUrl} alt="" className="w-8 h-8 rounded-lg object-cover" />
                       ) : (
                         <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -239,7 +235,6 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
             </div>
           </div>
 
-          {/* Slot Usage for Selected Server */}
           {selectedServer && (
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-card border border-border rounded-xl p-4">
@@ -286,7 +281,6 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
             </div>
           )}
 
-          {/* Purchase Plans */}
           <div>
             <h3 className="font-semibold mb-4">Available Plans</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -363,7 +357,6 @@ export default function ServerEmojiSlotShopClient({ initialBalance }: ServerEmoj
         </div>
       </div>
 
-      {/* Purchase Confirmation Dialog */}
       <Dialog
         open={!!selectedPlan}
         onOpenChange={(open) => !open && !purchasing && setSelectedPlan(null)}

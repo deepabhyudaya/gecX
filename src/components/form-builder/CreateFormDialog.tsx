@@ -107,20 +107,17 @@ export function CreateFormDialog({ exams, assignments }: CreateFormDialogProps) 
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
-          {/* Title */}
           <div className="space-y-1.5">
             <Label htmlFor="title">Form Title</Label>
             <Input id="title" {...register("title")} placeholder="Enter title" />
             {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
           </div>
 
-          {/* Description */}
           <div className="space-y-1.5">
             <Label htmlFor="description">Description (Optional)</Label>
             <Input id="description" {...register("description")} placeholder="Enter description" />
           </div>
 
-          {/* Form Type */}
           <div className="space-y-1.5">
             <Label htmlFor="type">Form Type</Label>
             <Select
@@ -138,7 +135,6 @@ export function CreateFormDialog({ exams, assignments }: CreateFormDialogProps) 
             </Select>
           </div>
 
-          {/* Linked Exam / Assignment Selection */}
           {formType === "EXAM" && (
             <div className="space-y-1.5">
               <Label htmlFor="examId">Link to Scheduled Exam</Label>

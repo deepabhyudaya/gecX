@@ -11,17 +11,12 @@ export default function SpeedRoundManager({ bout }: Props) {
   const [scoreA, setScoreA] = useState(0);
   const [scoreB, setScoreB] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  
-  // Speed Round specific state
+
   const [activeQuestion, setActiveQuestion] = useState("");
   const [countdown, setCountdown] = useState<number | null>(null);
   const [timerStatus, setTimerStatus] = useState<"IDLE" | "COUNTDOWN" | "ACTIVE">("IDLE");
   const [buzzerWinner, setBuzzerWinner] = useState<"A" | "B" | null>(null);
 
-  // In a real implementation with websockets, these would be bound to socket events.
-  // For this manager, the teacher acts as the absolute latency arbiter on a single screen
-  // or triggers the "buzzer open" event to the student clients.
-  
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (timerStatus === "COUNTDOWN" && countdown !== null) {
@@ -49,7 +44,7 @@ export default function SpeedRoundManager({ bout }: Props) {
   const awardPointsAndReset = (student: "A" | "B" | "NONE") => {
     if (student === "A") setScoreA((s) => s + 50);
     if (student === "B") setScoreB((s) => s + 50);
-    
+
     setTimerStatus("IDLE");
     setBuzzerWinner(null);
     setActiveQuestion("");
@@ -75,7 +70,6 @@ export default function SpeedRoundManager({ bout }: Props) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Control Board */}
       <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
         <div>
           <h2 className="font-bold text-xl mb-1 text-red-500">⚡ Speed Round Controller</h2>
@@ -146,9 +140,7 @@ export default function SpeedRoundManager({ bout }: Props) {
         )}
       </div>
 
-      {/* Simulator / Scoreboard */}
       <div className="space-y-6 flex flex-col">
-        {/* SIMULATED BUZZERS (For demo purposes without websockets) */}
         {timerStatus === "ACTIVE" && !buzzerWinner && (
           <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex gap-4 animate-in fade-in slide-in-from-top-4">
             <button
@@ -166,11 +158,10 @@ export default function SpeedRoundManager({ bout }: Props) {
           </div>
         )}
 
-        {/* Scoreboard */}
         <div className="flex-1 bg-card border border-border rounded-2xl p-6 flex flex-col justify-between">
           <div>
             <h2 className="font-bold text-lg mb-6">Match Score</h2>
-            
+
             <div className="flex items-center justify-between p-4 border border-border rounded-xl bg-muted/20 mb-4">
               <span className="font-bold text-blue-500">{bout.rivalry.studentA.name}</span>
               <span className="text-3xl font-black tabular-nums">{scoreA}</span>

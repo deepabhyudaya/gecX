@@ -1,8 +1,6 @@
 import prisma from "@/lib/prisma";
 import { cache } from "react";
 
-// Wrapped in React.cache so multiple layouts/components in the same render
-// (root layout + dashboard layout) share a single DB roundtrip per request.
 export const getActiveEventThemeForUser = cache(_getActiveEventThemeForUser);
 async function _getActiveEventThemeForUser(userId: string) {
   const activeTheme = await prisma.eventTheme.findFirst({
@@ -21,7 +19,6 @@ async function _getActiveEventThemeForUser(userId: string) {
     },
   });
 
-  // If no state exists, auto-create it
   if (!state) {
     const equipped = await prisma.userEquippedColors.findUnique({
       where: { userId },

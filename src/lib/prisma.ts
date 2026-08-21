@@ -11,7 +11,6 @@ const prismaClientSingleton = () => {
   })
 }
 
-// Force disconnect/reconnect to clear cached plans after schema changes
 export async function resetPrismaConnection() {
   await prisma.$disconnect();
   return prisma.$connect();

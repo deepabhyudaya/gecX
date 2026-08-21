@@ -210,7 +210,6 @@ const TeacherForm = ({
           )}
         </CldUploadWidget>
       </div>
-      {/* Faculty Identity */}
       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         Faculty Identity
       </span>

@@ -10,10 +10,10 @@ import {
   Tooltip,
 } from "recharts";
 
-const BOYS_COLOR  = "#3b82f6"; // blue-500
-const GIRLS_COLOR = "#FF10F0"; // custom pink
-const BOYS_DARK   = "#60a5fa"; // blue-400
-const GIRLS_DARK  = "#FF10F0"; // custom pink
+const BOYS_COLOR  = "#3b82f6";
+const GIRLS_COLOR = "#FF10F0";
+const BOYS_DARK   = "#60a5fa";
+const GIRLS_DARK  = "#FF10F0";
 
 const CustomTooltip = ({
   active,
@@ -95,7 +95,6 @@ const CountChart = ({ boys, girls }: { boys: number; girls: number }) => {
         </PieChart>
       </ResponsiveContainer>
 
-      {/* Centre label */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className="text-2xl font-extrabold text-foreground">{total}</span>
         <span className="text-[11px] text-muted-foreground font-medium">students</span>

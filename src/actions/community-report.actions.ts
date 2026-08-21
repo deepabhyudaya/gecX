@@ -12,21 +12,18 @@ enum ReportStatus {
   DISMISSED = "DISMISSED",
 }
 
-// Report a post
 export async function reportPost(postId: string, reason: string, description?: string) {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
 
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "student").toLowerCase();
 
-  // Check if post exists and is not deleted
   const post = await prisma.communityPost.findUnique({
     where: { id: postId, isDeleted: false },
   });
 
   if (!post) throw new Error("Post not found");
 
-  // Check if user already reported this post
   const existingReport = await prisma.communityReport.findFirst({
     where: {
       postId,
@@ -38,7 +35,6 @@ export async function reportPost(postId: string, reason: string, description?: s
     throw new Error("You have already reported this post");
   }
 
-  // Create the report
   const report = await prisma.communityReport.create({
     data: {
       postId,
@@ -49,7 +45,6 @@ export async function reportPost(postId: string, reason: string, description?: s
     },
   });
 
-  // Create a ticket for admins to review
   const ticket = await prisma.ticket.create({
     data: {
       subject: `Community Report: ${reason}`,
@@ -59,7 +54,6 @@ export async function reportPost(postId: string, reason: string, description?: s
     },
   });
 
-  // Create the initial message so it appears in chat UI
   await prisma.ticketMessage.create({
     data: {
       content: `**Post Report**\n\n**Reason:** ${reason}\n**Description:** ${description || "N/A"}\n\n**Post ID:** ${postId}\n**Report ID:** ${report.id}`,
@@ -69,7 +63,6 @@ export async function reportPost(postId: string, reason: string, description?: s
     },
   });
 
-  // Notify admins of the new report
   const adminIds = await getAllUserIdsByRole("admin");
   await createNotificationsForUsers({
     title: "New Post Report",
@@ -83,7 +76,6 @@ export async function reportPost(postId: string, reason: string, description?: s
   return { success: true, reportId: report.id };
 }
 
-// Get reports (admin only)
 export async function getReports(status?: ReportStatus) {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -111,7 +103,6 @@ export async function getReports(status?: ReportStatus) {
   return reports;
 }
 
-// Resolve a report (admin only)
 export async function resolveReport(reportId: string, action: "delete" | "dismiss") {
   const { userId, sessionClaims } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -127,20 +118,18 @@ export async function resolveReport(reportId: string, action: "delete" | "dismis
   if (!report) throw new Error("Report not found");
 
   if (action === "delete") {
-    // Soft delete the post
+
     await prisma.communityPost.update({
       where: { id: report.postId },
       data: { isDeleted: true },
     });
 
-    // Update author's post count
     await prisma.userCommunityProfile.update({
       where: { userId: report.post.authorId },
       data: { postCount: { decrement: 1 } },
     });
   }
 
-  // Update report status
   await prisma.communityReport.update({
     where: { id: reportId },
     data: {
@@ -155,7 +144,6 @@ export async function resolveReport(reportId: string, action: "delete" | "dismis
   return { success: true };
 }
 
-// Get report count for admin badge
 export async function getPendingReportCount() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();

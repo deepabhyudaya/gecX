@@ -36,7 +36,6 @@ export default function GroupMembersPanel({
   const [members, setMembers] = useState<Member[]>(group.members || []);
   const [loading, setLoading] = useState(!group.members);
 
-  // Re-sync members when group prop changes (e.g. after router.refresh())
   useEffect(() => {
     if (group.members) {
       setMembers(group.members);
@@ -262,8 +261,7 @@ export default function GroupMembersPanel({
             </div>
           </div>
         )}
-        
-        {/* Access Code - visible to all members */}
+
         {group.accessCode && (
           <div className="bg-muted/50 rounded-xl px-4 py-3 border border-border/30">
             <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2 flex items-center gap-1.5">

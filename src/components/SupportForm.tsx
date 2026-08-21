@@ -27,7 +27,7 @@ const SupportForm = () => {
     <form ref={formRef} action={formAction} className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <label className="text-foreground font-semibold text-[14px]">Subject</label>
-        <input 
+        <input
           name="subject"
           required
           className="p-3 text-[14px] rounded-[8px] text-foreground border border-input focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-transparent"
@@ -36,7 +36,7 @@ const SupportForm = () => {
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-foreground font-semibold text-[14px]">Description</label>
-        <textarea 
+        <textarea
           name="description"
           required
           rows={4}
@@ -44,9 +44,9 @@ const SupportForm = () => {
           placeholder="Provide details about your issue..."
         />
       </div>
-      
-      <button 
-        type="submit" 
+
+      <button
+        type="submit"
         className="mt-2 bg-primary text-primary-foreground py-3 px-4 rounded-[8px] text-[14px] font-semibold hover:opacity-90 transition-all shadow-md active:scale-[0.98]"
       >
         Submit Ticket

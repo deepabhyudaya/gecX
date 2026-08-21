@@ -13,8 +13,6 @@ import {
   deleteStudentRivalry,
 } from "@/actions/student-rivalry.actions";
 
-// ── Admin approve/reject ──────────────────────────────────────────────────────
-
 export function AdminWarButtons({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -105,8 +103,6 @@ export function DeleteStudentWarButton({ rivalryId }: { rivalryId: string }) {
   );
 }
 
-// ── Target accept ─────────────────────────────────────────────────────────────
-
 export function TargetAcceptButton({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -134,8 +130,6 @@ export function TargetAcceptButton({ rivalryId }: { rivalryId: string }) {
     </button>
   );
 }
-
-// ── Conclude war (admin) ──────────────────────────────────────────────────────
 
 export function ConcludeWarButton({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState(false);
@@ -174,8 +168,6 @@ export function ConcludeWarButton({ rivalryId }: { rivalryId: string }) {
     </>
   );
 }
-
-// ── RP → Karma + GECX conversion ──────────────────────────────────────────────
 
 export function ConvertStudentRPButton({ rivalryId, availableRP }: { rivalryId: string; availableRP: number }) {
   const [amount, setAmount] = useState(100);
@@ -244,8 +236,6 @@ export function ConvertStudentRPButton({ rivalryId, availableRP }: { rivalryId: 
   );
 }
 
-// ── Retract Proposal (Proposer) ───────────────────────────────────────────────
-
 export function RetractProposalButton({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState(false);
   const router = useRouter();
@@ -273,8 +263,6 @@ export function RetractProposalButton({ rivalryId }: { rivalryId: string }) {
     </button>
   );
 }
-
-// ── Surrender War ─────────────────────────────────────────────────────────────
 
 export function SurrenderWarButton({ rivalryId }: { rivalryId: string }) {
   const [busy, setBusy] = useState(false);

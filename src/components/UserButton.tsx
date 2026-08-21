@@ -107,8 +107,6 @@ export function UserButton({ communityAvatar, academicAvatar }: UserButtonProps)
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
-        {/* Prefetch on hover so the route segment is already cached when the
-            user actually clicks — feels instant. router.push keeps SPA nav. */}
         <DropdownMenuItem
           onClick={() => router.push("/profile")}
           onMouseEnter={() => router.prefetch("/profile")}

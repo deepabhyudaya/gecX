@@ -5,8 +5,6 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createNotificationsForUsers } from "@/lib/notifications";
 
-// ==================== HELPERS ====================
-
 async function requireAdmin() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -17,8 +15,6 @@ async function requireAdmin() {
 function generateSeasonCode(cycleNumber: number, seasonNumber: number) {
   return `C${cycleNumber}S${seasonNumber}`;
 }
-
-// ==================== CREATE SEASON ====================
 
 export async function createSeason(input: {
   collegeId?: string | null;
@@ -64,7 +60,6 @@ export async function createSeason(input: {
 
   const seasonCode = generateSeasonCode(input.cycleNumber, input.seasonNumber);
 
-  // Uniqueness check
   const existing = await prisma.season.findFirst({
     where: {
       collegeId: input.collegeId ?? null,
@@ -137,8 +132,6 @@ export async function createSeason(input: {
   return season;
 }
 
-// ==================== UPDATE SEASON ====================
-
 export async function updateSeason(
   seasonId: string,
   input: Partial<{
@@ -178,8 +171,6 @@ export async function updateSeason(
   return updated;
 }
 
-// ==================== SEASON LIFECYCLE ====================
-
 export async function startSeason(seasonId: string) {
   await requireAdmin();
 
@@ -202,7 +193,7 @@ export async function startSeason(seasonId: string) {
       : `A new season has begun. Good luck!`,
     type: "SEASON_STARTED",
     entityId: seasonId,
-    // Broadcast to all
+
     studentIds: [],
   });
 
@@ -243,8 +234,6 @@ export async function triggerSeasonConclusion(seasonId: string) {
   revalidatePath("/admin/seasons");
   return updated;
 }
-
-// ==================== MULTIPLIER ====================
 
 export async function activateSeasonMultiplier(
   seasonId: string,
@@ -292,8 +281,6 @@ export async function deactivateSeasonMultiplier(seasonId: string) {
   return updated;
 }
 
-// ==================== QUERIES ====================
-
 export async function listSeasons(collegeId?: string | null) {
   await requireAdmin();
 
@@ -327,11 +314,6 @@ export async function getActiveSeason(collegeId?: string | null) {
   });
 }
 
-/**
- * Finds the active season for a war proposal.
- * Tries college-specific first, then falls back to global (collegeId: null).
- * Filters by seasonType matching the war type.
- */
 export async function getStudentSeasonPoints(studentId: string, seasonId: string) {
   return prisma.studentSeasonPoints.findUnique({
     where: { seasonId_studentId: { seasonId, studentId } },
@@ -363,7 +345,6 @@ export async function getActiveSeasonForWar(
     ? { in: ["BRANCH", "BOTH"] as const }
     : { in: ["STUDENT", "BOTH"] as const };
 
-  // College-specific first
   let season = await prisma.season.findFirst({
     where: {
       status: "ACTIVE",
@@ -373,7 +354,6 @@ export async function getActiveSeasonForWar(
     orderBy: { startDate: "desc" },
   });
 
-  // Fallback to global
   if (!season && collegeId !== null) {
     season = await prisma.season.findFirst({
       where: {

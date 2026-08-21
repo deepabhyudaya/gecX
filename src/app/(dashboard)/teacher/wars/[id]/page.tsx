@@ -28,7 +28,6 @@ export default async function TeacherWarRoomPage({ params }: { params: { id: str
 
   return (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto pb-24">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Link
           href="/teacher/wars"
@@ -46,11 +45,10 @@ export default async function TeacherWarRoomPage({ params }: { params: { id: str
         </div>
       </div>
 
-      {/* Dynamic Type Manager */}
       {bout.warType?.name === "Knowledge Duel" && (
         <KnowledgeDuelManager bout={bout} />
       )}
-      
+
       {bout.warType?.name === "Speed Round" && (
         <SpeedRoundManager bout={bout} />
       )}
@@ -59,8 +57,8 @@ export default async function TeacherWarRoomPage({ params }: { params: { id: str
         <CreativeClashManager bout={bout} />
       )}
 
-      {bout.warType?.name !== "Knowledge Duel" && 
-       bout.warType?.name !== "Speed Round" && 
+      {bout.warType?.name !== "Knowledge Duel" &&
+       bout.warType?.name !== "Speed Round" &&
        bout.warType?.name !== "Creative Clash" && (
         <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground">
           <div className="text-4xl mb-4">🚧</div>

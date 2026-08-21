@@ -48,7 +48,7 @@ const TicketsPage = async ({
   const renderRow = (item: TicketList) => {
     let userName = "Unknown";
     let userRole = "N/A";
-    
+
     if (item.student) {
       userName = `${item.student.name} ${item.student.surname}`;
       userRole = "Student";

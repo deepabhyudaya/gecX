@@ -133,18 +133,16 @@ export default function KanbanBoard({
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [draggingItem, setDraggingItem] = useState<KanbanItem | null>(null);
 
-  // Update items when initialItems changes (e.g., new items created)
   useEffect(() => {
     setItems((prevItems) => {
       const prevIds = new Set(prevItems.map((i) => String(i.id)));
       const newItems = initialItems.filter((i) => !prevIds.has(String(i.id)));
-      
+
       if (newItems.length === 0 && prevItems.length === initialItems.length) {
-        // No new items and same count, keep current state
+
         return prevItems;
       }
-      
-      // Merge: keep existing items with their current status, add new items with default status
+
       const merged = initialItems.map((item) => {
         const existing = prevItems.find((p) => String(p.id) === String(item.id));
         return existing || { ...item, status: item.status || columns[0].id };
@@ -153,7 +151,6 @@ export default function KanbanBoard({
     });
   }, [initialItems, columns]);
 
-  // Initialize status from storage or default to first column
   useEffect(() => {
     try {
       const stored = localStorage.getItem(`kanban_state_${storageKey}`);
@@ -205,7 +202,6 @@ export default function KanbanBoard({
         return item;
       });
 
-      // Save to localStorage
       try {
         const stateMap = newItems.reduce((acc, item) => {
           acc[item.id] = item.status!;
@@ -216,7 +212,7 @@ export default function KanbanBoard({
           JSON.stringify(stateMap)
         );
       } catch (e) {
-        // ignore
+
       }
 
       return newItems;

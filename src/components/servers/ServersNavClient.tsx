@@ -74,7 +74,6 @@ export default function ServersNavClient({ servers, children }: ServersNavClient
 
   return (
     <>
-      {/* Desktop: server sidebar always visible */}
       <div className="hidden md:flex flex-col shrink-0">
         <ServerSidebar
           servers={servers.map((s) => ({
@@ -88,10 +87,8 @@ export default function ServersNavClient({ servers, children }: ServersNavClient
         />
       </div>
 
-      {/* Main Content Area */}
       {selectedServer ? (
         <>
-          {/* Mobile channel-picking view */}
           {!hasChannel && (
             <div className="flex md:hidden flex-1 min-w-0">
               <ServerSidebar
@@ -137,7 +134,6 @@ export default function ServersNavClient({ servers, children }: ServersNavClient
             </div>
           )}
 
-          {/* Desktop channel list */}
           <div className={`${hasChannel ? "hidden md:flex" : "hidden md:flex"} flex-col`}>
             {isLoading ? (
               <div className="w-64 p-3 space-y-2 animate-pulse">
@@ -167,12 +163,10 @@ export default function ServersNavClient({ servers, children }: ServersNavClient
             )}
           </div>
 
-          {/* Chat Area */}
           {children}
         </>
       ) : (
         <>
-          {/* Mobile: show servers sidebar + placeholder */}
           <div className="flex md:hidden flex-1">
             <ServerSidebar
               servers={servers.map((s) => ({
@@ -192,7 +186,6 @@ export default function ServersNavClient({ servers, children }: ServersNavClient
             </div>
           </div>
 
-          {/* Desktop fallback */}
           <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">
             <div className="text-center max-w-md">
               <h3 className="text-xl font-semibold mb-4">Welcome to Servers</h3>

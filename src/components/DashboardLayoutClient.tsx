@@ -83,7 +83,6 @@ export function DashboardLayoutClient({
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
-      {/* Full-width background image from sidebar to right end */}
       {eventTheme?.backgroundImage && (
         <div
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
@@ -92,8 +91,6 @@ export function DashboardLayoutClient({
       )}
 
       <RoutePrefetcher />
-      {/* Suspense boundary required because RouteProgress reads useSearchParams,
-          which would otherwise bail out static rendering at build time. */}
       <Suspense fallback={null}>
         <RouteProgress />
       </Suspense>
@@ -122,7 +119,6 @@ export function DashboardLayoutClient({
 
         <ResizablePanel defaultSize={defaultLayout?.[1] ?? 84}>
           <div className="h-full flex flex-col overflow-hidden relative">
-            {/* Optional event banner above top navbar */}
             {showBanner && (
               <div
                 className="w-full shrink-0 bg-cover bg-center relative overflow-hidden"

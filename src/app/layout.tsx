@@ -50,21 +50,21 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { userId } = auth();
-  let htmlThemeStyle: React.CSSProperties = {};   // CSS vars — go on <html>
-  let bodyBgImage: string | undefined;             // gradient backgroundImage — goes on <body>
+  let htmlThemeStyle: React.CSSProperties = {};
+  let bodyBgImage: string | undefined;
   let themeMode: "light" | "dark" | undefined = undefined;
-  let eventThemeActive = false;                    // tracks if an event theme is currently active
+  let eventThemeActive = false;
 
   if (userId) {
     try {
-      // Check active event theme first (overrides user theme)
+
       const eventThemeData = await getActiveEventThemeForUser(userId);
       if (eventThemeData && eventThemeData.theme && !eventThemeData.state.revertedAt) {
         eventThemeActive = true;
         const parsed = JSON.parse(eventThemeData.theme.themeVars) as Record<string, string>;
-        // Event theme background image is stored in its own DB field, not themeVars
+
         const rawBgImage = eventThemeData.theme.backgroundImage;
-        // Wrap raw URL in url() if it doesn't already look like a CSS value
+
         bodyBgImage = rawBgImage
           ? (rawBgImage.startsWith("linear-gradient") || rawBgImage.startsWith("radial-gradient") || rawBgImage.startsWith("url(")
             ? rawBgImage
@@ -84,22 +84,20 @@ export default async function RootLayout({
           }
         }
       } else {
-        // Fall back to user's equipped theme
+
         const colors = await getEquippedColors(userId);
         if (colors?.themeVars) {
           const parsed = JSON.parse(colors.themeVars) as Record<string, string>;
 
-          // Separate backgroundImage (gradient) from CSS custom properties
           const { backgroundImage, ...cssVars } = parsed;
           bodyBgImage = backgroundImage as string | undefined;
           htmlThemeStyle = cssVars as React.CSSProperties;
 
-          // Determine light vs dark from background lightness
           const bg = cssVars["--background"];
           if (bg) {
             const match = bg.match(/(\d+(?:\.\d+)?)%/g);
             if (match && match.length >= 2) {
-              const lightness = parseFloat(match[1]); // second % = lightness in HSL
+              const lightness = parseFloat(match[1]);
               themeMode = lightness > 50 ? "light" : "dark";
             }
           }
@@ -112,7 +110,6 @@ export default async function RootLayout({
 
   return (
     <ClerkProvider>
-      {/* Theme CSS vars live on <html> so they have higher specificity than html.dark class rules */}
       <html
         lang="en"
         suppressHydrationWarning
@@ -123,8 +120,6 @@ export default async function RootLayout({
         }}
       >
         <head>
-          {/* Open TCP+TLS connections to image CDNs in parallel with HTML parse
-              so the first <Image> render doesn't pay DNS/handshake cost. */}
           <link rel="preconnect" href="https://img.clerk.com" crossOrigin="anonymous" />
           <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://api.dicebear.com" />
@@ -143,7 +138,6 @@ export default async function RootLayout({
         >
           <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme={themeMode} disableTransitionOnChange>
             <StatusBarHandler />
-            {/* Persist the equipped theme to localStorage so the login page can restore it */}
             {userId && (
               <ThemePersist
                 vars={htmlThemeStyle as Record<string, string>}

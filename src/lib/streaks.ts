@@ -1,7 +1,7 @@
 export interface StreakTierDef {
   name: string;
   threshold: number;
-  color: string | null; // null = no border, "cosmic" = special gradient
+  color: string | null;
   label: string;
   emoji: string;
 }

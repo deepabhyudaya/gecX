@@ -17,7 +17,6 @@ export default async function DiscoverServersPage() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
       <div className="h-14 px-4 border-b border-border flex items-center justify-between bg-background shrink-0">
         <div className="flex items-center gap-3">
           <Compass className="w-5 h-5 text-primary" />
@@ -35,7 +34,6 @@ export default async function DiscoverServersPage() {
         </Link>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         {servers.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -70,14 +68,12 @@ export default async function DiscoverServersPage() {
 function ServerCard({ server }: { server: any }) {
   const isTrending = server.bumps >= 10;
   const isHot = server.bumps >= 5 && server.bumps < 10;
-  
+
   return (
     <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
-      {/* Server Banner */}
       <div className="h-28 relative overflow-hidden">
         {server.bannerUrl ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={server.bannerUrl}
               alt={`${server.name} banner`}
@@ -87,14 +83,12 @@ function ServerCard({ server }: { server: any }) {
           </>
         ) : (
           <div className="h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 relative overflow-hidden">
-            {/* Decorative pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,white_1px,transparent_1px)] bg-[length:20px_20px]" />
             </div>
           </div>
         )}
 
-        {/* Trending badge */}
         {isTrending && (
           <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-orange-500 text-white text-xs font-semibold flex items-center gap-1 shadow-lg animate-pulse">
             <Flame className="w-3 h-3" />
@@ -110,10 +104,9 @@ function ServerCard({ server }: { server: any }) {
       </div>
 
       <div className="p-5">
-        {/* Server icon */}
         <div className="w-14 h-14 rounded-2xl bg-background border-2 border-border flex items-center justify-center -mt-12 mb-3 shadow-lg group-hover:scale-105 transition-transform duration-300 overflow-hidden">
           {server.iconUrl ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
+
             <img
               src={server.iconUrl}
               alt={server.name}
@@ -131,7 +124,6 @@ function ServerCard({ server }: { server: any }) {
           {server.description || "No description provided"}
         </p>
 
-        {/* Stats row */}
         <div className="flex items-center gap-4 text-xs text-muted-foreground mb-5">
           <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-lg">
             <Users className="w-3.5 h-3.5" />

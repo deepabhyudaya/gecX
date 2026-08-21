@@ -126,14 +126,12 @@ export default function ServerChatView({
   const [showReactionRoleDialog, setShowReactionRoleDialog] = useState(false);
   const [allRenderEmojis, setAllRenderEmojis] = useState<any[]>([]);
 
-  // Fetch ALL emojis for rendering messages (includes all server + global emojis)
   useEffect(() => {
     getAllEmojisForRendering()
       .then(({ emojis }) => setAllRenderEmojis(emojis))
       .catch(() => {});
   }, []);
 
-  // Fetch bump cooldown on mount
   useEffect(() => {
     const fetchCooldown = async () => {
       try {
@@ -144,16 +142,13 @@ export default function ServerChatView({
       }
     };
     fetchCooldown();
-    
-    // Refresh cooldown every minute
+
     const interval = setInterval(fetchCooldown, 60000);
     return () => clearInterval(interval);
   }, [server.id]);
 
-  // Memoize emoji map — include server + ALL emojis so all messages render correctly
   const emojiMap = useMemo(() => buildEmojiMap([...serverEmojis, ...allRenderEmojis], []), [serverEmojis, allRenderEmojis]);
-  
-  // Reset messages only when channel changes
+
   useEffect(() => {
     setLocalMessages(messages);
     lastMsgTimeRef.current = messages.length > 0
@@ -161,7 +156,7 @@ export default function ServerChatView({
       : new Date().toISOString();
     setReplyToMessage(null);
   }, [channel.id]);
-  
+
   const { theme } = useTheme();
   const router = useRouter();
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -173,12 +168,10 @@ export default function ServerChatView({
 
   const isMuted = server.isMuted;
 
-  // Mark server as read
   useEffect(() => {
     markServerAsRead(server.id);
   }, [server.id]);
 
-  // Ably realtime integration for server channels
   const ablyChannelName = useMemo(() => `server:${server.id}:channel:${channel.id}`, [server.id, channel.id]);
   const { isConnected, subscribe } = useAbly(ablyChannelName);
 
@@ -216,7 +209,6 @@ export default function ServerChatView({
     return unsubscribe;
   }, [ablyChannelName, subscribe]);
 
-  // Poll for new messages (fallback when Ably not connected)
   useEffect(() => {
     if (isConnected) return;
     let cancelled = false;
@@ -248,7 +240,6 @@ export default function ServerChatView({
     };
   }, [channel.id, isConnected]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (scroller) {
@@ -256,7 +247,6 @@ export default function ServerChatView({
     }
   }, [localMessages.length]);
 
-  // Click outside handlers
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (reactionEmojiRef.current && !reactionEmojiRef.current.contains(event.target as Node)) {
@@ -339,7 +329,6 @@ export default function ServerChatView({
     } catch {}
   };
 
-  // Helper to check custom permissions on client
   const hasPermission = useCallback((flag: bigint): boolean => {
     if (!server.myPermissions) return server.myRole === "ADMIN";
     const perms = BigInt(server.myPermissions);
@@ -369,7 +358,6 @@ export default function ServerChatView({
 
       await toggleServerMessageReaction(messageId, emoji);
 
-      // Handle reaction role assignment/removal
       if (existing) {
         await handleReactionRemove(server.id, messageId, emoji, currentUserId);
       } else {
@@ -380,7 +368,7 @@ export default function ServerChatView({
       setLocalMessages(refreshed);
       router.refresh();
     } catch (e: any) {
-      // Revert optimistic update
+
       setLocalMessages((prev) =>
         prev.map((msg) => {
           if (msg.id !== messageId) return msg;
@@ -414,10 +402,8 @@ export default function ServerChatView({
 
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
-      {/* HEADER */}
       <div className="h-14 px-4 border-b border-border flex items-center justify-between bg-background shrink-0">
         <div className="flex items-center gap-2">
-          {/* Mobile back button */}
           {selectedServerId && (
             <Link
               href={`/servers?serverId=${selectedServerId}`}
@@ -445,13 +431,12 @@ export default function ServerChatView({
         </div>
       </div>
 
-      {/* MESSAGES AREA */}
       <div
         ref={scrollerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 bg-background"
       >
         {localMessages.map((msg: any) => {
-          // System messages (bumps, cooldowns, etc.)
+
           if (msg.messageType === "SYSTEM" || msg.senderId === "system") {
             return (
               <div key={msg.id} className="flex w-full justify-center py-2">
@@ -463,7 +448,7 @@ export default function ServerChatView({
               </div>
             );
           }
-          
+
           const isMe = msg.senderId === currentUserId;
           const reactionsByEmoji = (msg.reactions || []).reduce((acc: any, r: any) => {
             if (!acc[r.emoji]) acc[r.emoji] = [];
@@ -515,7 +500,6 @@ export default function ServerChatView({
               {reactionMessageId === msg.id && (
                 <div ref={reactionEmojiRef} className="absolute z-50 right-4 top-8 shadow-xl">
                   <div className="bg-background rounded-lg border border-border shadow-2xl overflow-hidden" style={{ width: 320 }}>
-                    {/* Tabs */}
                     <div className="flex border-b border-border">
                       <button
                         onClick={() => setReactionTab('unicode')}
@@ -537,7 +521,6 @@ export default function ServerChatView({
                       )}
                     </div>
 
-                    {/* Unicode Emojis */}
                     {reactionTab === 'unicode' && (
                       <EmojiPicker
                         onEmojiClick={(emojiData) => handleReaction(msg.id, emojiData.emoji)}
@@ -547,7 +530,6 @@ export default function ServerChatView({
                       />
                     )}
 
-                    {/* Custom Server Emojis */}
                     {reactionTab === 'custom' && (
                       <div className="p-3 h-[300px] overflow-y-auto">
                         {serverEmojis.filter((e: any) => !e.packId).length === 0 ? (
@@ -564,7 +546,6 @@ export default function ServerChatView({
                                 className="aspect-square rounded hover:bg-accent p-1 transition-colors flex items-center justify-center"
                                 title={emoji.name}
                               >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={emoji.imageUrl}
                                   alt={emoji.name}
@@ -617,14 +598,13 @@ export default function ServerChatView({
                       {msg.commandLabel || msg.content}
                     </a>
                   ) : (
-                    <MarkdownMessage 
-                      content={msg.content} 
-                      emojiMap={emojiMap} 
+                    <MarkdownMessage
+                      content={msg.content}
+                      emojiMap={emojiMap}
                       stickerUrls={serverStickers.map(s => s.imageUrl)}
                     />
                   )}
 
-                  {/* REACTIONS DISPLAY */}
                   {Object.keys(reactionsByEmoji).length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       <TooltipProvider delayDuration={100}>
@@ -674,7 +654,6 @@ export default function ServerChatView({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* INPUT AREA */}
       <div className="p-2 bg-background border-t border-border shrink-0 relative">
         {replyToMessage && (
           <div className="mb-2 px-3 py-2 rounded-md border border-border bg-muted/40 text-sm text-muted-foreground flex items-center justify-between gap-2 max-w-4xl mx-auto">
@@ -719,16 +698,16 @@ export default function ServerChatView({
               {
                 id: "bump",
                 title: "/bump",
-                description: bumpCooldown 
-                  ? bumpCooldown.canBump 
-                    ? "Bump this server to the top of discover (Ready!)" 
+                description: bumpCooldown
+                  ? bumpCooldown.canBump
+                    ? "Bump this server to the top of discover (Ready!)"
                     : `Bump cooldown: ${bumpCooldown.remainingMinutes}m remaining`
                   : "Bump this server (checking cooldown...)",
                 keywords: ["promote", "boost", "discoverable"],
                 icon: <Rocket className={cn("size-4", bumpCooldown?.canBump === false && "text-muted-foreground")} />,
                 onSelect: async () => {
                   if (bumpCooldown && !bumpCooldown.canBump) {
-                    // System message will be shown via local state update
+
                     const systemMessage = {
                       id: `system-${Date.now()}`,
                       content: `⏰ Bump cooldown active. Please wait ${bumpCooldown.remainingMinutes} minutes before bumping again.`,
@@ -743,18 +722,18 @@ export default function ServerChatView({
                     setLocalMessages(prev => [...prev, systemMessage]);
                     return;
                   }
-                  
+
                   try {
                     setIsSending(true);
                     const result = await bumpServer(server.id, channel.id);
                     if (result.success) {
-                      // Update cooldown
+
                       setBumpCooldown({ canBump: false, remainingMinutes: 120 });
-                      // Refresh to show system message from server
+
                       router.refresh();
                     }
                   } catch (err: any) {
-                    // Show error as system message
+
                     const errorMessage = {
                       id: `system-error-${Date.now()}`,
                       content: `❌ ${err.message || "Failed to bump server"}`,
@@ -795,7 +774,6 @@ export default function ServerChatView({
         </div>
       </div>
 
-      {/* POLL DIALOG */}
       <Dialog open={showPollDialog} onOpenChange={setShowPollDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -866,7 +844,6 @@ export default function ServerChatView({
         </DialogContent>
       </Dialog>
 
-      {/* MEMBERS SIDE SHEET */}
       <Sheet open={showMembers} onOpenChange={setShowMembers}>
         <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
           <SheetHeader className="p-4 border-b border-border">
@@ -887,7 +864,6 @@ export default function ServerChatView({
         </SheetContent>
       </Sheet>
 
-      {/* REACTION ROLE DIALOG */}
       <ReactionRoleDialog
         serverId={server.id}
         channelId={channel.id}
@@ -923,12 +899,12 @@ function RoleBadge({ role, colorOverride }: { role: string; colorOverride?: stri
   const config = configs[role] || configs.MEMBER;
 
   return (
-    <span 
+    <span
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${colorOverride ? '' : config.color}`}
       style={colorOverride ? {
         color: colorOverride,
-        borderColor: `${colorOverride}33`, // 20% opacity
-        backgroundColor: `${colorOverride}1a`, // 10% opacity
+        borderColor: `${colorOverride}33`,
+        backgroundColor: `${colorOverride}1a`,
       } : undefined}
     >
       {config.icon}

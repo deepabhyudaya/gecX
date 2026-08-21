@@ -58,7 +58,6 @@ import { useClerk } from "@clerk/nextjs";
 import { useUnreadCountsSSE } from "@/hooks/useUnreadCountsSSE";
 import { Input } from "@/components/ui/input";
 
-// Use primitives directly for full icon control + animations
 import {
   Files,
   FilesHighlight,
@@ -225,7 +224,7 @@ const getMenuGroups = (role: string): MenuGroup[] => [
       { icon: Zap, label: "Karma Settings", href: "/admin/karma-settings", visible: ["admin"] },
       { icon: Zap, label: "Streak Settings", href: "/admin/streak-settings", visible: ["admin"] },
       { icon: Ticket, label: "Admin Tickets", href: "/admin/tickets", visible: ["admin"] },
-      // { icon: Trophy, label: "Seasons", href: "/admin/seasons", visible: ["admin"] },
+
     ],
   },
   {
@@ -253,15 +252,12 @@ function NavContent({
   const { signOut } = useClerk();
   const router = useRouter();
 
-  // Live counts — seed from server-side initialCounts, then keep fresh via SSE
   const { counts: liveCounts, isConnected } = useUnreadCountsSSE();
   const [counts, setCounts] = useState<UnreadCounts>(initialCounts);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Update counts when SSE data arrives. The SSE hook returns a permissive
-    // record type to avoid duplicating the full shape there; at runtime the
-    // payload from /api/sse/unread-counts matches UnreadCounts exactly.
+
     setCounts(liveCounts as UnreadCounts);
   }, [liveCounts]);
 
@@ -275,11 +271,10 @@ function NavContent({
         const data = await res.json();
         if (!cancelled) setCounts(data);
       } catch {
-        // silently ignore network errors to avoid console noise
+
       }
     };
 
-    // Fallback polling only if SSE is not connected (every 5 minutes)
     if (!isConnected) {
       fetchCounts();
       intervalRef.current = setInterval(fetchCounts, 300_000);
@@ -290,7 +285,6 @@ function NavContent({
       }
     }
 
-    // Also re-fetch immediately whenever a notification dialog is dismissed
     window.addEventListener(NOTIFICATION_DISMISSED_EVENT, fetchCounts);
 
     return () => {
@@ -298,14 +292,13 @@ function NavContent({
       if (intervalRef.current) clearInterval(intervalRef.current);
       window.removeEventListener(NOTIFICATION_DISMISSED_EVENT, fetchCounts);
     };
-  }, [isConnected]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isConnected]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTypes, setDialogTypes] = useState<string[]>([]);
   const [dialogEntityId, setDialogEntityId] = useState("");
   const [dialogEntityName, setDialogEntityName] = useState("");
 
-  // Mapping from menu labels to notification types
   const labelToTypes: Record<string, string[]> = {
     Teachers: ["TEACHER_CREATED", "TEACHER_UPDATED", "TEACHER_DELETED"],
     Students: ["STUDENT_CREATED", "STUDENT_UPDATED", "STUDENT_DELETED"],
@@ -359,14 +352,12 @@ function NavContent({
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Auto-expand all groups when searching
   useEffect(() => {
     if (searchQuery.trim() && isHydrated) {
       setOpenGroups(filteredGroups.map(g => g.groupKey));
     }
-  }, [searchQuery, isHydrated]); // intentionally omit filteredGroups to prevent jumping when typing
+  }, [searchQuery, isHydrated]);
 
-  // Load state on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -381,7 +372,6 @@ function NavContent({
     setIsHydrated(true);
   }, [role]);
 
-  // Save state on change
   useEffect(() => {
     if (isHydrated) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups));
@@ -399,7 +389,6 @@ function NavContent({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className="px-5 pt-7 pb-5 shrink-0">
         <Link href="/" className="flex flex-col gap-0.5" onClick={onNavClick}>
           <span className="text-foreground font-semibold text-[15px] tracking-tight leading-tight" style={{ letterSpacing: "-0.01em" }}>
@@ -409,7 +398,6 @@ function NavContent({
         </Link>
       </div>
 
-      {/* Section Filter Toggles */}
       <div className="px-3 pb-2 shrink-0">
         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
           {sectionTitles.map((title) => (
@@ -428,7 +416,6 @@ function NavContent({
         </div>
       </div>
 
-      {/* Search Filter */}
       <div className="px-3 pb-3 shrink-0">
         <div className="relative">
           <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground/70" />
@@ -441,7 +428,6 @@ function NavContent({
         </div>
       </div>
 
-      {/* Files Nav */}
       <div className="flex-1 overflow-y-auto pb-6 px-2 no-scrollbar">
         <Files
           open={openGroups}
@@ -506,9 +492,7 @@ function NavContent({
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      // Messages and ticket badges navigate directly to their pages.
-                                      // Use Next router (SPA nav) instead of window.location.href
-                                      // so we don't blow away the layout, sidebar state, and SSE connection.
+
                                       if (item.label === "Messages") {
                                         if (onNavClick) onNavClick();
                                         router.push(item.href);

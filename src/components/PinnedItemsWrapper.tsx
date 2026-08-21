@@ -5,7 +5,6 @@ import { PinList } from "@/components/animate-ui/components/community/pin-list";
 import { User, BookOpen, GraduationCap, Calendar, FileText, LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// Map entity types to icons
 const getIconForType = (type: string): LucideIcon => {
   switch (type) {
     case "students":
@@ -25,7 +24,7 @@ const getIconForType = (type: string): LucideIcon => {
 
 type Props = {
   entityType: string;
-  baseUrl: string; // e.g., '/list/students'
+  baseUrl: string;
   role?: string;
 };
 
@@ -39,30 +38,15 @@ export default function PinnedItemsWrapper({ entityType, baseUrl, role }: Props)
     return null;
   }
 
-  // Transform our simple PinnedItem to the PinList expected format
   const mappedItems = pinnedItems.map((item) => ({
     id: typeof item.id === 'string' ? parseInt(item.id.replace(/\D/g,'')) || Math.random() : item.id,
-    originalId: item.id, // Keep the original for navigation
+    originalId: item.id,
     name: item.name,
     info: item.info,
     icon: getIconForType(entityType),
-    pinned: true, // Everything here is pinned
+    pinned: true,
   }));
 
-  // We need to pass a custom toggle function to update localStorage
-  // The PinList component has its own internal state, so we want to sync them.
-  // Actually, PinList component handles the toggle internally for visual effect,
-  // but it doesn't notify us. 
-  // Let's modify PinList or wrap it. The requested `pin-list.tsx` currently doesn't export an `onToggle` callback.
-  // Since we don't want to rewrite the animation component if we don't have to,
-  // we can add a simple wrapper around the PinList item click, or just modify the PinList to accept an onPinChange callback.
-
-  // Let's render our own simple pinned cards if we don't want to use PinList for everything,
-  // OR we use the PinList component and pass ONLY pinned items.
-  // Wait, the PinList is designed to show pinned AND unpinned.
-  // We want to show ONLY pinned items here, but using the PinList component.
-  // If we pass ONLY pinned items, PinList will render them all in the 'pinned' section.
-  
   return (
     <div className="mb-6 bg-card border border-border rounded-xl p-4 shadow-sm">
       <h2 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">

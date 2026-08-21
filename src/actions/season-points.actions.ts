@@ -10,8 +10,6 @@ async function requireAdmin() {
   if (role !== "admin") throw new Error("Admin only");
 }
 
-// ==================== CONFIG HELPERS ====================
-
 async function getPointConfig(seasonId: string) {
   const config = await prisma.seasonPointConfig.findUnique({ where: { seasonId } });
   const defaults = {
@@ -39,8 +37,6 @@ async function getPointConfig(seasonId: string) {
 function applyMultiplier(points: number, multiplier: number) {
   return Math.round(points * multiplier);
 }
-
-// ==================== RECORD BRANCH WAR POINTS ====================
 
 export async function recordBranchWarSeasonPoints(
   rivalryId: string,
@@ -81,7 +77,6 @@ export async function recordBranchWarSeasonPoints(
       (winnerClassId === rivalry.classBId && aBoutsWon === 0)
     : false;
 
-  // ---- Branch-level points ----
   const branchPointsA =
     (winnerClassId === rivalry.classAId ? config.branchWarWin : config.branchWarLoss) +
     (winnerClassId === rivalry.classAId && isDominant ? config.branchWarWinDominant : 0) +
@@ -96,7 +91,6 @@ export async function recordBranchWarSeasonPoints(
 
   const txs: any[] = [];
 
-  // Upsert branch aggregates and record transactions.
   for (const { classId, points, warsWon, warsLost } of [
     {
       classId: rivalry.classAId,
@@ -147,7 +141,6 @@ export async function recordBranchWarSeasonPoints(
     );
   }
 
-  // ---- Individual points (per member) ----
   const mvpIds = new Set(
     rivalry.members.filter((m: any) => m.isMvp).map((m: any) => m.studentId)
   );
@@ -228,8 +221,6 @@ export async function recordBranchWarSeasonPoints(
   return { recorded: true, branchPointsA, branchPointsB };
 }
 
-// ==================== RECORD STUDENT WAR POINTS ====================
-
 export async function recordStudentWarSeasonPoints(
   rivalryId: string,
   seasonId: string,
@@ -260,9 +251,6 @@ export async function recordStudentWarSeasonPoints(
       (winnerStudentId === rivalry.studentBId && aBoutsWon === 0 && totalBouts > 0)
     : false;
 
-  // Underdog: winner had fewer total season points at start of war.
-  // Simplified: we don't track pre-war points snapshot, so we skip underdog for now
-  // or compute it from current aggregates.
   const [aggA, aggB] = await Promise.all([
     db.studentSeasonPoints.findUnique({ where: { seasonId_studentId: { seasonId, studentId: rivalry.studentAId } } }),
     db.studentSeasonPoints.findUnique({ where: { seasonId_studentId: { seasonId, studentId: rivalry.studentBId } } }),
@@ -336,7 +324,6 @@ export async function recordStudentWarSeasonPoints(
     );
   }
 
-  // Ally win bonus
   if (winnerStudentId) {
     const winningAllies = rivalry.allies.filter((a: any) => a.sideStudentId === winnerStudentId);
     for (const ally of winningAllies) {
@@ -386,8 +373,6 @@ export async function recordStudentWarSeasonPoints(
   return { recorded: true };
 }
 
-// ==================== RANK RECALCULATION ====================
-
 export async function recalculateSeasonRanks(seasonId: string, tx?: any) {
   const db = tx ?? prisma;
 
@@ -400,7 +385,6 @@ export async function recalculateSeasonRanks(seasonId: string, tx?: any) {
   const ranks = season.ranks;
   if (ranks.length === 0) return { branchUpdated: 0, studentUpdated: 0 };
 
-  // --- Branch ranks ---
   const branchRows = await db.branchSeasonPoints.findMany({ where: { seasonId } });
   let branchUpdated = 0;
   for (const row of branchRows) {
@@ -420,7 +404,6 @@ export async function recalculateSeasonRanks(seasonId: string, tx?: any) {
     }
   }
 
-  // --- Student ranks ---
   const studentRows = await db.studentSeasonPoints.findMany({ where: { seasonId } });
   let studentUpdated = 0;
   for (const row of studentRows) {
@@ -443,8 +426,6 @@ export async function recalculateSeasonRanks(seasonId: string, tx?: any) {
   return { branchUpdated, studentUpdated };
 }
 
-// ==================== CONQUEROR RECALCULATION ====================
-
 export async function recalculateConquerors(seasonId: string, tx?: any) {
   const db = tx ?? prisma;
 
@@ -452,7 +433,6 @@ export async function recalculateConquerors(seasonId: string, tx?: any) {
   if (!season) throw new Error("Season not found");
   const size = season.conquerorSize;
 
-  // --- Branch conquerors ---
   const branchTop = await db.branchSeasonPoints.findMany({
     where: { seasonId },
     orderBy: { totalPoints: "desc" },
@@ -469,7 +449,6 @@ export async function recalculateConquerors(seasonId: string, tx?: any) {
     });
   }
 
-  // --- Student conquerors ---
   const studentTop = await db.studentSeasonPoints.findMany({
     where: { seasonId },
     orderBy: { totalPoints: "desc" },

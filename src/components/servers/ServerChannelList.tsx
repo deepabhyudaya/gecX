@@ -77,7 +77,6 @@ export default function ServerChannelList({
   const [editingChannel, setEditingChannel] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
-  // Category management state
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -87,7 +86,6 @@ export default function ServerChannelList({
   const isAdmin = server.myRole === "ADMIN";
   const isMod = server.myRole === "MODERATOR";
 
-  // Helper to check custom permissions
   const hasPermission = (flag: bigint): boolean => {
     if (isAdmin) return true;
     if (!server.myPermissions) return false;
@@ -100,24 +98,20 @@ export default function ServerChannelList({
   const canManageEmojis = isAdmin || isMod || hasPermission(ROLE_PERMISSIONS.MANAGE_EMOJIS);
   const canManage = canManageChannels || canManageServer || canManageEmojis;
 
-  // Get uncategorized channels
   const uncategorizedChannels = channels.filter(c => !c.categoryId);
 
   return (
     <TooltipProvider delayDuration={100}>
       <div className="flex flex-col h-full w-full md:w-60 bg-muted/30 border-r border-border">
-        {/* Discord-style Server Header */}
         <div className="relative shrink-0">
-          {/* Banner - Discord uses ~135px height */}
           {server.bannerUrl ? (
             <div className="w-full h-[135px] relative overflow-hidden bg-muted">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={server.bannerUrl}
                 alt="Server banner"
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  // Fallback to gradient on error
+
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
@@ -127,11 +121,10 @@ export default function ServerChannelList({
             <div className="w-full h-[60px] bg-gradient-to-br from-primary/30 via-primary/10 to-muted" />
           )}
 
-          {/* Server Icon - Discord style: positioned at bottom of banner with overflow */}
           <div className="absolute left-4" style={{ bottom: '-44px' }}>
             <div className="w-[88px] h-[88px] rounded-[24px] bg-background border-[6px] border-background overflow-hidden shadow-lg">
               {server.iconUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
+
                 <img
                   src={server.iconUrl}
                   alt={server.name}
@@ -149,7 +142,6 @@ export default function ServerChannelList({
           </div>
         </div>
 
-        {/* Server Name Header - Discord style with proper spacing for overlapped icon */}
         <div className="px-4 pt-12 pb-3 flex items-center justify-between bg-background/50 border-b border-border">
           <div className="flex items-center gap-2 min-w-0">
             <h2 className="font-bold text-foreground truncate text-lg">{server.name}</h2>
@@ -167,16 +159,13 @@ export default function ServerChannelList({
           </Tooltip>
         </div>
 
-        {/* Channels List */}
         <div className="flex-1 overflow-y-auto py-2 space-y-1">
-          {/* Categories */}
           {categories.map((category) => {
             const isCollapsed = collapsedCategories.has(category.id);
             const categoryChannels = channels.filter(c => c.categoryId === category.id);
 
             return (
               <div key={category.id} className="space-y-0.5">
-                {/* Category Header */}
                 <div className="px-2 py-1 group">
                   {editingCategory === category.id ? (
                     <form
@@ -223,7 +212,6 @@ export default function ServerChannelList({
                         {categoryChannels.length}
                       </span>
 
-                      {/* Category actions - canManageChannels only */}
                       {canManageChannels && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -263,7 +251,6 @@ export default function ServerChannelList({
                   )}
                 </div>
 
-                {/* Category Channels */}
                 {!isCollapsed && categoryChannels.map((channel) => (
                   <ChannelItem
                     key={channel.id}
@@ -282,7 +269,6 @@ export default function ServerChannelList({
             );
           })}
 
-          {/* Uncategorized Channels */}
           {uncategorizedChannels.length > 0 && (
             <div className="space-y-0.5">
               {categories.length > 0 && (
@@ -306,7 +292,6 @@ export default function ServerChannelList({
             </div>
           )}
 
-          {/* Create Category Button (canManageChannels only) */}
           {canManageChannels && !creatingCategory && (
             <button
               onClick={() => setCreatingCategory(true)}
@@ -317,7 +302,6 @@ export default function ServerChannelList({
             </button>
           )}
 
-          {/* Create Category Form */}
           {canManageChannels && creatingCategory && (
             <form
               onSubmit={async (e) => {
@@ -347,7 +331,6 @@ export default function ServerChannelList({
             </form>
           )}
 
-          {/* Create Channel Button (canManageChannels) */}
           {canManageChannels && (
             <button
               onClick={() => setShowCreateChannel(true)}
@@ -359,7 +342,6 @@ export default function ServerChannelList({
           )}
         </div>
 
-        {/* User Info Footer */}
         <div className="h-14 px-3 flex items-center gap-2 border-t border-border bg-background/50">
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
             {roleIcons[server.myRole]}
@@ -389,7 +371,6 @@ export default function ServerChannelList({
   );
 }
 
-// Channel Item Component
 function ChannelItem({
   channel,
   server,
@@ -447,7 +428,6 @@ function ChannelItem({
         ) : (
           <span className="truncate flex items-center gap-1">
             {channel.name}
-            {/* Show lock icon for private channels (admin only) */}
             {isAdmin && channel.isPrivate && (
               <Lock className="w-3 h-3 text-muted-foreground shrink-0" />
             )}
@@ -455,7 +435,6 @@ function ChannelItem({
         )}
       </Link>
 
-      {/* Channel actions - Admin only */}
       {isAdmin && !isEditing && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

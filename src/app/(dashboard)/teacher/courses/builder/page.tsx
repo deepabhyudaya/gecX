@@ -64,7 +64,6 @@ export default async function TeacherCourseBuilderPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  // Admin: fetch all approved/rejected courses for force-delete
   const allAdminCourses = role === "admin"
     ? await prisma.course.findMany({
       where: { status: { in: ["APPROVED", "REJECTED"] } },
@@ -85,7 +84,6 @@ export default async function TeacherCourseBuilderPage() {
     <div className="p-6 bg-background">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
 
-        {/* Header */}
         <div className="flex items-center justify-between bg-card border border-border p-6 rounded-[12px] shadow-sm flex-wrap gap-3">
           <div>
             <h1 className="text-[28px] font-bold text-foreground tracking-tight">Course Builder</h1>
@@ -103,10 +101,8 @@ export default async function TeacherCourseBuilderPage() {
           left={
             <div className="flex flex-col gap-5">
 
-              {/* New Course Form */}
               <AddCourseForm />
 
-              {/* Draft Courses Quick Access */}
               {draftCourses.length > 0 && (
                 <div className="bg-card border border-border rounded-[12px] p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
@@ -135,7 +131,6 @@ export default async function TeacherCourseBuilderPage() {
                 </div>
               )}
 
-              {/* Admin Force-Delete Panel */}
               {role === "admin" && allAdminCourses.length > 0 && (
                 <div className="bg-card border border-destructive/30 rounded-[12px] p-5 shadow-sm">
                   <h2 className="text-[14px] font-bold text-destructive mb-1">Admin Controls</h2>
@@ -177,7 +172,6 @@ export default async function TeacherCourseBuilderPage() {
                   id={`course-${course.id}`}
                   className="bg-card border border-border rounded-[12px] shadow-sm overflow-hidden scroll-mt-6"
                 >
-                  {/* Course Header */}
                   <div className="flex items-start justify-between p-5 border-b border-border">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -197,7 +191,6 @@ export default async function TeacherCourseBuilderPage() {
                     </div>
                   </div>
 
-                  {/* Sections  drag-and-drop */}
                   <div className="p-5 flex flex-col gap-4">
                     <DraggableSectionList
                       courseId={course.id}

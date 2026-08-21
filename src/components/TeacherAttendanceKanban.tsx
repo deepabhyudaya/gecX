@@ -255,7 +255,6 @@ export default function TeacherAttendanceKanban() {
       setAbsent((prev) => [...prev, teacher]);
     }
 
-    // Autosave after drag
     saveAttendance();
   };
 
@@ -292,7 +291,6 @@ export default function TeacherAttendanceKanban() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col">
-            {/* Action Bar */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-[13px]">
                 <span className="font-semibold text-foreground">
@@ -318,7 +316,6 @@ export default function TeacherAttendanceKanban() {
               </div>
             </div>
 
-            {/* Board */}
             <DndContext
               sensors={sensors}
               onDragStart={onDragStart}

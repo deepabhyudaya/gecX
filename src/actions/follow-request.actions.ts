@@ -5,7 +5,6 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createNotificationsForUsers } from "@/lib/notifications";
 
-// Get incoming follow requests
 export async function getFollowRequests() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -31,7 +30,6 @@ export async function getFollowRequests() {
   return requests;
 }
 
-// Get outgoing follow requests
 export async function getSentFollowRequests() {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -57,7 +55,6 @@ export async function getSentFollowRequests() {
   return requests;
 }
 
-// Accept a follow request
 export async function acceptFollowRequest(requestId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -78,13 +75,11 @@ export async function acceptFollowRequest(requestId: string) {
   if (request.targetId !== userId) throw new Error("Unauthorized");
   if (request.status !== "PENDING") throw new Error("Request is not pending");
 
-  // Update request status
   await prisma.followRequest.update({
     where: { id: requestId },
     data: { status: "ACCEPTED" },
   });
 
-  // Create the actual follow relationship
   await prisma.communityFollow.create({
     data: {
       followerId: request.requesterId,
@@ -92,20 +87,18 @@ export async function acceptFollowRequest(requestId: string) {
     },
   });
 
-  // Update follower/following counts using raw SQL
   await prisma.$executeRaw`
-    UPDATE "UserCommunityProfile" 
+    UPDATE "UserCommunityProfile"
     SET "followingCount" = "followingCount" + 1, "updatedAt" = NOW()
     WHERE "userId" = ${request.requesterId}
   `;
 
   await prisma.$executeRaw`
-    UPDATE "UserCommunityProfile" 
+    UPDATE "UserCommunityProfile"
     SET "followerCount" = "followerCount" + 1, "updatedAt" = NOW()
     WHERE "userId" = ${request.targetId}
   `;
 
-  // Notify requester
   await createNotificationsForUsers({
     title: "Follow Request Accepted",
     message: `${request.target.displayName || request.target.username} accepted your follow request`,
@@ -120,7 +113,6 @@ export async function acceptFollowRequest(requestId: string) {
   return { success: true };
 }
 
-// Decline a follow request
 export async function declineFollowRequest(requestId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -138,7 +130,6 @@ export async function declineFollowRequest(requestId: string) {
     data: { status: "DECLINED" },
   });
 
-  // Notify requester
   await createNotificationsForUsers({
     title: "Follow Request Declined",
     message: "Your follow request was declined",
@@ -151,7 +142,6 @@ export async function declineFollowRequest(requestId: string) {
   return { success: true };
 }
 
-// Cancel an outgoing follow request
 export async function cancelFollowRequest(requestId: string) {
   const { userId } = auth();
   if (!userId) throw new Error("Unauthorized");
@@ -172,14 +162,12 @@ export async function cancelFollowRequest(requestId: string) {
   return { success: true };
 }
 
-// Check if there's a pending follow request (either direction)
 export async function getPendingFollowRequest(targetUserId: string) {
   const { userId } = auth();
   if (!userId) return null;
 
   if (userId === targetUserId) return null;
 
-  // Check for request from current user to target
   const outgoingRequest = await prisma.followRequest.findUnique({
     where: {
       requesterId_targetId: {
@@ -193,7 +181,6 @@ export async function getPendingFollowRequest(targetUserId: string) {
     return { type: "outgoing", request: outgoingRequest };
   }
 
-  // Check for request from target to current user
   const incomingRequest = await prisma.followRequest.findUnique({
     where: {
       requesterId_targetId: {
@@ -210,7 +197,6 @@ export async function getPendingFollowRequest(targetUserId: string) {
   return null;
 }
 
-// Get count of pending follow requests for badge
 export async function getFollowRequestCount() {
   const { userId } = auth();
   if (!userId) return 0;
@@ -225,7 +211,6 @@ export async function getFollowRequestCount() {
   return count;
 }
 
-// Get count of pending DM requests for badge
 export async function getDMRequestCount() {
   const { userId } = auth();
   if (!userId) return 0;
@@ -240,7 +225,6 @@ export async function getDMRequestCount() {
   return count;
 }
 
-// Get total request count (for badge)
 export async function getTotalRequestCount() {
   const { userId } = auth();
   if (!userId) return 0;
@@ -263,9 +247,8 @@ export async function getTotalRequestCount() {
   return followCount + dmCount;
 }
 
-// Helper to get notification IDs based on user lookup
 async function getUserNotificationIds(userId: string) {
-  // Check user type by looking up in various tables
+
   const student = await prisma.student.findUnique({
     where: { id: userId },
     select: { id: true },

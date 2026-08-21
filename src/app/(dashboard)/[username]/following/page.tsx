@@ -23,7 +23,6 @@ export default async function FollowingPage({ params }: FollowingPageProps) {
 
   const following = isPrivateLocked ? [] : await getFollowing(params.username);
 
-  // Load the profile owner's equipped bg for theming
   const equippedColors = profile ? await getEquippedColors(profile.userId) : null;
   const profileBgColor = equippedColors?.profileBgColor ?? null;
   const bgIsLight = profileBgColor ? isLightColor(profileBgColor) : false;

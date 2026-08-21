@@ -26,7 +26,6 @@ export type KarmaSettingsData = {
   promisingAnswerKarma: number;
 };
 
-// Check if user is admin
 function checkAdmin() {
   const { sessionClaims } = auth();
   const role = ((sessionClaims?.metadata as { role?: string })?.role || "").toLowerCase();
@@ -35,12 +34,11 @@ function checkAdmin() {
   }
 }
 
-// Get karma settings (creates defaults if none exist)
 export async function getKarmaSettings(): Promise<KarmaSettingsData> {
   let settings = await prisma.karmaSettings.findFirst();
-  
+
   if (!settings) {
-    // Create default settings
+
     settings = await prisma.karmaSettings.create({
       data: {
         likeReceived: 2,
@@ -89,19 +87,17 @@ export async function getKarmaSettings(): Promise<KarmaSettingsData> {
   };
 }
 
-// Update karma settings (admin only)
 export async function updateKarmaSettings(settings: Partial<KarmaSettingsData>) {
   checkAdmin();
-  
-  // Validate all values are non-negative integers
+
   for (const [key, value] of Object.entries(settings)) {
     if (typeof value !== "number" || value < 0 || !Number.isInteger(value)) {
       throw new Error(`${key} must be a non-negative integer`);
     }
   }
-  
+
   const existing = await prisma.karmaSettings.findFirst();
-  
+
   if (existing) {
     await prisma.karmaSettings.update({
       where: { id: existing.id },
@@ -112,15 +108,14 @@ export async function updateKarmaSettings(settings: Partial<KarmaSettingsData>) 
       data: settings as KarmaSettingsData,
     });
   }
-  
+
   revalidatePath("/admin/karma-settings");
   return { success: true };
 }
 
-// Reset to default values (admin only)
 export async function resetKarmaSettingsToDefaults() {
   checkAdmin();
-  
+
   const defaults: KarmaSettingsData = {
     likeReceived: 2,
     commentCreated: 1,
@@ -142,9 +137,9 @@ export async function resetKarmaSettingsToDefaults() {
     helpfulAnswerKarma: 50,
     promisingAnswerKarma: 25,
   };
-  
+
   const existing = await prisma.karmaSettings.findFirst();
-  
+
   if (existing) {
     await prisma.karmaSettings.update({
       where: { id: existing.id },
@@ -155,7 +150,7 @@ export async function resetKarmaSettingsToDefaults() {
       data: defaults,
     });
   }
-  
+
   revalidatePath("/admin/karma-settings");
   return { success: true, defaults };
 }

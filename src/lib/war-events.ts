@@ -1,10 +1,4 @@
-// Real-time war event publisher (Phase 2A).
-// Layered on top of the existing Ably integration in `ably-server.ts` so the
-// war UI can subscribe to a single channel per rivalry and react to score
-// updates, new bouts, strikes, lore drops, and conclusions without polling.
-//
-// All publishes are best-effort: a missing ABLY_API_KEY makes them silent
-// no-ops so dev environments without Ably credentials still work.
+
 
 import { ablyPublish } from "./ably-server";
 
@@ -63,12 +57,6 @@ export type WarEvent =
       battlefieldServerId: string | null;
     };
 
-/**
- * Publishes a war event to the appropriate Ably channel. Returns true on
- * success, false on missing credentials or transport failure (logged inside
- * ablyPublish). Callers should not branch on the return value — these are
- * UI-enhancement events, not source-of-truth.
- */
 export async function publishWarEvent(
   scope: "branch" | "student",
   event: Extract<WarEvent, { rivalryId: string }>
@@ -77,6 +65,6 @@ export async function publishWarEvent(
     scope === "branch"
       ? getBranchWarChannel(event.rivalryId)
       : getStudentWarChannel(event.rivalryId);
-  // ablyPublish only narrowly types its second arg; cast at the boundary.
+
   return ablyPublish(channel, event as any);
 }

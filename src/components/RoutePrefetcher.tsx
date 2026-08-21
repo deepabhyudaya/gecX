@@ -4,9 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 
-// Prefetches the routes the user is statistically most likely to navigate to
-// next, role-aware. Previously this prefetched non-existent /dashboard/* paths
-// and effectively did nothing.
 export function RoutePrefetcher() {
   const router = useRouter();
   const { user } = useUser();
@@ -14,7 +11,6 @@ export function RoutePrefetcher() {
   useEffect(() => {
     const role = (user?.publicMetadata?.role as string) || "student";
 
-    // High-priority — prefetch immediately on mount.
     const critical = [
       "/profile",
       "/notifications",
@@ -23,8 +19,6 @@ export function RoutePrefetcher() {
       "/settings",
     ];
 
-    // Role-specific dashboards & secondary pages prefetched after idle to
-    // avoid contending with the current route's resources.
     const secondaryByRole: Record<string, string[]> = {
       admin: ["/admin", "/list/teachers", "/list/students", "/list/announcements", "/list/tickets", "/list/rivalries"],
       teacher: ["/teacher", "/list/lessons", "/list/students", "/list/announcements", "/list/results"],

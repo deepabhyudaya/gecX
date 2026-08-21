@@ -109,11 +109,9 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
     const role = roles.find((r) => r.id === roleId);
     if (!role) return;
 
-    // Calculate new positions for all roles
     const otherRoles = roles.filter((r) => r.id !== roleId);
     const updatedRoles = [...otherRoles, { ...role, position: newPosition }];
-    
-    // Reassign positions to ensure they're sequential
+
     const sorted = updatedRoles.sort((a, b) => b.position - a.position);
     const roleOrders = sorted.map((r, index) => ({
       id: r.id,
@@ -141,11 +139,11 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
     let newPosition: number;
 
     if (direction === "up" && roleIndex > 0) {
-      // Move up = higher position number
+
       const aboveRole = sortedRoles[roleIndex - 1];
       newPosition = aboveRole.position + 1;
     } else if (direction === "down" && roleIndex < sortedRoles.length - 1) {
-      // Move down = lower position number
+
       const belowRole = sortedRoles[roleIndex + 1];
       newPosition = belowRole.position - 1;
     } else {
@@ -166,7 +164,6 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Server Roles</h3>
@@ -194,7 +191,6 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
         </Dialog>
       </div>
 
-      {/* Roles List */}
       <div className="space-y-2">
         {sortedRoles.map((role, index) => (
           <div
@@ -204,18 +200,15 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
               "bg-card hover:bg-accent/50 transition-colors"
             )}
           >
-            {/* Drag handle */}
             <div className="text-muted-foreground/50 cursor-grab active:cursor-grabbing">
               <GripVertical className="w-4 h-4" />
             </div>
 
-            {/* Role color indicator */}
             <div
               className="w-4 h-4 rounded-full shrink-0"
               style={{ backgroundColor: role.color || "#808080" }}
             />
 
-            {/* Role icon */}
             {role.iconUrl ? (
               <img
                 src={role.iconUrl}
@@ -226,7 +219,6 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
               <Shield className="w-5 h-5 text-muted-foreground shrink-0" />
             )}
 
-            {/* Role info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{role.name}</span>
@@ -243,7 +235,6 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
               </div>
             </div>
 
-            {/* Reorder buttons */}
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => moveRole(role.id, "up")}
@@ -261,7 +252,6 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
               </button>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-1">
               <Dialog
                 open={editingPermissions?.id === role.id}
@@ -332,7 +322,6 @@ export default function RoleManager({ serverId, roles: initialRoles, isAdmin }: 
         )}
       </div>
 
-      {/* Info */}
       <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
         <p className="font-medium mb-1">Role Hierarchy:</p>
         <p>

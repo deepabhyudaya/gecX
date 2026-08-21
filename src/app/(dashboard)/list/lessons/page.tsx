@@ -13,7 +13,6 @@ type LessonList = Lesson & { subject: Subject } & { class: Class } & {
   teacher: Teacher;
 };
 
-
 const LessonListPage = async ({
   searchParams,
 }: {
@@ -23,7 +22,6 @@ await markNotificationsByTypesAsRead(["LESSON_CREATED", "LESSON_UPDATED", "LESSO
 
 const { sessionClaims } = auth();
 const role = (sessionClaims?.metadata as { role?: string })?.role;
-
 
 const columns = [
   {
@@ -75,8 +73,6 @@ const renderRow = (item: LessonList) => (
   const { page, ...queryParams } = searchParams;
 
   const p = page ? parseInt(page) : 1;
-
-  // URL PARAMS CONDITION
 
   const query: Prisma.LessonWhereInput = {};
 
@@ -136,7 +132,6 @@ const renderRow = (item: LessonList) => (
     <div className="flex-1 m-4 mt-0 flex flex-col gap-6 overflow-y-auto h-full pb-24">
       <PinnedItemsWrapper entityType="lessons" baseUrl="/list/lessons" role={role} />
       <div className="bg-card text-card-foreground p-4 rounded-xl border border-border">
-        {/* TOP */}
         <div className="flex items-center justify-between mb-4">
         <h1 className="hidden md:block text-lg font-semibold">All Lessons</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
@@ -146,9 +141,7 @@ const renderRow = (item: LessonList) => (
           </div>
         </div>
       </div>
-      {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={data} />
-      {/* PAGINATION */}
       <Pagination page={p} count={count} />
     </div>
   </div>

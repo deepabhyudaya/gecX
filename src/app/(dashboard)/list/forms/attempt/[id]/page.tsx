@@ -27,7 +27,6 @@ export default async function FormAttemptPage({
 
   if (!form) return notFound();
 
-  // If general forms do not allow multiple attempts, or it is an exam/assignment, check duplicates
   if (form.type !== "GENERAL" || !form.allowMultiple) {
     const existingResponse = await prisma.formResponse.findFirst({
       where: { formId: id, submittedById: userId },
@@ -46,7 +45,6 @@ export default async function FormAttemptPage({
     }
   }
 
-  // Verify class enrollment constraints for EXAM/ASSIGNMENT forms
   if (form.type === "EXAM" || form.type === "ASSIGNMENT") {
     const student = await prisma.student.findUnique({
       where: { id: userId },
@@ -56,7 +54,6 @@ export default async function FormAttemptPage({
       return <div>Access Denied: Only enrolled students can submit answers.</div>;
     }
 
-    // Verify student is linked to the form's scheduled exam/assignment class
     let isLinked = false;
     if (form.type === "EXAM" && form.examId) {
       const exam = await prisma.exam.findUnique({

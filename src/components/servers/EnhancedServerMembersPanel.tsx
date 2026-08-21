@@ -27,7 +27,6 @@ import { getKarmaTierColor } from "@/lib/karma-tiers";
 import { UserCard } from "@/components/user/UserCard";
 import type { UserCardData } from "@/actions/user-card.actions";
 
-// Legacy role type for backward compatibility
 type LegacyRole = "ADMIN" | "MODERATOR" | "MEMBER";
 
 interface CustomRole {
@@ -84,9 +83,9 @@ const legacyRoleLabels: Record<LegacyRole, string> = {
 
 function RoleBadge({ role, colorOverride }: { role: CustomRole; colorOverride?: string | null }) {
   const effectiveColor = colorOverride || role.color || "#808080";
-  
+
   return (
-    <span 
+    <span
       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border"
       style={{
         color: effectiveColor,
@@ -119,24 +118,21 @@ export default function EnhancedServerMembersPanel({
   const isAdmin = myRole === "ADMIN";
   const isMod = myRole === "MODERATOR";
 
-  // Get member's highest custom role
   const getMemberHighestRole = (member: Member): CustomRole | null => {
     if (member.roles.length === 0) return null;
-    return member.roles.reduce((highest, current) => 
+    return member.roles.reduce((highest, current) =>
       current.role.position > highest.role.position ? current : highest
     ).role;
   };
 
-  // Get all roles for a member (sorted by position)
   const getMemberRoles = (member: Member): CustomRole[] => {
     return member.roles
       .map(r => r.role)
       .sort((a, b) => b.position - a.position);
   };
 
-  // Group and sort members
   const groupedMembers = useMemo(() => {
-    // First group by legacy role
+
     const byLegacyRole = localMembers.reduce(
       (acc, member) => {
         acc[member.role].push(member);
@@ -145,17 +141,16 @@ export default function EnhancedServerMembersPanel({
       { ADMIN: [] as Member[], MODERATOR: [] as Member[], MEMBER: [] as Member[] }
     );
 
-    // Sort each group
     const sortMembers = (members: Member[]) => {
       if (sortOrder === "custom" && allowReordering) {
         return [...members].sort((a, b) => a.sortOrder - b.sortOrder);
       }
-      
+
       return [...members].sort((a, b) => {
-        // First by highest custom role position
+
         const aHighest = getMemberHighestRole(a);
         const bHighest = getMemberHighestRole(b);
-        
+
         if (aHighest && bHighest) {
           if (sortOrder === "hierarchy_desc") {
             if (bHighest.position !== aHighest.position) {
@@ -171,8 +166,7 @@ export default function EnhancedServerMembersPanel({
         } else if (!aHighest && bHighest) {
           return sortOrder === "hierarchy_desc" ? 1 : -1;
         }
-        
-        // Then by joinedAt
+
         return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
       });
     };
@@ -315,14 +309,12 @@ export default function EnhancedServerMembersPanel({
                       member.userId === currentUserId && "bg-accent/50"
                     )}
                   >
-                    {/* Drag handle for reordering */}
                     {allowReordering && isAdmin && (
                       <div className="cursor-grab active:cursor-grabbing text-muted-foreground/50">
                         <GripVertical className="w-4 h-4" />
                       </div>
                     )}
 
-                    {/* Avatar placeholder */}
                     <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                       <span className="text-xs font-bold text-muted-foreground">
                         {member.displayName.substring(0, 2).toUpperCase()}
@@ -331,19 +323,17 @@ export default function EnhancedServerMembersPanel({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p 
+                        <p
                           className="text-sm font-medium truncate"
                           style={{ color: member.equippedColor || 'inherit' }}
                         >
                           {member.displayName}
                         </p>
-                        
-                        {/* Role Badges */}
+
                         {showRoleBadges && (
                           <div className="flex items-center gap-1 flex-wrap">
-                            {/* Legacy role badge */}
                             {legacyRole !== "MEMBER" && (
-                              <span 
+                              <span
                                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border"
                                 style={member.equippedColor ? {
                                   color: member.equippedColor,
@@ -355,20 +345,19 @@ export default function EnhancedServerMembersPanel({
                                 {legacyRoleLabels[legacyRole]}
                               </span>
                             )}
-                            
-                            {/* Custom role badges */}
+
                             {getMemberRoles(member).map((role) => (
-                              <RoleBadge 
-                                key={role.id} 
-                                role={role} 
+                              <RoleBadge
+                                key={role.id}
+                                role={role}
                                 colorOverride={member.equippedColor}
                               />
                             ))}
                           </div>
                         )}
                       </div>
-                      
-                      <p 
+
+                      <p
                         className="text-xs text-muted-foreground truncate"
                         style={{ color: !member.equippedColor ? (getKarmaTierColor(member.karmaPoints || 0) || undefined) : undefined }}
                       >
@@ -376,14 +365,12 @@ export default function EnhancedServerMembersPanel({
                       </p>
                     </div>
 
-                    {/* Muted indicator */}
                     {member.isMuted && (
                       <div className="shrink-0" title="Muted">
                         <VolumeX className="w-4 h-4 text-red-500" />
                       </div>
                     )}
 
-                    {/* Actions dropdown */}
                     {member.userId !== currentUserId && (isAdmin || isMod) && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -392,7 +379,6 @@ export default function EnhancedServerMembersPanel({
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                          {/* Legacy role management */}
                           {isAdmin && member.role === "MEMBER" && (
                             <DropdownMenuItem
                               onClick={() => handleRoleChange(member.userId, "MODERATOR")}
@@ -410,7 +396,6 @@ export default function EnhancedServerMembersPanel({
                             </DropdownMenuItem>
                           )}
 
-                          {/* Custom role management */}
                           {isAdmin && customRoles.length > 0 && (
                             <>
                               <DropdownMenuSeparator />
@@ -428,7 +413,7 @@ export default function EnhancedServerMembersPanel({
                                         disabled={hasRole}
                                         onClick={() => handleAssignCustomRole(member.userId, role.id)}
                                       >
-                                        <span 
+                                        <span
                                           className="w-2 h-2 rounded-full mr-2"
                                           style={{ backgroundColor: role.color || "#808080" }}
                                         />
@@ -452,7 +437,7 @@ export default function EnhancedServerMembersPanel({
                                         key={memberRole.id}
                                         onClick={() => handleRemoveCustomRole(member.userId, memberRole.role.id)}
                                       >
-                                        <span 
+                                        <span
                                           className="w-2 h-2 rounded-full mr-2"
                                           style={{ backgroundColor: memberRole.role.color || "#808080" }}
                                         />
@@ -467,7 +452,6 @@ export default function EnhancedServerMembersPanel({
 
                           <DropdownMenuSeparator />
 
-                          {/* Transfer ownership */}
                           {isAdmin && member.role !== "ADMIN" && (
                             <DropdownMenuItem
                               onClick={() => handleTransferOwnership(member.userId)}
@@ -478,7 +462,6 @@ export default function EnhancedServerMembersPanel({
                             </DropdownMenuItem>
                           )}
 
-                          {/* Mute/Unmute */}
                           {(isAdmin || isMod) && member.role !== "ADMIN" && (
                             <DropdownMenuItem
                               onClick={() => handleMuteToggle(member.userId, member.isMuted)}
@@ -488,7 +471,6 @@ export default function EnhancedServerMembersPanel({
                             </DropdownMenuItem>
                           )}
 
-                          {/* Kick */}
                           {(isAdmin || (isMod && member.role === "MEMBER")) && (
                             <DropdownMenuItem
                               onClick={() => handleKick(member.userId)}

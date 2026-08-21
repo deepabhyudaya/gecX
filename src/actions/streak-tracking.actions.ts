@@ -3,10 +3,6 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
-/**
- * Record user activity for today and update streak
- * Call this whenever a user sends a message, posts, comments, etc.
- */
 export async function recordUserActivity(
   userId?: string,
   activityType: "message" | "post" | "comment" | "general" = "general"
@@ -20,7 +16,6 @@ export async function recordUserActivity(
   const month = today.getMonth() + 1;
   const day = today.getDate();
 
-  // Upsert activity log for today
   await prisma.$executeRaw`
     INSERT INTO "UserActivityLog" ("id", "userId", "date", "year", "month", "day", "activityType", "createdAt")
     VALUES (gen_random_uuid(), ${targetUserId}, ${today}, ${year}, ${month}, ${day}, ${activityType}, NOW())
@@ -29,7 +24,6 @@ export async function recordUserActivity(
         "createdAt" = NOW();
   `;
 
-  // Get user's current streak info
   const profiles = await prisma.$queryRaw`
     SELECT "currentStreak", "longestStreak", "lastActiveDate"
     FROM "UserCommunityProfile"
@@ -46,7 +40,7 @@ export async function recordUserActivity(
   let newStreak = profile.currentStreak || 0;
 
   if (!lastActive) {
-    // First activity ever
+
     newStreak = 1;
   } else {
     const lastActiveDate = new Date(
@@ -56,20 +50,19 @@ export async function recordUserActivity(
     );
 
     if (lastActiveDate.getTime() === today.getTime()) {
-      // Already active today, streak unchanged
+
       newStreak = profile.currentStreak || 1;
     } else if (lastActiveDate.getTime() === yesterday.getTime()) {
-      // Continued streak
+
       newStreak = (profile.currentStreak || 0) + 1;
     } else {
-      // Streak broken, restart
+
       newStreak = 1;
     }
   }
 
   const newLongest = Math.max(newStreak, profile.longestStreak || 0);
 
-  // Update profile streak
   await prisma.$executeRaw`
     UPDATE "UserCommunityProfile"
     SET "currentStreak" = ${newStreak},
@@ -80,9 +73,6 @@ export async function recordUserActivity(
   `;
 }
 
-/**
- * Get streak info for any user
- */
 export async function getUserStreak(userId: string) {
   const profiles = await prisma.$queryRaw`
     SELECT "currentStreak", "longestStreak", "lastActiveDate"
@@ -103,9 +93,6 @@ export async function getUserStreak(userId: string) {
   };
 }
 
-/**
- * Get current user's streak info
- */
 export async function getMyStreak() {
   const { userId } = auth();
   if (!userId) return { currentStreak: 0, longestStreak: 0, lastActiveDate: null };

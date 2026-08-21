@@ -62,7 +62,6 @@ export function ProfileTabs({
 }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState<"posts" | "reels">("posts");
 
-  // Filter posts based on postType
   const textPosts = posts.filter((post) => post.postType !== "REEL");
   const videoReels = posts.filter((post) => post.postType === "REEL");
 
@@ -71,7 +70,6 @@ export function ProfileTabs({
 
   return (
     <div className="w-full flex flex-col">
-      {/* Tabs Headers */}
       <div className={cn("flex border-b shrink-0", borderClass)}>
         <button
           onClick={() => setActiveTab("posts")}
@@ -99,10 +97,9 @@ export function ProfileTabs({
         </button>
       </div>
 
-      {/* Tabs Content */}
       <div className="flex-1 mt-1">
         {activeTab === "posts" ? (
-          /* Text Posts list */
+
           textPosts.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <FileText size={48} className="mx-auto mb-3 opacity-40" />
@@ -136,7 +133,7 @@ export function ProfileTabs({
             </div>
           )
         ) : (
-          /* Video Reels Grid */
+
           videoReels.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Film size={48} className="mx-auto mb-3 opacity-40" />
@@ -151,7 +148,7 @@ export function ProfileTabs({
                   className="aspect-[9/16] bg-muted border border-border rounded-xl overflow-hidden relative group flex flex-col items-center justify-center hover:brightness-110 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                 >
                   {reel.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+
                     <img
                       src={reel.thumbnailUrl}
                       alt={reel.content || "Reel"}
@@ -161,7 +158,6 @@ export function ProfileTabs({
                     <Film className="size-8 text-muted-foreground/30 z-0" />
                   )}
 
-                  {/* Views count and hover overlays */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 z-10 transition-opacity flex flex-col justify-end p-2 text-white">
                     <p className="text-[11px] font-medium line-clamp-2 leading-snug mb-1">
                       {reel.content}
@@ -172,7 +168,6 @@ export function ProfileTabs({
                     </div>
                   </div>
 
-                  {/* Non-hover view indicator */}
                   <div className="absolute left-1.5 bottom-1.5 z-10 flex items-center gap-1 bg-black/40 rounded-md px-1.5 py-0.5 text-white group-hover:opacity-0 transition-opacity">
                     <Eye className="size-3 text-white/90" />
                     <span className="text-[9px] font-bold text-white">{reel.viewCount || 0}</span>

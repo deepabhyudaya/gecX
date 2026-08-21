@@ -38,7 +38,6 @@ export function DashboardPageLayout({
     document.cookie = `${layoutKey}=${JSON.stringify(sizes)}; path=/; max-age=31536000`;
   };
 
-  // No right panel simple single scrollable column
   if (!rightContent) {
     return (
       <div className="h-full overflow-y-auto custom-scrollbar">
@@ -47,7 +46,6 @@ export function DashboardPageLayout({
     );
   }
 
-  // Pre-hydration SSR fallback (also used on mobile)
   if (!isHydrated) {
     return (
       <div className="h-full overflow-y-auto custom-scrollbar">
@@ -59,10 +57,8 @@ export function DashboardPageLayout({
     );
   }
 
-  // Desktop: resizable panels, each with their own inner scroll div
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Desktop */}
       <div className="hidden lg:flex flex-1 min-h-0">
         <ResizablePanelGroup
           direction="horizontal"
@@ -70,7 +66,6 @@ export function DashboardPageLayout({
           className="h-full"
         >
           <ResizablePanel defaultSize={panelLayout[0]} minSize={30}>
-            {/* Inner div owns the scroll panel itself stays overflow-hidden */}
             <div className="h-full overflow-y-auto custom-scrollbar">
               <div className="p-4 pb-24">{leftContent}</div>
             </div>
@@ -84,7 +79,6 @@ export function DashboardPageLayout({
         </ResizablePanelGroup>
       </div>
 
-      {/* Mobile stacked, single scroll */}
       <div className="lg:hidden flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-4 pb-24 flex flex-col gap-8">
           {leftContent}

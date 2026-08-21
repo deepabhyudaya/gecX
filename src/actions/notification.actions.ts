@@ -58,7 +58,6 @@ export async function getUnreadCounts() {
     };
   }
 
-  // Check cache first
   const cacheKey = `unread-counts-${userId}`;
   const cached = memoryCache.get(cacheKey);
   if (cached) {
@@ -69,7 +68,6 @@ export async function getUnreadCounts() {
   const claimRole = (sessionClaims?.metadata as { role?: string })?.role;
   const role = await resolveRole(userId, claimRole);
 
-  // Batch all count queries in parallel to minimize round trips
   const [
     unreadDMs,
     groupData,
@@ -77,7 +75,7 @@ export async function getUnreadCounts() {
     pendingRequests,
     notificationCounts,
   ] = await Promise.all([
-    // Direct Messages count
+
     prisma.directMessage.count({
       where: {
         senderId: { not: userId },
@@ -88,14 +86,12 @@ export async function getUnreadCounts() {
       },
     }),
 
-    // Group messages data (single query for all groups)
     prisma.groupMember.findMany({
       where: { userId },
       select: { groupId: true, lastReadAt: true },
     }).then(async (groups) => {
       if (groups.length === 0) return { unreadGroups: 0 };
 
-      // Use a single raw query to count unread messages across all groups
       const groupUnreadCounts = await Promise.all(
         groups.map((group) =>
           prisma.groupMessage.count({
@@ -110,7 +106,6 @@ export async function getUnreadCounts() {
       return { unreadGroups: groupUnreadCounts.reduce((sum, c) => sum + c, 0) };
     }),
 
-    // Ticket data
     (async () => {
       let unreadSupportTickets = 0;
       let unreadPublicTickets = 0;
@@ -169,10 +164,8 @@ export async function getUnreadCounts() {
       };
     })(),
 
-    // Follow and DM requests
     getTotalRequestCount(),
 
-    // Notification counts - optimized with single query and aggregation
     (async () => {
       const notificationWhere = role ? roleWhere(role, userId) : null;
 
@@ -195,7 +188,6 @@ export async function getUnreadCounts() {
         "ANNOUNCEMENT_CREATED", "ANNOUNCEMENT_UPDATED", "ANNOUNCEMENT_DELETED",
       ] as any[];
 
-      // Single query to get all notification types and their counts
       const unreadNotificationItems = await prisma.notification.findMany({
         where: {
           ...notificationWhere,
@@ -207,7 +199,6 @@ export async function getUnreadCounts() {
         select: { type: true },
       });
 
-      // Aggregate counts by type in memory (much faster than multiple queries)
       const typeCounts = unreadNotificationItems.reduce(
         (acc, n) => {
           acc[n.type] = (acc[n.type] ?? 0) + 1;
@@ -220,7 +211,6 @@ export async function getUnreadCounts() {
     })(),
   ]);
 
-  // Extract results from batched queries
   const unreadGroups = groupData.unreadGroups;
   const unreadTickets = ticketData.unreadTickets;
   const unreadSupportTickets = ticketData.unreadSupportTickets;
@@ -228,7 +218,6 @@ export async function getUnreadCounts() {
   const typeCounts = notificationCounts.typeCounts || {};
   const unreadNotifications = notificationCounts.totalNotifications || 0;
 
-  // Helper functions for aggregating counts
   const bucketByType = (types: string[]) =>
     types.reduce((sum, type) => sum + (typeCounts[type] ?? 0), 0);
 
@@ -240,7 +229,6 @@ export async function getUnreadCounts() {
     return "blue";
   };
 
-  // Calculate all badge counts
   const teachers = bucketByType(["TEACHER_CREATED", "TEACHER_UPDATED", "TEACHER_DELETED"]);
   const students = bucketByType(["STUDENT_CREATED", "STUDENT_UPDATED", "STUDENT_DELETED"]);
   const parents = bucketByType(["PARENT_CREATED", "PARENT_UPDATED", "PARENT_DELETED"]);
@@ -318,10 +306,9 @@ export async function getUnreadCounts() {
     itemBadges,
   };
 
-  // Cache the result for 30 seconds
   memoryCache.set(cacheKey, result, 30000);
 
-  performanceMonitor.trackSidebarPoll(5, Date.now() - startTime); // 5 batched queries
+  performanceMonitor.trackSidebarPoll(5, Date.now() - startTime);
   return result;
 }
 
@@ -338,7 +325,6 @@ export async function markDirectMessagesAsRead(conversationId: number) {
     data: { isRead: true },
   });
 
-  // Invalidate cache
   memoryCache.delete(`unread-counts-${userId}`);
 
   revalidatePath("/", "layout");
@@ -353,7 +339,7 @@ export async function markGroupMessagesAsRead(groupId: number) {
     where: { groupId_userId: { groupId, userId } },
     data: { lastReadAt: new Date() },
   });
-  // Invalidate cache
+
   memoryCache.delete(`unread-counts-${userId}`);
   revalidatePath("/", "layout");
   revalidatePath("/messages");

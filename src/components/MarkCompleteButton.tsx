@@ -15,7 +15,6 @@ interface Props {
 export default function MarkCompleteButton({ lectureId, courseSlug, initialCompleted }: Props) {
   const [state, action] = useFormState(markLectureComplete, { success: false, error: false });
 
-  // Optimistic UI   flip immediately on click, revert if server fails
   const [optimisticDone, setOptimistic] = useOptimistic<boolean>(initialCompleted);
   const [, startTransition] = useTransition();
 

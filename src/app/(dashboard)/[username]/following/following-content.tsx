@@ -47,7 +47,6 @@ export function FollowingContent({
     router.refresh();
   };
 
-  // Derive explicit color classes from profile bg (same logic as profile page)
   const hasCustomBg = !!profileBgColor;
   const textClass = bgIsLight ? "text-gray-900" : hasCustomBg ? "text-gray-100" : "";
   const mutedClass = bgIsLight ? "text-gray-500" : hasCustomBg ? "text-gray-400" : "text-muted-foreground";
@@ -61,7 +60,6 @@ export function FollowingContent({
   return (
     <div className={`flex-1 flex flex-col w-full ${textClass}`} style={bgStyle}>
       <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-        {/* Header */}
         <div className={`sticky top-0 z-10 ${headerBgClass} backdrop-blur border-b ${borderClass}`}>
           <div className="px-4 py-3 flex items-center gap-4">
             <Link
@@ -77,7 +75,6 @@ export function FollowingContent({
           </div>
         </div>
 
-        {/* Following List */}
         <div className={`divide-y ${borderClass}`}>
           {isPrivateLocked ? (
             <div className="text-center py-16 px-4">

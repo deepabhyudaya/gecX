@@ -14,7 +14,6 @@ const ICON_MAP: Record<string, any> = {
   VERIFIED_ANSWERS: ShieldTickSVG,
 };
 
-// Map BadgeColor enum values to actual hex colors
 const COLOR_HEX: Record<string, string> = {
   PINK: '#FF6B9D',
   PURPLE: '#9B59B6',
@@ -23,7 +22,6 @@ const COLOR_HEX: Record<string, string> = {
   GOLD: '#F1C40F',
 };
 
-// Tier-to-color mapping (same as badge-engine.ts)
 const TIER_COLOR_NAMES: Record<number, string> = {
   1: 'PINK',
   2: 'PURPLE',
@@ -33,7 +31,7 @@ const TIER_COLOR_NAMES: Record<number, string> = {
 };
 
 export default function BadgeIcon({ badge, size = 20 }: { badge: any, size?: number }) {
-  // Resolve actual color: use badge.color if set, otherwise derive from tier
+
   const colorName = badge.color || TIER_COLOR_NAMES[badge.tier] || 'PINK';
   const hexColor = COLOR_HEX[colorName] || '#9CA3AF';
   const isGold = colorName === 'GOLD';

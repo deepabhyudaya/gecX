@@ -10,12 +10,6 @@ function generateInviteCode(): string {
 
 const CR_POLL_QUESTION = "🗳️ Vote for Class Representative";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// createClassServer
-// Called when a class is created. Creates a dedicated server for the class,
-// adds a #cr-election channel with a persistent CR poll, and links the server
-// back to the class record.
-// ─────────────────────────────────────────────────────────────────────────────
 export async function createClassServer(classId: number, className: string) {
   const existing = await prisma.class.findUnique({
     where: { id: classId },
@@ -96,11 +90,6 @@ export async function createClassServer(classId: number, className: string) {
   revalidatePath("/list/classes");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// addStudentToClassServer
-// Called when a student is assigned to a class (create or class transfer).
-// Adds them as a ServerMember and adds them as a PollOption in the CR poll.
-// ─────────────────────────────────────────────────────────────────────────────
 export async function addStudentToClassServer(
   studentId: string,
   classId: number,
@@ -145,11 +134,6 @@ export async function addStudentToClassServer(
   revalidatePath("/servers");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// removeStudentFromClassServer
-// Called when a student changes class. Removes their server membership and
-// their poll option from the old class's CR poll.
-// ─────────────────────────────────────────────────────────────────────────────
 export async function removeStudentFromClassServer(studentId: string, classId: number) {
   const classData = await prisma.class.findUnique({
     where: { id: classId },
@@ -176,12 +160,6 @@ export async function removeStudentFromClassServer(studentId: string, classId: n
   revalidatePath("/servers");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// tallyAndUpdateCR
-// Count votes in the CR poll and elect the leading student as CR.
-// The leader is whoever has the most votes (even 1 vote counts).
-// Tied votes keep the existing CR.
-// ─────────────────────────────────────────────────────────────────────────────
 export async function tallyAndUpdateCR(pollId: number, classId: number) {
   const options = await prisma.pollOption.findMany({
     where: { pollId },
@@ -215,7 +193,6 @@ export async function tallyAndUpdateCR(pollId: number, classId: number) {
 
   if (existing?.studentId === topOption.studentId) return;
 
-  // Sync crAId/crBId on any PENDING_CR rivalry involving this class
   const pendingRivalry = await prisma.classRivalry.findFirst({
     where: {
       status: "PENDING_CR",
@@ -263,10 +240,6 @@ export async function tallyAndUpdateCR(pollId: number, classId: number) {
   revalidatePath("/student/rivalry");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// getClassServerInfo
-// Returns the class server + CR info for a given class.
-// ─────────────────────────────────────────────────────────────────────────────
 export async function getClassServerInfo(classId: number) {
   const cls = await prisma.class.findUnique({
     where: { id: classId },

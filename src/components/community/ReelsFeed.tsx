@@ -48,7 +48,6 @@ export function ReelsFeed() {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const feedContainerRef = useRef<HTMLDivElement>(null);
 
-  // Comments State
   const [activeReelComments, setActiveReelComments] = useState<any[]>([]);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
@@ -56,11 +55,9 @@ export function ReelsFeed() {
 
   const [isMuted, setIsMuted] = useState(true);
 
-  // Profile context
   const [userProfile, setUserProfile] = useState<any>(null);
   const { user } = useClerk();
 
-  // Load initial feed
   const loadFeed = useCallback(async () => {
     try {
       setLoading(true);
@@ -82,7 +79,6 @@ export function ReelsFeed() {
     }).catch(() => {});
   }, [loadFeed]);
 
-  // Load more items
   const loadMoreReels = async () => {
     if (loadingMore || !hasMore || !cursor) return;
     setLoadingMore(true);
@@ -98,26 +94,22 @@ export function ReelsFeed() {
     }
   };
 
-  // Scroll handler to track active video
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
     const scrollPos = container.scrollTop;
     const clientHeight = container.clientHeight;
-    
-    // Calculate current item based on snap-scroll snap points
+
     const nextIndex = Math.round(scrollPos / clientHeight);
     if (nextIndex !== activeIndex && nextIndex >= 0 && nextIndex < reels.length) {
       setActiveIndex(nextIndex);
     }
 
-    // Trigger infinite loading if we scroll near the end
     const scrollRemaining = container.scrollHeight - (scrollPos + clientHeight);
     if (scrollRemaining < clientHeight * 2 && hasMore && !loadingMore) {
       loadMoreReels();
     }
   };
 
-  // Comments open handler
   const handleOpenComments = async (reelId: string) => {
     setCommentsTargetReelId(reelId);
     setCommentsOpen(true);
@@ -132,25 +124,21 @@ export function ReelsFeed() {
     }
   };
 
-  // Refreshes comments drawer on new comment
   const handleCommentCreated = async () => {
     if (!commentsTargetReelId) return;
-    
-    // Update comment counts on current reel object in feed
+
     setReels((prev) =>
       prev.map((r) =>
         r.id === commentsTargetReelId ? { ...r, commentCount: r.commentCount + 1 } : r
       )
     );
 
-    // Fetch updated comments
     try {
       const result = await getComments(commentsTargetReelId);
       setActiveReelComments(result.comments);
     } catch {}
   };
 
-  // Repost handler
   const handleRepost = async (reelId: string) => {
     try {
       await repostPost(reelId);
@@ -185,7 +173,6 @@ export function ReelsFeed() {
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black">
-      {/* Snap Scroll Viewport Container */}
       <div
         ref={feedContainerRef}
         onScroll={handleScroll}
@@ -211,14 +198,12 @@ export function ReelsFeed() {
         )}
       </div>
 
-      {/* Floating Comments Bottom Sheet */}
       <Sheet open={commentsOpen} onOpenChange={setCommentsOpen}>
         <SheetContent side="bottom" className="max-h-[60vh] h-[60vh] max-w-2xl mx-auto p-0 flex flex-col bg-background/95 backdrop-blur-md rounded-t-2xl border-t border-border">
           <SheetHeader className="px-4 py-3 border-b border-border shrink-0 flex flex-row items-center justify-between">
             <SheetTitle className="text-sm font-semibold tracking-wide text-foreground">Answers & Comments</SheetTitle>
           </SheetHeader>
 
-          {/* Comments List Container */}
           <div className="flex-1 overflow-y-auto px-4 py-2">
             {loadingComments ? (
               <div className="w-full py-12 flex justify-center text-muted-foreground">
@@ -234,7 +219,6 @@ export function ReelsFeed() {
             )}
           </div>
 
-          {/* Comment Form Input */}
           <div className="p-4 border-t border-border bg-background shrink-0">
             <CommentCreator
               postId={commentsTargetReelId || ""}

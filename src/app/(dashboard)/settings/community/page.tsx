@@ -23,8 +23,6 @@ import { Loader2, ArrowLeft, Trophy, Check, ExternalLink, Palette, Image as Imag
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// ─── Cosmetics mini-card ─────────────────────────────────────────────────────
-
 type CosmeticItem = {
   id: string;
   name: string;
@@ -60,10 +58,8 @@ function CosmeticSwatch({
       )}
       onClick={() => !item.equipped && onEquip(item)}
     >
-      {/* Swatch */}
       <div className="w-full aspect-square" style={swatchStyle} />
 
-      {/* Equipped badge */}
       {item.equipped && (
         <div className="absolute top-1.5 left-1.5">
           <span className="inline-flex items-center gap-0.5 bg-primary/90 text-primary-foreground rounded-full px-1.5 py-0.5 text-[9px] font-semibold shadow">
@@ -72,7 +68,6 @@ function CosmeticSwatch({
         </div>
       )}
 
-      {/* Name */}
       <div className="px-2 py-1.5">
         <p className="text-[11px] font-medium truncate leading-tight">{item.name}</p>
         {isEquipping && (
@@ -82,8 +77,6 @@ function CosmeticSwatch({
     </div>
   );
 }
-
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 type CosmeticTab = "username" | "nameplate" | "background" | "avatar" | "banner";
 
@@ -114,7 +107,6 @@ export default function CommunitySettingsPage() {
   const [usernameError, setUsernameError] = useState("");
   const [usernameChecking, setUsernameChecking] = useState(false);
 
-  // Cosmetics state
   const [cosmeticTab, setCosmeticTab] = useState<CosmeticTab>("username");
   const [isLoadingCosmetics, setIsLoadingCosmetics] = useState(false);
   const [isEquipping, setIsEquipping] = useState<string | null>(null);
@@ -125,7 +117,7 @@ export default function CommunitySettingsPage() {
     equippedUsernameColorId: string | null;
     equippedNameplateId: string | null;
     equippedProfileBgColorId: string | null;
-    // Custom media
+
     ownsCustomAvatar: boolean;
     ownsProfileBanner: boolean;
     customAvatarUrl: string | null;
@@ -134,7 +126,6 @@ export default function CommunitySettingsPage() {
     profileBannerItemId: string | null;
   } | null>(null);
 
-  // Custom media form state
   const [avatarUrlInput, setAvatarUrlInput] = useState("");
   const [bannerUrlInput, setBannerUrlInput] = useState("");
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
@@ -171,7 +162,7 @@ export default function CommunitySettingsPage() {
     setIsLoadingCosmetics(true);
     try {
       const data = await getColorShopData();
-      // Flatten username colors (grouped by hue) into a single owned array
+
       const usernameColors = Object.values(data.usernameColors)
         .flat()
         .filter((i: any) => i.owned) as unknown as CosmeticItem[];
@@ -185,7 +176,7 @@ export default function CommunitySettingsPage() {
         equippedUsernameColorId: data.equippedUsernameColorId,
         equippedNameplateId: data.equippedNameplateId,
         equippedProfileBgColorId: data.equippedProfileBgColorId,
-        // Custom media
+
         ownsCustomAvatar: data.ownsCustomAvatar,
         ownsProfileBanner: data.ownsProfileBanner,
         customAvatarUrl: data.customAvatarUrl,
@@ -193,11 +184,11 @@ export default function CommunitySettingsPage() {
         customAvatarItemId: data.customAvatarItemId,
         profileBannerItemId: data.profileBannerItemId,
       });
-      // Initialize input values
+
       setAvatarUrlInput(data.customAvatarUrl || "");
       setBannerUrlInput(data.bannerUrl || "");
     } catch {
-      // silent fail — cosmetics section just shows empty state
+
     } finally {
       setIsLoadingCosmetics(false);
     }
@@ -411,7 +402,7 @@ export default function CommunitySettingsPage() {
       const result = await checkUsernameAvailable(username);
       setUsernameError(result.available ? "" : "Username is already taken");
     } catch {
-      // silent
+
     } finally {
       setUsernameChecking(false);
     }
@@ -448,7 +439,6 @@ export default function CommunitySettingsPage() {
     );
   }
 
-  // Cosmetics helpers
   const cosmeticTabs: { key: CosmeticTab; label: string; icon: React.ElementType; accent: string }[] = [
     { key: "username", label: "Username", icon: Type, accent: "text-violet-500" },
     { key: "nameplate", label: "Nameplate", icon: IdCard, accent: "text-amber-500" },
@@ -550,7 +540,6 @@ export default function CommunitySettingsPage() {
           </CardContent>
         </Card>
 
-        {/* ── Cosmetics Card ──────────────────────────────────────────────── */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -572,7 +561,6 @@ export default function CommunitySettingsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Tab row */}
             <div className="flex items-center gap-1.5 mb-4 flex-wrap">
               {cosmeticTabs.map((tab) => {
                 const Icon = tab.icon;
@@ -611,13 +599,12 @@ export default function CommunitySettingsPage() {
               )}
             </div>
 
-            {/* Content based on tab */}
             {isLoadingCosmetics ? (
               <div className="flex items-center justify-center h-24">
                 <Loader2 size={20} className="animate-spin text-muted-foreground" />
               </div>
             ) : cosmeticTab === "avatar" ? (
-              /* Custom Avatar Tab */
+
               <div className="space-y-4">
                 {!cosmetics?.ownsCustomAvatar ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center gap-2 text-muted-foreground">
@@ -656,12 +643,10 @@ export default function CommunitySettingsPage() {
                       </p>
                     </div>
 
-                    {/* Preview */}
                     {avatarUrlInput && (
                       <div className="p-4 bg-muted rounded-lg">
                         <p className="text-sm font-medium mb-2">Preview</p>
                         <div className="flex items-center gap-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={avatarUrlInput}
                             alt="Avatar preview"
@@ -694,7 +679,6 @@ export default function CommunitySettingsPage() {
                       <div className="p-4 bg-muted rounded-lg">
                         <p className="text-sm font-medium mb-2">Current Avatar</p>
                         <div className="flex items-center gap-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={cosmetics.customAvatarUrl}
                             alt="Current avatar"
@@ -716,7 +700,7 @@ export default function CommunitySettingsPage() {
                 )}
               </div>
             ) : cosmeticTab === "banner" ? (
-              /* Profile Banner Tab */
+
               <div className="space-y-4">
                 {!cosmetics?.ownsProfileBanner ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center gap-2 text-muted-foreground">
@@ -755,12 +739,10 @@ export default function CommunitySettingsPage() {
                       </p>
                     </div>
 
-                    {/* Preview */}
                     {bannerUrlInput && (
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Preview</p>
                         <div className="relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={bannerUrlInput}
                             alt="Banner preview"
@@ -790,7 +772,6 @@ export default function CommunitySettingsPage() {
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Current Banner</p>
                         <div className="relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={cosmetics.bannerUrl}
                             alt="Current banner"

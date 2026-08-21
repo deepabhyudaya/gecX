@@ -18,17 +18,15 @@ interface UserCardTriggerProps {
   className?: string;
 }
 
-// Module-level cache so repeated opens across the app are instant
 const userCardCache = new Map<string, UserCardData>();
 const inflightRequests = new Map<string, Promise<UserCardData | null>>();
 
 function fetchUserCard(userId: string): Promise<UserCardData | null> {
-  // Return cached data instantly
+
   if (userCardCache.has(userId)) {
     return Promise.resolve(userCardCache.get(userId)!);
   }
 
-  // Deduplicate in-flight requests for the same user
   if (inflightRequests.has(userId)) {
     return inflightRequests.get(userId)!;
   }
@@ -54,7 +52,6 @@ export function UserCardTrigger({ userId, userData, children, className }: UserC
   const [hasError, setHasError] = useState(false);
   const prefetchStarted = useRef(false);
 
-  // Fetch on open if we still don't have data
   useEffect(() => {
     if (open && !data && !isLoading && !hasError && userId) {
       console.log("[UserCardTrigger] Opening dialog, fetching data for userId:", userId);
@@ -93,7 +90,7 @@ export function UserCardTrigger({ userId, userData, children, className }: UserC
       fetchUserCard(userId).then((fetched) => {
         if (fetched) setData(fetched);
       }).catch(() => {
-        // Silently fail prefetch
+
       });
     }
   }, [userId, userData, data]);
@@ -102,7 +99,7 @@ export function UserCardTrigger({ userId, userData, children, className }: UserC
     setHasError(false);
     setData(null);
     setIsLoading(true);
-    // Remove from cache so we force a fresh fetch
+
     userCardCache.delete(userId);
     fetchUserCard(userId)
       .then((fetchedData) => {
@@ -116,7 +113,6 @@ export function UserCardTrigger({ userId, userData, children, className }: UserC
       .finally(() => setIsLoading(false));
   };
 
-  // If we have pre-fetched data, render UserCard directly
   if (userData) {
     return (
       <UserCard user={userData}>
@@ -125,7 +121,6 @@ export function UserCardTrigger({ userId, userData, children, className }: UserC
     );
   }
 
-  // Otherwise use Dialog with loading state
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -144,7 +139,7 @@ export function UserCardTrigger({ userId, userData, children, className }: UserC
         ) : hasError ? (
           <div className="p-6 text-center">
             <p className="text-muted-foreground mb-3">Failed to load profile</p>
-            <button 
+            <button
               onClick={handleRetry}
               className="text-sm text-primary hover:underline"
             >

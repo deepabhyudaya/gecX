@@ -43,8 +43,8 @@ interface PostAuthor {
   customAvatar?: string | null;
   karmaPoints?: number;
   currentStreak?: number;
-  equippedColor?: string | null; // Shop-purchased solid color
-  equippedNameplate?: string | null; // Shop-purchased nameplate bg
+  equippedColor?: string | null;
+  equippedNameplate?: string | null;
 }
 
 interface OriginalPost {
@@ -106,7 +106,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
   const [isReposting, setIsReposting] = useState(false);
   const [userEmojis, setUserEmojis] = useState<Array<{ name: string; imageUrl: string }>>([]);
 
-  // Fetch user's server emojis for rendering (cached)
   useEffect(() => {
     fetchUserEmojis()
       .then((emojis) => {
@@ -129,7 +128,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
       toast.error("Failed to like post");
     }
   };
-
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -160,7 +158,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
 
   return (
     <article className={`border-b ${articleBorderClass} p-4 ${articleHoverClass} transition-colors`}>
-      {/* Repost indicator */}
       {post.isRepost && (
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2 ml-12">
           <Repeat2 size={14} />
@@ -181,7 +178,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
       )}
 
       <div className="flex gap-3">
-        {/* Avatar - use current profile avatar, not static authorImage */}
         <UserCardTrigger userId={displayAuthor.userId}>
           <div className="cursor-pointer">
             <StreakBorderAvatar
@@ -195,15 +191,12 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
           </div>
         </UserCardTrigger>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
           <div className="flex items-center justify-between gap-2">
-            <div 
+            <div
               className={cn("flex items-center gap-1.5 min-w-0 rounded-md px-1.5 py-0.5")}
               style={displayAuthor.equippedNameplate ? { background: displayAuthor.equippedNameplate, textShadow: "0 1px 2px rgba(0,0,0,0.4)" } : undefined}
             >
-              {/* Username color: prefer equippedColor, then karma tier, regardless of nameplate */}
               {(() => {
                 const nameColor = displayAuthor.equippedColor
                   ? { color: displayAuthor.equippedColor }
@@ -253,7 +246,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
               )}
             </div>
 
-            {/* Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
@@ -280,14 +272,12 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
             </DropdownMenu>
           </div>
 
-          {/* Post Content */}
           <Link href={`/community/post/${post.id}`} className="block mt-1">
             <p className="text-sm whitespace-pre-wrap break-words">
               <EmojiRenderer content={displayPost.content} emojiMap={emojiMap} />
             </p>
           </Link>
 
-          {/* Image Embeds */}
           {(() => {
             const imageUrls = extractImageUrls(displayPost.content);
             if (imageUrls.length === 0) return null;
@@ -300,7 +290,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
             );
           })()}
 
-          {/* Actions */}
           <div className="flex items-center justify-between mt-3 max-w-md">
             <Button
               variant="ghost"
@@ -340,7 +329,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
             </Button>
           </div>
 
-          {/* Comments Preview */}
           {post.previewComments && post.previewComments.length > 0 && (
             <CommentsPreview
               postId={post.id}
@@ -351,7 +339,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
         </div>
       </div>
 
-      {/* Delete Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -373,7 +360,6 @@ export function PostCard({ post, onDelete, onRepost, bgIsLight = false, hasCusto
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Report Dialog */}
       <AlertDialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
